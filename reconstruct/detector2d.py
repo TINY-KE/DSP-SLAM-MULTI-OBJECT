@@ -23,18 +23,19 @@ import mmcv
 from mmcv.runner import load_checkpoint
 from mmdet.models import build_detector
 from mmdet.core import get_classes
-from mmdet.apis import inference_detector
+from mmdet.apis import inference_detector, show_result_pyplot
 
+from contents import object_class_table
 
-object_class_table = {"cars": [2], "chairs": [56, 57]}
-
+import matplotlib.pyplot as plt
+import matplotlib.image as mpimg
 
 def get_detector2d(configs):
     return Detector2D(configs)
 
-
 class Detector2D(object):
     def __init__(self, configs):
+        print("     get online 2D detectors -2")
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         config = configs.Detector2D.config_path
         checkpoint = configs.Detector2D.weight_path
@@ -60,43 +61,121 @@ class Detector2D(object):
         self.model.eval()
         self.min_bb_area = configs.min_bb_area
         self.predictions = None
+        print("     get online 2D detectors -3")
+        self.mRow = configs.image.mRow
+        print("     get online 2D detectors -4")
+        self.mCol = configs.image.mCol
+        print("     get online 2D detectors -5")
+        self.mEdge = configs.image.mEdge
+        print("     get online 2D detectors -6")
 
-    def make_prediction(self, image, object_class="cars"):
-        assert object_class == "chairs" or object_class == "cars"
+
+    def make_prediction(self, image, object_classes=["cars"]):
+        # print(f"make_prediction: object_classes = {object_classes}")
+        # assert object_class == "chairs" or object_class == "cars"
+        for object_class in object_classes:
+            assert object_class in object_class_table, f"{object_class} is not valid class to detect"
+
+        # print(f"      make_prediction: mmdet api Start")
+        # 显示图片
+        # plt.imshow(image)
+        # plt.axis('off')  # 关闭坐标轴
+        # plt.gcf().canvas.set_window_title('mmdet Detector Image Input')
+        # plt.pause(0.001)  # 不暂停程序
+        # plt.show()
         self.predictions = inference_detector(self.model, image)
-        boxes = [self.predictions[0][o] for o in object_class_table[object_class]]
-        boxes = np.concatenate(boxes, axis=0)
-        masks = []
-        n_det = 0
-        for o in object_class_table[object_class]:
-            masks += self.predictions[1][o]
-            n_det += len(self.predictions[1][o])
+        # print(f"      make_prediction: mmdet api success")
 
+        # print(f"type(self.predictions) = {self.predictions}")
+
+        """
+            structure of predictions:
+            - bboxs: self.predictions[0]
+                - bboxs[class]: self.predictions[0][class_index]
+                    - bbox: self.predictions[0][class_index][instance_index]
+                        - x1, y1, x2, y2, prob
+            - masks: self.predictions[1]
+                - masks[class]: self.predictions[1][class_index]
+        """
+
+        bboxes = []
+        masks = []
+        labels = []
+
+        n_det = 0
+
+        print(f"[zhjd-debug] make_prediction valid object_classes = {object_classes}")
+        
+        any_detect = False
+        # print(f"detect ")
+        for object_class in object_classes:
+            for object_id in object_class_table[object_class]:
+                o = object_id
+                n_det_bbox = len(self.predictions[0][o])
+                n_det_mask = len(self.predictions[1][o])
+
+                
+                if n_det_bbox:
+                    any_detect = True
+                    print(f"[zhjd-debug] make_prediction result = {n_det_bbox} {object_class}, ", end='')
+
+                assert n_det_bbox == n_det_mask,  f"len(bbox[{o}]) != len(mask[{o}])"
+                bboxes_o = self.predictions[0][o]
+                bboxes.append(bboxes_o)
+                masks += self.predictions[1][o]
+                labels.extend([o for i in range(n_det_bbox)])
+                n_det += n_det_bbox
+
+        if any_detect:
+            print("")
+        else:
+            print("nothing")
+        
+        bboxes = np.concatenate(bboxes, axis=0)
+        labels = np.array(labels)
+        probs = bboxes[:,4]
+        
         # In case there is no detections
         if n_det == 0:
             masks = np.zeros((0, 0, 0))
         else:
             masks = np.stack(masks, axis=0)
-        assert boxes.shape[0] == masks.shape[0]
 
-        return self.get_valid_detections(boxes, masks)
+        # print(f"make_prediction: n_det = {n_det}")
+
+        # img = show_result_pyplot(self.model, image, self.predictions, score_thr=0.2)
+        # cv2.imshow("labeled img", img)
+        # cv2.waitKey(2)
+
+        return self.get_valid_detections(bboxes, masks, labels, probs)
 
     def visualize_result(self, image, filename):
         self.model.show_result(image, self.predictions, out_file=filename)
 
-    def get_valid_detections(self, boxes, masks):
+    def get_valid_detections(self, boxes, masks, labels, probs):
+
         # Remove those on the margin
-        cond1 = (boxes[:, 0] >= 30) & (boxes[:, 1] > 10) & (boxes[:, 2] < 1211) & (boxes[:, 3] < 366)
+        cond1 = (boxes[:, 0] >= self.mEdge) \
+                & (boxes[:, 1] > self.mEdge) \
+                & (boxes[:, 2] < self.mCol - self.mEdge) \
+                & (boxes[:, 3] < self.mRow - self.mEdge)
+        
         boxes_area = (boxes[:, 2] - boxes[:, 0]) * (boxes[:, 3] - boxes[:, 1])
         # Remove those with too small bounding boxes
+
         cond2 = (boxes_area > self.min_bb_area)
         scores = boxes[:, -1]
-        cond3 = (scores >= 0.70)
+        cond3 = (scores >= 0.60)
 
-        valid_mask = (cond2 & cond3)
+        # valid_mask = (cond2 & cond3)
+        valid_mask = (cond1 & cond2 & cond3)
+
         valid_instances = {"pred_boxes": boxes[valid_mask, :4],
-                           "pred_masks": masks[valid_mask, ...]}
-
+                           "pred_masks": masks[valid_mask, ...],
+                           "pred_labels": labels[valid_mask],
+                           "pred_probs": probs[valid_mask],
+                           }
+        
         return valid_instances
 
     @staticmethod

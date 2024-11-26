@@ -56,6 +56,13 @@ public:
     bool isGood;
     std::mutex mMutexFeatures;
     std::mutex mMutexDetection;
+
+
+public:
+    Eigen::Vector4d bbox;   //物体检测框，用于椭球体prior
+    int label;              //物体类别
+    double prob;            //物体检测概率
+
 };
 }
 

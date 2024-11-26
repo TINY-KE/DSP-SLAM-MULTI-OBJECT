@@ -250,7 +250,7 @@ void LocalMapping::CreateNewObjectsFromDetections()
     }
 }
 
-void LocalMapping::ProcessDetectedObjects()
+void LocalMapping::ProcessDetectedObjects_byPythonReconstruct()
 {
     auto SE3Twc = Converter::toMatrix4f(mpCurrentKeyFrame->GetPoseInverse());
     auto SE3Tcw = Converter::toMatrix4f(mpCurrentKeyFrame->GetPose());
@@ -388,6 +388,21 @@ void LocalMapping::ProcessDetectedObjects()
             rays << fg_rays, det->background_rays;
 
             PyThreadStateLock PyThreadLock;
+
+            // 获取dsp优化器
+            // int class_id = 56; //det->label;  //临时设置为chair，用于debug
+            // py::object* optimizer_ptr;
+            // if(mmPyOptimizers.count(class_id) > 0) {
+            //     py::object* optimizer_ptr_local = &(mmPyOptimizers[class_id]);
+            //     optimizer_ptr = optimizer_ptr_local;
+            // }
+            // else{
+            //     cout << " [ProcessDetectedObjects] class " << class_id << " is not in yolo_classes" << endl;
+            //     py::object* optimizer_ptr_local = &pyOptimizer;
+            //     optimizer_ptr = optimizer_ptr_local;
+            // }
+            cout << "Before reconstruct_object" << std::endl;
+
             auto pyMapObject = pyOptimizer.attr("reconstruct_object")
                     (SE3Tcw * pMO->Sim3Two, surface_points_cam, rays, depth_obs, pMO->vShapeCode);
 

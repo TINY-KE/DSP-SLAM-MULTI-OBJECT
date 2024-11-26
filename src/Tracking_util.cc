@@ -159,9 +159,19 @@ cv::Mat Tracking::GetCameraIntrinsics()
     return mK;
 }
 
+
+void Tracking::GetObjectDetectionsRGBD(KeyFrame *pKF)
+{
+    // todo: 
+}
+
+
 void Tracking::GetObjectDetectionsMono(KeyFrame *pKF)
 {
     PyThreadStateLock PyThreadLock;
+    mvImObjectMasks.clear();
+    mvImObjectBboxs.clear();
+
 
     py::list detections = mpSystem->pySequence.attr("get_frame_by_id")(pKF->mnFrameId);
     int num_dets = detections.size();
@@ -175,6 +185,11 @@ void Tracking::GetObjectDetectionsMono(KeyFrame *pKF)
         auto py_det = detections[detected_idx];
         det->background_rays = py_det.attr("background_rays").cast<Eigen::MatrixXf>();
         auto mask = py_det.attr("mask").cast<Eigen::MatrixXf>();
+        det->bbox = py_det.attr("bbox").cast<Eigen::Vector4d>();
+        det->label = py_det.attr("label").cast<int>();
+        det->prob = py_det.attr("prob").cast<double>();
+
+
         cv::Mat mask_cv;
         cv::eigen2cv(mask, mask_cv);
         // cv::imwrite("mask.png", mask_cv);
@@ -183,6 +198,13 @@ void Tracking::GetObjectDetectionsMono(KeyFrame *pKF)
                                                cv::Size(2 * maskErrosion + 1, 2 * maskErrosion + 1),
                                                cv::Point(maskErrosion, maskErrosion));
         cv::erode(mask_cv, mask_erro, kernel);
+        
+        // 物体检测框和掩码，用于可视化
+        int x1 = (int)(det->bbox(0)), y1 = (int)(det->bbox(1)), \
+            x2 = (int)(det->bbox(2)), y2 = (int)(det->bbox(3));
+        mvImObjectMasks.push_back(std::move(mask_cv));
+        mvImObjectBboxs.push_back({x1,y1,x2,y2});
+
 
         // get 2D feature points inside mask
         for (int i = 0; i < pKF->mvKeys.size(); i++)
@@ -201,6 +223,7 @@ void Tracking::GetObjectDetectionsMono(KeyFrame *pKF)
         }
         pKF->mvpDetectedObjects.push_back(det);
     }
+
     pKF->nObj = pKF->mvpDetectedObjects.size();
     pKF->mvpMapObjects = vector<MapObject *>(pKF->nObj, static_cast<MapObject *>(NULL));
 

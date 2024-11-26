@@ -99,10 +99,10 @@ void LocalMapping::Run()
             {
                 if (mpTracker->mState != Tracking::NOT_INITIALIZED)
                 {
-                    if (mpMap->GetAllMapObjects().empty())
+                    if (mpMap->GetAllMapObjects().empty())  //源程序这里只能构建一个物体
                         CreateNewObjectsFromDetections();
                     // reconstruction
-                    ProcessDetectedObjects();
+                    ProcessDetectedObjects_byPythonReconstruct();
                 }
             }
             if (!stopRequested())

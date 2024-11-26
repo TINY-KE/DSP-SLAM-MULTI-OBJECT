@@ -10,7 +10,7 @@
   "min_bb_area": 1600,
   "min_mask_area": 1000,
   "downsample_ratio": 4.0,
-  "DeepSDF_DIR": "weights/deepsdf/beds_64",
+  "DeepSDF_DIR": "weights/deepsdf/cars_64",
   "voxels_dim": 64,
   "optimizer": {
     "code_len": 64,

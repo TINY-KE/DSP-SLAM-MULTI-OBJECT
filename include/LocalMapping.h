@@ -80,7 +80,7 @@ public:
     void CreateNewMapObjects();
     void MapObjectCulling();
     void CreateNewObjectsFromDetections();
-    void ProcessDetectedObjects();
+    void ProcessDetectedObjects_byPythonReconstruct();
     py::object pyOptimizer;
     py::object pyMeshExtractor;
     int nLastReconKFID;

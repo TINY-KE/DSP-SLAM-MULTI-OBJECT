@@ -85,6 +85,7 @@ public:
     std::string detection_path;  // path to associated detected instances
     cv::Mat GetCameraIntrinsics();
     void GetObjectDetectionsMono(KeyFrame *pKF);
+    void GetObjectDetectionsRGBD(KeyFrame *pKF);
     void AssociateObjectsByProjection(KeyFrame *pKF);  // assocating detection to object by projecting map points
 
 
@@ -229,6 +230,12 @@ protected:
     bool mbRGB;
 
     list<MapPoint*> mlpTemporalPoints;
+
+public:
+    // 物体检测框和掩码，用于可视化
+    vector<cv::Mat> mvImObjectMasks;
+    vector<vector<int>> mvImObjectBboxs;
+    
 };
 
 } //namespace ORB_SLAM
