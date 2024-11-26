@@ -58,3 +58,11 @@ Viewer.ViewpointX: 0
 Viewer.ViewpointY: -10   # originally -10
 Viewer.ViewpointZ: -0.1
 Viewer.ViewpointF: 2000
+
+
+# dsp
+YoloClasses: [56, 57, 60, 59]
+DecoderPaths: ["weights/deepsdf/chairs_64",
+               "weights/deepsdf/sofas_64",
+               "weights/deepsdf/tables_64",  #table is default object in my code, so it's essential to keep the table.
+               "weights/deepsdf/beds_64"]

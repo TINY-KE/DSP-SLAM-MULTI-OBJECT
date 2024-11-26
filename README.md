@@ -22,10 +22,24 @@
     "mCol": 960,
     "mEdge": 15
   }
-+ 
++ 在LocalMapping_util.cc根据物体label选择不同的pyOptimizer，进行选择不同的deepsdf参数，从而生成不同的物体模型
++ 实现了多物体dsp模型导入，其中桌子模型是默认模型，一定要保留。  
++ 待： 实现物体关联，修改AssociateObjectsByProjection。暂时按照距离进行关联。
+
+
++ lj这里的用意是什么？
+if (keep_raw_pose) {
+            cout << "Draw Sim3Two_raw " << endl;
+            pMO->UpdateReconstruction(Sim3Two_raw, code);
+        }
+        else {
+            pMO->UpdateReconstruction(Sim3Two, code);
+            
+        }
+
+
 + 使用单个床的rosbag，但是还是建模成为汽车
 
-+ 实现多个物体（为了debug， 第一个是床， 第二个沙发）
 
 
 # 第二阶段：利用距离 进行数据关联

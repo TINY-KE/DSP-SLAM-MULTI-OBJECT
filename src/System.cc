@@ -94,7 +94,28 @@ System::System(const string &strVocFile, const string &strSettingsFile, const st
     py::module io_utils = py::module::import("reconstruct.utils");
     string pyCfgPath = fSettings["DetectorConfigPath"].string();
     pyCfg = io_utils.attr("get_configs")(pyCfgPath);
-    pyDecoder = io_utils.attr("get_decoder")(pyCfg);
+    
+    // 原程序： 单物体dsp模型导入, 弃用
+    // pyDecoder = io_utils.attr("get_decoder")(pyCfg);
+
+    // 多物体dsp模型导入
+    py::module deep_sdf_utils = py::module::import("deep_sdf.workspace");
+    vector<int> yolo_classes;
+    fSettings["YoloClasses"] >> yolo_classes;
+    vector<std::string> decoder_paths;
+    fSettings["DecoderPaths"] >> decoder_paths;
+    std::cout << "多物体dsp模型导入："<<std::endl;
+    for (const std::string& path : decoder_paths) 
+        std::cout << path << " "<<std::endl;
+    py::module optim  = py::module::import("reconstruct.optimizer");
+    for (int i = 0; i < yolo_classes.size(); i++){
+        int class_id = yolo_classes[i];
+        cout << "mmPyDecoders Add class: " << class_id << std::endl;
+        py::object decoder = deep_sdf_utils.attr("config_decoder")(decoder_paths[i]);
+        // py::object* decoder_ptr = &decoder;
+        mmPyDecoders[class_id] = std::move(decoder);
+    }
+
     pySequence = py::module::import("reconstruct").attr("get_sequence")(strSequencePath, pyCfg);
     InitThread();
 

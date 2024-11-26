@@ -36,10 +36,29 @@ LocalMapping::LocalMapping(System *pSys, Map *pMap, ObjectDrawer* pObjectDrawer,
     mbStopRequested(false), mbNotStop(false), mbAcceptKeyFrames(true)
 {
     py::module optim  = py::module::import("reconstruct.optimizer");
-    pyOptimizer = optim.attr("Optimizer")(pSys->pyDecoder, pSys->pyCfg);
-    pyMeshExtractor = optim.attr("MeshExtractor")(pSys->pyDecoder, pSys->pyCfg.attr("optimizer").attr("code_len"), pSys->pyCfg.attr("voxels_dim"));
+    // pyOptimizer = optim.attr("Optimizer")(pSys->pyDecoder, pSys->pyCfg);
+    // pyMeshExtractor = optim.attr("MeshExtractor")(pSys->pyDecoder, pSys->pyCfg.attr("optimizer").attr("code_len"), pSys->pyCfg.attr("voxels_dim"));
     mpLastKeyFrame = static_cast<KeyFrame*>(NULL);
     nLastReconKFID = 0;
+
+    // 多物体dsp模型导入
+    auto& pyDecoders = pSys->mmPyDecoders;
+    for (auto it = pyDecoders.begin(); it != pyDecoders.end(); ++it) {
+        int class_id = it->first;
+        cout << "[LocalMapping] 导入物体dsp模型: " << class_id << std::endl;
+        // TODO: 对于运行过程序的终端窗口，运行到这里就会报错 895372 Segmentation fault ，可能与内存分配有关
+        auto& decoder = it->second;
+        // cout << "11" << endl;
+        py::object optimizer = optim.attr("Optimizer")(decoder, pSys->pyCfg);
+        // cout << "12" << endl;
+        // py::object* optimizer_ptr = static_cast<py::object*>(&optimizer);
+        mmPyOptimizers[class_id] = std::move(optimizer);
+        py::object mesh_extractor = optim.attr("MeshExtractor")(decoder, pSys->pyCfg.attr("optimizer").attr("code_len"), pSys->pyCfg.attr("voxels_dim"));
+        
+        // py::object* mesh_extractor_ptr = &mesh_extractor;
+        mmPyMeshExtractors[class_id] = std::move(mesh_extractor);
+    }
+
 }
 
 void LocalMapping::SetLoopCloser(LoopClosing* pLoopCloser)

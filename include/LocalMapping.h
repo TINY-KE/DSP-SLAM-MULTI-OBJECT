@@ -81,8 +81,15 @@ public:
     void MapObjectCulling();
     void CreateNewObjectsFromDetections();
     void ProcessDetectedObjects_byPythonReconstruct();
-    py::object pyOptimizer;
-    py::object pyMeshExtractor;
+
+    map<int, py::object> mmPyOptimizers;
+    map<int, py::object> mmPyMeshExtractors;
+
+    // 单物体的dsp模型相关， 弃用
+    // py::object pyOptimizer;
+    // py::object pyMeshExtractor;
+
+
     int nLastReconKFID;
 
 protected:

@@ -155,8 +155,9 @@ public:
         }
     }
     py::object pyCfg;
-    py::object pyDecoder;
+    // py::object pyDecoder;  // 原程序： 单物体dsp模型导入, 弃用
     py::object pySequence;
+    map<int, py::object> mmPyDecoders;
 
 private:
 

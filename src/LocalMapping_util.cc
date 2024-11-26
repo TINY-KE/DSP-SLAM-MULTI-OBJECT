@@ -83,125 +83,125 @@ void LocalMapping::MapObjectCulling()
 
 void LocalMapping::GetNewObservations()
 {
-    PyThreadStateLock PyThreadLock;
+    // PyThreadStateLock PyThreadLock;
 
-    // cout << "LocalMapping: Estimating new poses for associated objects" << endl;
+    // // cout << "LocalMapping: Estimating new poses for associated objects" << endl;
 
-    auto Tcw = Converter::toMatrix4f(mpCurrentKeyFrame->GetPose());
-    auto mvpAssociatedObjects = mpCurrentKeyFrame->GetMapObjectMatches();
-    auto mvpObjectDetections = mpCurrentKeyFrame->GetObjectDetections();
+    // auto Tcw = Converter::toMatrix4f(mpCurrentKeyFrame->GetPose());
+    // auto mvpAssociatedObjects = mpCurrentKeyFrame->GetMapObjectMatches();
+    // auto mvpObjectDetections = mpCurrentKeyFrame->GetObjectDetections();
 
-    for (int i = 0; i < mvpObjectDetections.size(); i++)
-    {
-        auto det = mvpObjectDetections[i];
-        if (det->isNew)
-            continue;
-        if (!det->isGood)
-            continue;
+    // for (int i = 0; i < mvpObjectDetections.size(); i++)
+    // {
+    //     auto det = mvpObjectDetections[i];
+    //     if (det->isNew)
+    //         continue;
+    //     if (!det->isGood)
+    //         continue;
 
-        auto pMO = mvpAssociatedObjects[i];
-        if (pMO)
-        {
-            // Tco obtained by transforming Two to camera frame
-            Eigen::Matrix4f iniSE3Tco = Tcw * pMO->GetPoseSE3();
-            g2o::SE3Quat Tco = Converter::toSE3Quat(iniSE3Tco);
-            // Tco after running ICP, use Tco provided by detector
-            Eigen::Matrix4f SE3Tco = pyOptimizer.attr("estimate_pose_cam_obj")
-                    (det->SE3Tco, pMO->scale, det->SurfacePoints, pMO->GetShapeCode()).cast<Eigen::Matrix4f>();
-            g2o::SE3Quat Zco = Converter::toSE3Quat(SE3Tco);
-            // error
-            Eigen::Vector3f dist3D = SE3Tco.topRightCorner<3, 1>() - iniSE3Tco.topRightCorner<3, 1>();
-            Eigen::Vector2f dist2D; dist2D << dist3D[0], dist3D[2];
-            Eigen::Matrix<double, 6, 1> e = (Tco.inverse() * Zco).log();
+    //     auto pMO = mvpAssociatedObjects[i];
+    //     if (pMO)
+    //     {
+    //         // Tco obtained by transforming Two to camera frame
+    //         Eigen::Matrix4f iniSE3Tco = Tcw * pMO->GetPoseSE3();
+    //         g2o::SE3Quat Tco = Converter::toSE3Quat(iniSE3Tco);
+    //         // Tco after running ICP, use Tco provided by detector
+    //         Eigen::Matrix4f SE3Tco = pyOptimizer.attr("estimate_pose_cam_obj")
+    //                 (det->SE3Tco, pMO->scale, det->SurfacePoints, pMO->GetShapeCode()).cast<Eigen::Matrix4f>();
+    //         g2o::SE3Quat Zco = Converter::toSE3Quat(SE3Tco);
+    //         // error
+    //         Eigen::Vector3f dist3D = SE3Tco.topRightCorner<3, 1>() - iniSE3Tco.topRightCorner<3, 1>();
+    //         Eigen::Vector2f dist2D; dist2D << dist3D[0], dist3D[2];
+    //         Eigen::Matrix<double, 6, 1> e = (Tco.inverse() * Zco).log();
 
-            if (pMO->isDynamic()) // if associated with a dynamic object
-            {
-                auto motion = pMO->SE3Tow * Tcw.inverse() * SE3Tco;
-                float deltaT = (float)(mpCurrentKeyFrame->mnFrameId - mpLastKeyFrame->mnFrameId);
-                auto speed = motion.topRightCorner<3, 1>() / deltaT;
-                pMO->SetObjectPoseSE3(Tcw.inverse() * SE3Tco);
-                pMO->SetVelocity(speed);
-            }
-            else // associated with a static object
-            {
-                if (dist2D.norm() < 1.0 && e.norm() < 1.5) // if the change of translation is very small, then it really is a static object
-                {
-                    det->SetPoseMeasurementSE3(SE3Tco);
-                }
-                else // if change is large, it could be dynamic object or false association
-                {
-                    // If just observed, assume it is dynamic
-                    if (pMO->Observations() <= 2)
-                    {
-                        pMO->SetDynamicFlag();
-                        auto motion = pMO->SE3Tow * Tcw.inverse() * SE3Tco;
-                        float deltaT = (float)(mpCurrentKeyFrame->mnFrameId - mpLastKeyFrame->mnFrameId);
-                        auto speed = motion.topRightCorner<3, 1>() / deltaT;
-                        pMO->SetObjectPoseSE3(Tcw.inverse() * SE3Tco);
-                        pMO->SetVelocity(speed);
-                        mpMap->mnDynamicObj++;
-                    }
-                    else
-                    {
-                        det->isNew = true;
-                        mpCurrentKeyFrame->EraseMapObjectMatch(i);
-                        pMO->EraseObservation(mpCurrentKeyFrame);
-                    }
-                }
-            }
-        }
-    }
+    //         if (pMO->isDynamic()) // if associated with a dynamic object
+    //         {
+    //             auto motion = pMO->SE3Tow * Tcw.inverse() * SE3Tco;
+    //             float deltaT = (float)(mpCurrentKeyFrame->mnFrameId - mpLastKeyFrame->mnFrameId);
+    //             auto speed = motion.topRightCorner<3, 1>() / deltaT;
+    //             pMO->SetObjectPoseSE3(Tcw.inverse() * SE3Tco);
+    //             pMO->SetVelocity(speed);
+    //         }
+    //         else // associated with a static object
+    //         {
+    //             if (dist2D.norm() < 1.0 && e.norm() < 1.5) // if the change of translation is very small, then it really is a static object
+    //             {
+    //                 det->SetPoseMeasurementSE3(SE3Tco);
+    //             }
+    //             else // if change is large, it could be dynamic object or false association
+    //             {
+    //                 // If just observed, assume it is dynamic
+    //                 if (pMO->Observations() <= 2)
+    //                 {
+    //                     pMO->SetDynamicFlag();
+    //                     auto motion = pMO->SE3Tow * Tcw.inverse() * SE3Tco;
+    //                     float deltaT = (float)(mpCurrentKeyFrame->mnFrameId - mpLastKeyFrame->mnFrameId);
+    //                     auto speed = motion.topRightCorner<3, 1>() / deltaT;
+    //                     pMO->SetObjectPoseSE3(Tcw.inverse() * SE3Tco);
+    //                     pMO->SetVelocity(speed);
+    //                     mpMap->mnDynamicObj++;
+    //                 }
+    //                 else
+    //                 {
+    //                     det->isNew = true;
+    //                     mpCurrentKeyFrame->EraseMapObjectMatch(i);
+    //                     pMO->EraseObservation(mpCurrentKeyFrame);
+    //                 }
+    //             }
+    //         }
+    //     }
+    // }
 }
 
 void LocalMapping::CreateNewMapObjects()
 {
-    PyThreadStateLock PyThreadLock;
+    // PyThreadStateLock PyThreadLock;
 
-    // cout << "LocalMapping: Started new objects creation" << endl;
+    // // cout << "LocalMapping: Started new objects creation" << endl;
 
-    auto SE3Twc = Converter::toMatrix4f(mpCurrentKeyFrame->GetPoseInverse());
-    auto mvpObjectDetections = mpCurrentKeyFrame->GetObjectDetections();
+    // auto SE3Twc = Converter::toMatrix4f(mpCurrentKeyFrame->GetPoseInverse());
+    // auto mvpObjectDetections = mpCurrentKeyFrame->GetObjectDetections();
 
-    for (int i = 0; i < mvpObjectDetections.size(); i++)
-    {
-        // This might happen when a new KF is created in Tracking thread
-        if (mbAbortBA)
-            return;
+    // for (int i = 0; i < mvpObjectDetections.size(); i++)
+    // {
+    //     // This might happen when a new KF is created in Tracking thread
+    //     if (mbAbortBA)
+    //         return;
 
-        auto det = mvpObjectDetections[i];
+    //     auto det = mvpObjectDetections[i];
 
-        if (det->nRays == 0)
-            continue;
-        if (!det->isNew)
-            continue;
-        if (!det->isNew)
-            continue;
-        auto pyMapObject = pyOptimizer.attr("reconstruct_object")
-                (det->Sim3Tco, det->SurfacePoints, det->RayDirections, det->DepthObs);
-        if (!pyMapObject.attr("is_good").cast<bool>())
-            continue;
+    //     if (det->nRays == 0)
+    //         continue;
+    //     if (!det->isNew)
+    //         continue;
+    //     if (!det->isNew)
+    //         continue;
+    //     auto pyMapObject = pyOptimizer.attr("reconstruct_object")
+    //             (det->Sim3Tco, det->SurfacePoints, det->RayDirections, det->DepthObs);
+    //     if (!pyMapObject.attr("is_good").cast<bool>())
+    //         continue;
 
-        if (mbAbortBA)
-            return;
+    //     if (mbAbortBA)
+    //         return;
 
-        auto Sim3Tco = pyMapObject.attr("t_cam_obj").cast<Eigen::Matrix4f>();
-        det->SetPoseMeasurementSim3(Sim3Tco);
-        // Sim3, SE3, Sim3
-        Eigen::Matrix4f Sim3Two = SE3Twc * Sim3Tco;
-        auto code = pyMapObject.attr("code").cast<Eigen::Matrix<float, 64, 1>>();
-        auto pNewObj = new MapObject(Sim3Two, code, mpCurrentKeyFrame, mpMap);
+    //     auto Sim3Tco = pyMapObject.attr("t_cam_obj").cast<Eigen::Matrix4f>();
+    //     det->SetPoseMeasurementSim3(Sim3Tco);
+    //     // Sim3, SE3, Sim3
+    //     Eigen::Matrix4f Sim3Two = SE3Twc * Sim3Tco;
+    //     auto code = pyMapObject.attr("code").cast<Eigen::Matrix<float, 64, 1>>();
+    //     auto pNewObj = new MapObject(Sim3Two, code, mpCurrentKeyFrame, mpMap);
 
-        auto pyMesh = pyMeshExtractor.attr("extract_mesh_from_code")(code);
-        pNewObj->vertices = pyMesh.attr("vertices").cast<Eigen::MatrixXf>();
-        pNewObj->faces = pyMesh.attr("faces").cast<Eigen::MatrixXi>();
+    //     auto pyMesh = pyMeshExtractor.attr("extract_mesh_from_code")(code);
+    //     pNewObj->vertices = pyMesh.attr("vertices").cast<Eigen::MatrixXf>();
+    //     pNewObj->faces = pyMesh.attr("faces").cast<Eigen::MatrixXi>();
 
-        pNewObj->AddObservation(mpCurrentKeyFrame, i);
-        mpCurrentKeyFrame->AddMapObject(pNewObj, i);
-        mpMap->AddMapObject(pNewObj);
-        mpObjectDrawer->AddObject(pNewObj);
-        mlpRecentAddedMapObjects.push_back(pNewObj);
-    }
-    // cout << "LocalMapping: Finished new objects creation" << endl;
+    //     pNewObj->AddObservation(mpCurrentKeyFrame, i);
+    //     mpCurrentKeyFrame->AddMapObject(pNewObj, i);
+    //     mpMap->AddMapObject(pNewObj);
+    //     mpObjectDrawer->AddObject(pNewObj);
+    //     mlpRecentAddedMapObjects.push_back(pNewObj);
+    // }
+    // // cout << "LocalMapping: Finished new objects creation" << endl;
 }
 
 /*
@@ -390,23 +390,23 @@ void LocalMapping::ProcessDetectedObjects_byPythonReconstruct()
             PyThreadStateLock PyThreadLock;
 
             // 获取dsp优化器
-            // int class_id = 56; //det->label;  //临时设置为chair，用于debug
-            // py::object* optimizer_ptr;
-            // if(mmPyOptimizers.count(class_id) > 0) {
-            //     py::object* optimizer_ptr_local = &(mmPyOptimizers[class_id]);
-            //     optimizer_ptr = optimizer_ptr_local;
-            // }
-            // else{
-            //     cout << " [ProcessDetectedObjects] class " << class_id << " is not in yolo_classes" << endl;
-            //     py::object* optimizer_ptr_local = &pyOptimizer;
-            //     optimizer_ptr = optimizer_ptr_local;
-            // }
+            int class_id = 60; //det->label;  //临时设置为table，用于debug
+            py::object* optimizer_ptr;
+            if(mmPyOptimizers.count(class_id) > 0) {
+                py::object* optimizer_ptr_local = &(mmPyOptimizers[class_id]);
+                optimizer_ptr = optimizer_ptr_local;
+            }
+            else{
+                cout << " [ProcessDetectedObjects_byPythonReconstruct] class " << class_id << " is not in yolo_classes" << endl;
+                int default_class_id = 60;  //默认物体设置为桌子
+                py::object* optimizer_ptr_local = &(mmPyOptimizers[default_class_id]);
+                optimizer_ptr = optimizer_ptr_local;
+            }
+
             cout << "Before reconstruct_object" << std::endl;
 
-            auto pyMapObject = pyOptimizer.attr("reconstruct_object")
+            auto pyMapObject = optimizer_ptr->attr("reconstruct_object")
                     (SE3Tcw * pMO->Sim3Two, surface_points_cam, rays, depth_obs, pMO->vShapeCode);
-
-            // cout << "Number of KF passed: " << numKFsPassedSinceInit << endl;
 
             // If not initialized, duplicate optimization to resolve orientation ambiguity
             if (!pMO->reconstructed)
@@ -414,7 +414,7 @@ void LocalMapping::ProcessDetectedObjects_byPythonReconstruct()
                 auto flipped_Two = pMO->Sim3Two;
                 flipped_Two.col(0) *= -1;
                 flipped_Two.col(2) *= -1;
-                auto pyMapObjectFlipped = pyOptimizer.attr("reconstruct_object")
+                auto pyMapObjectFlipped = optimizer_ptr->attr("reconstruct_object")
                         (SE3Tcw * flipped_Two, surface_points_cam, rays, depth_obs, pMO->vShapeCode);
 
                 if (pyMapObject.attr("loss").cast<float>() > pyMapObjectFlipped.attr("loss").cast<float>())
@@ -425,7 +425,7 @@ void LocalMapping::ProcessDetectedObjects_byPythonReconstruct()
             det->SetPoseMeasurementSim3(Sim3Tco);
             // Sim3, SE3, Sim3
             Eigen::Matrix4f Sim3Two = SE3Twc * Sim3Tco;
-            int code_len = pyOptimizer.attr("code_len").cast<int>();
+            int code_len = optimizer_ptr->attr("code_len").cast<int>();
             Eigen::Matrix<float, 64, 1> code = Eigen::VectorXf::Zero(64);
             if (code_len == 32)
             {
@@ -437,8 +437,22 @@ void LocalMapping::ProcessDetectedObjects_byPythonReconstruct()
                 code = pyMapObject.attr("code").cast<Eigen::Matrix<float, 64, 1>>();
             }
 
+            
+            // 获取mesh提取器
+            py::object* mesh_extracter_ptr;
+            if(mmPyOptimizers.count(class_id) > 0) {
+                py::object* mesh_extracter_ptr_local = &(mmPyMeshExtractors[class_id]);
+                mesh_extracter_ptr = mesh_extracter_ptr_local;
+            }
+            else{
+                cout << " [ProcessDetectedObjects_byPythonReconstruct] class " << class_id << " is not in yolo_classes" << endl;
+                int default_class_id = 60;  //默认物体设置为桌子
+                py::object* mesh_extracter_ptr_local = &(mmPyMeshExtractors[default_class_id]);
+                mesh_extracter_ptr = mesh_extracter_ptr_local;
+            }
+
             pMO->UpdateReconstruction(Sim3Two, code);
-            auto pyMesh = pyMeshExtractor.attr("extract_mesh_from_code")(code);
+            auto pyMesh = mesh_extracter_ptr->attr("extract_mesh_from_code")(code);
             pMO->vertices = pyMesh.attr("vertices").cast<Eigen::MatrixXf>();
             pMO->faces = pyMesh.attr("faces").cast<Eigen::MatrixXi>();
             pMO->reconstructed = true;
