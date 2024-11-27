@@ -104,7 +104,7 @@ class Detector2D(object):
 
         n_det = 0
 
-        print(f"[zhjd-debug] make_prediction valid object_classes = {object_classes}")
+        print(f"        [zhjd-debug] 有效的物体类别包括： {object_classes}")
         
         any_detect = False
         # print(f"detect ")
@@ -117,7 +117,8 @@ class Detector2D(object):
                 
                 if n_det_bbox:
                     any_detect = True
-                    print(f"[zhjd-debug] make_prediction result = {n_det_bbox} {object_class}, ", end='')
+                    print(f"        识别到 = {n_det_bbox} {object_class}, ", end='')
+                    print("\n")
 
                 assert n_det_bbox == n_det_mask,  f"len(bbox[{o}]) != len(mask[{o}])"
                 bboxes_o = self.predictions[0][o]

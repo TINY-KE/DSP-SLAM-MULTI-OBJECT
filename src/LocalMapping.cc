@@ -124,6 +124,32 @@ void LocalMapping::Run()
                     ProcessDetectedObjects_byPythonReconstruct();
                 }
             }
+            /**
+             * 首先，从观测中创建新物体: 检查观测是否正常，创建物体注册到帧/地图中，把相应的地图点加入到物体上
+             * 然后，处理已经检测到的物体，
+             * 进行3D层面的关联和剔除：
+             * 最后，对这些结果进行
+            */
+            else if (mpTracker->mSensor == System::RGBD)
+            {
+                if (mpTracker->mState != Tracking::NOT_INITIALIZED)
+                {
+
+                    Create_Multi_NewObjectsFromDetections();
+
+                    /* FIXME，在处理已经检测到的物体时，需要考虑是否增加的新的观测
+                    * 这个函数中增加一个是否需要进行隐式位形优化的判断
+                    * 看看有无必要使用隐式位形优化结果中的Loss对物体点云进行剔除
+                    */
+                    Process_Multi_DetectedObjects_byPythonReconstruct();
+
+                    // TODO: 在此处增加一个合并相近同类物体的操作
+                    // AssociateObjects3D();
+
+                }
+            }
+
+
             if (!stopRequested())
                 mbAbortBA = false;
 

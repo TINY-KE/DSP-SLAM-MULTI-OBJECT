@@ -263,10 +263,11 @@ void LocalMapping::ProcessDetectedObjects_byPythonReconstruct()
     {
         auto det = mvpObjectDetections[det_i];
 
+        std::cout<< "[zhjd-debug] Detection "<<det_i<<": isNew:"<< det->isNew<< ", isGood:"<< det->isGood<< std::endl;
         // If the detection is associated with an existing map object, we consider 2 different situations:
         // 1. the object has been reconstructed: update observations 2. the object has not been reconstructed:
         // check if it's ready for reconstruction, reconstruct if it's got enough points
-        if (det->isNew)
+        if (det->isNew)   //疑问：如果是一个新的检测，为什么不创建物体？？
             continue;
         if (!det->isGood)
             continue;
@@ -465,5 +466,274 @@ void LocalMapping::ProcessDetectedObjects_byPythonReconstruct()
         }
     }
 }
+
+
+
+
+/*
+ * Tracking utils for monocular input on Freiburg Cars and Redwood OS
+ */
+void LocalMapping::Create_Multi_NewObjectsFromDetections()
+{
+    // cout << "LocalMapping: Started new objects creation" << endl;
+
+    cv::Mat Rcw = mpCurrentKeyFrame->GetRotation();
+    cv::Mat tcw = mpCurrentKeyFrame->GetTranslation();
+    auto mvpObjectDetections = mpCurrentKeyFrame->GetObjectDetections();
+
+    // Create new objects first, otherwise data association might fail
+    for (int det_i = 0; det_i < mvpObjectDetections.size(); det_i++)
+    {
+        auto det = mvpObjectDetections[det_i];
+
+        // If the detection is a new object, create a new map object.
+        if (!det->isNew)
+            continue;
+        if (!det->isGood)
+            continue;
+
+        // Create object with associated feature points
+        auto pNewObj = new MapObject(mpCurrentKeyFrame, mpMap);
+        mpCurrentKeyFrame->AddMapObject(pNewObj, det_i);
+        mpMap->AddMapObject(pNewObj);
+
+        auto mvpMapPoints = mpCurrentKeyFrame->GetMapPointMatches();
+        int n_valid_points = 0;
+        for (int k_i : det->GetFeaturePoints())
+        {
+            auto pMP = mvpMapPoints[k_i];
+            if (!pMP)
+                continue;
+            if (pMP->isBad())
+                continue;
+            pMP->in_any_object = true;
+            pMP->object_id = pNewObj->mnId;
+            pMP->keyframe_id_added_to_object = int(mpCurrentKeyFrame->mnId);
+            pNewObj->AddMapPoints(pMP);
+            n_valid_points++;
+        }
+    }
+}
+
+void LocalMapping::Process_Multi_DetectedObjects_byPythonReconstruct()
+{
+    auto SE3Twc = Converter::toMatrix4f(mpCurrentKeyFrame->GetPoseInverse());
+    auto SE3Tcw = Converter::toMatrix4f(mpCurrentKeyFrame->GetPose());
+    cv::Mat Rcw = mpCurrentKeyFrame->GetRotation();
+    cv::Mat tcw = mpCurrentKeyFrame->GetTranslation();
+    auto mvpObjectDetections = mpCurrentKeyFrame->GetObjectDetections();
+    auto mvpAssociatedObjects = mpCurrentKeyFrame->GetMapObjectMatches();
+
+    for (int det_i = 0; det_i < mvpObjectDetections.size(); det_i++)
+    {
+        auto det = mvpObjectDetections[det_i];
+
+        std::cout<< "[zhjd-debug] Process_Multi_DetectedObjects "<<det_i<<": isNew:"<< det->isNew<< ", isGood:"<< det->isGood<< std::endl;
+        // If the detection is associated with an existing map object, we consider 2 different situations:
+        // 1. the object has been reconstructed: update observations 2. the object has not been reconstructed:
+        // check if it's ready for reconstruction, reconstruct if it's got enough points
+        if (det->isNew)   //只有track中数据关联上的物体才会被重建
+            continue;
+        if (!det->isGood)
+            continue;
+
+        MapObject *pMO = mvpAssociatedObjects[det_i];
+        if (!pMO)
+            continue;
+
+        int numKFsPassedSinceInit = int(mpCurrentKeyFrame->mnId - pMO->mpRefKF->mnId);
+
+        if (numKFsPassedSinceInit < 50)
+            pMO->ComputeCuboidPCA(numKFsPassedSinceInit < 15);
+        else  // when we have relative good object shape
+            pMO->RemoveOutliersModel();
+        // // only begin to reconstruct the object if it is observed for enough amoubt of time (15 KFs)
+        // 修改：原程序中只有在观测到15帧之后才开始重建，我感觉没必要，因此注释掉
+        // if(numKFsPassedSinceInit < 15)
+        //     continue;
+
+        // 修改：原程序中只有在5的倍数帧才开始重建，为了debug，改成每帧都重建
+        if ((numKFsPassedSinceInit - 15) % 5 != 0)
+            continue;
+
+//        int numKFsPassedSinceLastRecon = int(mpCurrentKeyFrame->mnId) - nLastReconKFID;
+//        if (numKFsPassedSinceLastRecon  < 8)
+//            continue;
+
+        std::vector<MapPoint*> points_on_object = pMO->GetMapPointsOnObject();
+        int n_points = points_on_object.size();
+        int n_valid_points = 0;
+        for (auto pMP : points_on_object)
+        {
+            if (!pMP)
+                continue;
+            if (pMP->isBad())
+                continue;
+            if (pMP->isOutlier())
+                continue;
+            n_valid_points++;
+        }
+
+        int n_rays = 0;
+        auto map_points_vector = mpCurrentKeyFrame->GetMapPointMatches();
+        for (auto idx : det->GetFeaturePoints())
+        {
+            auto pMP = map_points_vector[idx];
+            if (!pMP)
+                continue;
+            if (pMP->isBad())
+                continue;
+            if (pMP->object_id != pMO->mnId)
+                continue;
+            if (pMP->isOutlier())
+                continue;
+            n_rays++;
+        }
+        // cout << "Object " << pMO->mnId << ": " << n_points << " points observed, " << "with " << n_valid_points << " valid points, and " << n_rays << " rays" << endl;
+
+        // Surface points
+        if (n_valid_points >= 50 && n_rays > 20)
+        {
+            Eigen::MatrixXf surface_points_cam = Eigen::MatrixXf::Zero(n_valid_points, 3);
+            int p_i = 0;
+            for (auto pMP : points_on_object)
+            {
+                if (!pMP)
+                    continue;
+                if (pMP->isBad())
+                    continue;
+                if (pMP->isOutlier())
+                    continue;
+
+                cv::Mat x3Dw = pMP->GetWorldPos();
+                cv::Mat x3Dc = Rcw * x3Dw + tcw;
+                float xc = x3Dc.at<float>(0);
+                float yc = x3Dc.at<float>(1);
+                float zc = x3Dc.at<float>(2);
+                surface_points_cam(p_i, 0) = xc;
+                surface_points_cam(p_i, 1) = yc;
+                surface_points_cam(p_i, 2) = zc;
+                p_i++;
+            }
+
+            // Rays
+            Eigen::MatrixXf ray_pixels = Eigen::MatrixXf::Zero(n_rays, 2);
+            Eigen::VectorXf depth_obs = Eigen::VectorXf::Zero(n_rays);
+            int k_i = 0;
+            for (auto point_idx : det->GetFeaturePoints())
+            {
+                auto pMP = map_points_vector[point_idx];
+                if (!pMP)
+                    continue;
+                if(pMP->isBad())
+                    continue;
+                if(pMP->object_id != pMO->mnId)
+                    continue;
+                if (pMP->isOutlier())
+                    continue;
+
+                cv::Mat x3Dw = pMP->GetWorldPos();
+                cv::Mat x3Dc = Rcw * x3Dw + tcw;
+                depth_obs(k_i) = x3Dc.at<float>(2);
+                ray_pixels(k_i, 0) = mpCurrentKeyFrame->mvKeysUn[point_idx].pt.x;
+                ray_pixels(k_i, 1 ) = mpCurrentKeyFrame->mvKeysUn[point_idx].pt.y;
+                k_i++;
+            }
+
+            Eigen::MatrixXf u_hom(n_rays, 3);
+            u_hom << ray_pixels, Eigen::MatrixXf::Ones(n_rays, 1);
+            Eigen::MatrixXf fg_rays(n_rays, 3);
+            Eigen::Matrix3f invK = Converter::toMatrix3f(mpTracker->GetCameraIntrinsics()).inverse();
+            for (int i = 0; i  < n_rays; i++)
+            {
+                auto x = u_hom.row(i).transpose();
+                fg_rays.row(i) = (invK * x).transpose();
+            }
+            Eigen::MatrixXf rays(fg_rays.rows() + det->background_rays.rows(), 3);
+            rays << fg_rays, det->background_rays;
+
+            PyThreadStateLock PyThreadLock;
+
+            // 获取dsp优化器
+            int class_id = 60; //det->label;  //临时设置为table，用于debug
+            py::object* optimizer_ptr;
+            if(mmPyOptimizers.count(class_id) > 0) {
+                py::object* optimizer_ptr_local = &(mmPyOptimizers[class_id]);
+                optimizer_ptr = optimizer_ptr_local;
+            }
+            else{
+                cout << " [ProcessDetectedObjects_byPythonReconstruct] class " << class_id << " is not in yolo_classes" << endl;
+                int default_class_id = 60;  //默认物体设置为桌子
+                py::object* optimizer_ptr_local = &(mmPyOptimizers[default_class_id]);
+                optimizer_ptr = optimizer_ptr_local;
+            }
+
+            cout << "Before reconstruct_object" << std::endl;
+
+            auto pyMapObject = optimizer_ptr->attr("reconstruct_object")
+                    (SE3Tcw * pMO->Sim3Two, surface_points_cam, rays, depth_obs, pMO->vShapeCode);
+            cout << "reconstruct_object 1" << std::endl;
+
+            // If not initialized, duplicate optimization to resolve orientation ambiguity
+            if (!pMO->reconstructed)
+            {
+                auto flipped_Two = pMO->Sim3Two;
+                flipped_Two.col(0) *= -1;
+                flipped_Two.col(2) *= -1;
+                auto pyMapObjectFlipped = optimizer_ptr->attr("reconstruct_object")
+                        (SE3Tcw * flipped_Two, surface_points_cam, rays, depth_obs, pMO->vShapeCode);
+
+                if (pyMapObject.attr("loss").cast<float>() > pyMapObjectFlipped.attr("loss").cast<float>())
+                    pyMapObject = pyMapObjectFlipped;
+            }
+            cout << "reconstruct_object 2" << std::endl;
+
+            auto Sim3Tco = pyMapObject.attr("t_cam_obj").cast<Eigen::Matrix4f>();
+            det->SetPoseMeasurementSim3(Sim3Tco);
+            // Sim3, SE3, Sim3
+            Eigen::Matrix4f Sim3Two = SE3Twc * Sim3Tco;
+            int code_len = optimizer_ptr->attr("code_len").cast<int>();
+            Eigen::Matrix<float, 64, 1> code = Eigen::VectorXf::Zero(64);
+            if (code_len == 32)
+            {
+                auto code_32 = pyMapObject.attr("code").cast<Eigen::Matrix<float, 32, 1>>();
+                code.head(32) = code_32;
+            }
+            else
+            {
+                code = pyMapObject.attr("code").cast<Eigen::Matrix<float, 64, 1>>();
+            }
+
+            
+            cout << "Before extract_mesh_from_code" << std::endl;
+
+            // 获取mesh提取器
+            py::object* mesh_extracter_ptr;
+            if(mmPyOptimizers.count(class_id) > 0) {
+                py::object* mesh_extracter_ptr_local = &(mmPyMeshExtractors[class_id]);
+                mesh_extracter_ptr = mesh_extracter_ptr_local;
+            }
+            else{
+                cout << " [ProcessDetectedObjects_byPythonReconstruct] class " << class_id << " is not in yolo_classes" << endl;
+                int default_class_id = 60;  //默认物体设置为桌子
+                py::object* mesh_extracter_ptr_local = &(mmPyMeshExtractors[default_class_id]);
+                mesh_extracter_ptr = mesh_extracter_ptr_local;
+            }
+
+            pMO->UpdateReconstruction(Sim3Two, code);
+            auto pyMesh = mesh_extracter_ptr->attr("extract_mesh_from_code")(code);
+            pMO->vertices = pyMesh.attr("vertices").cast<Eigen::MatrixXf>();
+            pMO->faces = pyMesh.attr("faces").cast<Eigen::MatrixXi>();
+            pMO->reconstructed = true;
+            pMO->AddObservation(mpCurrentKeyFrame, det_i);
+            mpCurrentKeyFrame->AddMapObject(pMO, det_i);
+            mpObjectDrawer->AddObject(pMO);
+            mlpRecentAddedMapObjects.push_back(pMO);
+
+            nLastReconKFID = int(mpCurrentKeyFrame->mnId);
+        }
+    }
+}
+
 
 }

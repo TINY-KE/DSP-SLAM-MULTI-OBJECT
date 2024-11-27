@@ -162,7 +162,83 @@ cv::Mat Tracking::GetCameraIntrinsics()
 
 void Tracking::GetObjectDetectionsRGBD(KeyFrame *pKF)
 {
-    // todo: 
+    PyThreadStateLock PyThreadLock;
+    mvImObjectMasks.clear();
+    mvImObjectBboxs.clear();
+
+
+    // 调用python接口获取，物体检测结果
+    py::list detections;
+    if (mbUseRos) {
+        string file_name = "ros.png";
+        std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now();
+        cv::imwrite(mDatasetPathRoot+"/"+file_name, pKF->color_img);
+        std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();
+        double ttrack= std::chrono::duration_cast<std::chrono::duration<double> >(t2 - t1).count();
+        std::cout << "[zhjd-debug] 存储图片花费了 " << ttrack << std::endl;
+        detections= mpSystem->pySequence.attr("get_frame_by_name")(pKF->mnFrameId, file_name);
+    }
+    // else {
+    //     std::string frame_name = mvstrImageFilenamesRGB[pKF->mnFrameId];
+    //     detections= mpSystem->pySequence.attr("get_frame_by_name")(pKF->mnFrameId, frame_name);
+    // }
+
+    int num_dets = detections.size();
+    // No detections, return immediately
+    if (num_dets == 0)
+        return;
+
+    for (int detected_idx = 0; detected_idx < num_dets; detected_idx++)
+    {
+        auto det = new ObjectDetection();
+        auto py_det = detections[detected_idx];
+        det->background_rays = py_det.attr("background_rays").cast<Eigen::MatrixXf>();
+        auto mask = py_det.attr("mask").cast<Eigen::MatrixXf>();
+        det->bbox = py_det.attr("bbox").cast<Eigen::Vector4d>();
+        det->label = py_det.attr("label").cast<int>();
+        det->prob = py_det.attr("prob").cast<double>();
+
+        cv::Mat mask_cv;
+        cv::eigen2cv(mask, mask_cv);
+        // cv::imwrite("mask.png", mask_cv);
+        cv::Mat mask_erro = mask_cv.clone();
+        cv::Mat kernel = getStructuringElement(cv::MORPH_ELLIPSE,
+                                               cv::Size(2 * maskErrosion + 1, 2 * maskErrosion + 1),
+                                               cv::Point(maskErrosion, maskErrosion));
+        
+        cv::erode(mask_cv, mask_erro, kernel);
+
+        // 物体检测框和掩码，用于可视化
+        int x1 = (int)(det->bbox(0)), y1 = (int)(det->bbox(1)), \
+            x2 = (int)(det->bbox(2)), y2 = (int)(det->bbox(3));
+        mvImObjectMasks.push_back(std::move(mask_cv));
+        mvImObjectBboxs.push_back({x1,y1,x2,y2});
+
+
+        // get 2D feature points inside mask
+        for (int i = 0; i < pKF->mvKeys.size(); i++)
+        {
+            int val = (int)mask_erro.at<float>(pKF->mvKeys[i].pt.y, pKF->mvKeys[i].pt.x);
+            if (val > 0)  // inside the mask
+            {
+                det->AddFeaturePoint(i);
+            }
+        }
+
+        // Reject the detection if too few keypoints are extracted
+        // todo: 设置点数量数量而不是isGood
+        if (det->NumberOfPoints() < mMinimux_Points_To_Judge_Good)
+        {
+            std::cout << "\033[31m" << "     物体class为"<< det->label<<"的Detection包含point较少，设置为bad。" << "\033[0m" << std::endl;
+            det->isGood = false;
+        }
+        pKF->mvpDetectedObjects.push_back(det);
+
+    }
+
+    // 将det结果保存到矩阵mmObservations中
+    pKF->nObj = pKF->mvpDetectedObjects.size();
+    pKF->mvpMapObjects = vector<MapObject *>(pKF->nObj, static_cast<MapObject *>(NULL));
 }
 
 
@@ -224,6 +300,7 @@ void Tracking::GetObjectDetectionsMono(KeyFrame *pKF)
         pKF->mvpDetectedObjects.push_back(det);
     }
 
+    // 将det结果保存到矩阵mmObservations中
     pKF->nObj = pKF->mvpDetectedObjects.size();
     pKF->mvpMapObjects = vector<MapObject *>(pKF->nObj, static_cast<MapObject *>(NULL));
 
@@ -253,6 +330,7 @@ void Tracking::AssociateObjectsByProjection(ORB_SLAM2::KeyFrame *pKF)
             if (pMP->object_id < 0)
                 continue;
 
+            // 根据det中的feature point，统计潜在关联的object_id（的数量）
             if (observed_object_id.count(pMP->object_id))
                 observed_object_id[pMP->object_id] += 1;
             else

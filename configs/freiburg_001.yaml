@@ -66,3 +66,8 @@ DecoderPaths: ["weights/deepsdf/chairs_64",
                "weights/deepsdf/sofas_64",
                "weights/deepsdf/tables_64",  #table is default object in my code, so it's essential to keep the table.
                "weights/deepsdf/beds_64"]
+
+# ros
+use_ros: 1
+DatasetPathRoot: "/media/robotlab/新加卷/ubuntu22/QSP-SLAM-all/MySimDataset/GroundObjects"
+Minimux_Points_To_Judge_Good: 20  #视情况，看是否要减小到5

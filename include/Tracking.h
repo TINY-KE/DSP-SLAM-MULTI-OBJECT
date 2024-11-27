@@ -236,6 +236,11 @@ public:
     vector<cv::Mat> mvImObjectMasks;
     vector<vector<int>> mvImObjectBboxs;
     
+private:
+    std::string mStrSettingPath;
+    int mbUseRos;
+    string mDatasetPathRoot;
+    int mMinimux_Points_To_Judge_Good;
 };
 
 } //namespace ORB_SLAM

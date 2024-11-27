@@ -1,0 +1,80 @@
+%YAML:1.0
+
+#--------------------------------------------------------------------------------------------
+# Camera Parameters. Adjust them!
+#--------------------------------------------------------------------------------------------
+
+# Camera calibration and distortion parameters (OpenCV)
+Camera.fx: 554.254691191187
+Camera.fy: 554.254691191187
+Camera.cx: 320.5
+Camera.cy: 240.5
+
+Camera.k1: 0.0
+Camera.k2: 0.0
+Camera.p1: 0.0
+Camera.p2: 0.0
+
+
+# Camera frames per second
+Camera.fps: 25.0
+
+
+#--------------------------------------------------------------------------------------------
+# ORB Parameters
+#--------------------------------------------------------------------------------------------
+
+# ORB Extractor: Number of features per image
+ORBextractor.nFeatures: 4000
+
+# ORB Extractor: Scale factor between levels in the scale pyramid
+ORBextractor.scaleFactor: 1.2
+
+# ORB Extractor: Number of levels in the scale pyramid
+ORBextractor.nLevels: 8
+
+# ORB Extractor: Fast threshold
+# Image is divided in a grid. At each cell FAST are extracted imposing a minimum response.
+# Firstly we impose iniThFAST. If no corners are detected we impose a lower value minThFAST
+# You can lower these values if your images have low contrast
+ORBextractor.iniThFAST: 12  #从20改成12后 就能运行了， 这是为什么？
+ORBextractor.minThFAST: 7
+
+#--------------------------------------------------------------------------------------------
+# Viewer Parameters
+#--------------------------------------------------------------------------------------------
+Viewer.KeyFrameSize: 0.1  # originally 0.6
+Viewer.KeyFrameLineWidth: 2
+Viewer.GraphLineWidth: 4
+Viewer.PointSize: 2
+Viewer.CameraSize: 0.15  # originally 0.7
+Viewer.CameraLineWidth: 3
+Viewer.ViewpointX: 0
+Viewer.ViewpointY: -10   # originally -10
+Viewer.ViewpointZ: -0.1
+Viewer.ViewpointF: 2000
+
+
+# dsp
+YoloClasses: [56, 57, 60, 59]
+DecoderPaths: ["weights/deepsdf/chairs_64",
+               "weights/deepsdf/sofas_64",
+               "weights/deepsdf/tables_64",  #table is default object in my code, so it's essential to keep the table.
+               "weights/deepsdf/beds_64"]
+
+# ros
+use_ros: 1
+DatasetPathRoot: "/media/robotlab/新加卷/ubuntu22/QSP-SLAM-all/MySimDataset/GroundObjects"
+Minimux_Points_To_Judge_Good: 20  #视情况，看是否要减小到5
+
+# camera
+Camera.width: 640
+Camera.height: 480
+# Color order of the images (0: BGR, 1: RGB. It is ignored if images are grayscale)
+Camera.RGB: 1
+DepthMapFactor: 5000
+
+#物体检测
+# Config path for Python detectors
+DetectorConfigPath: configs/config_self_allobject_ground.json
+Objects.maskErrosion: 5  #default 10

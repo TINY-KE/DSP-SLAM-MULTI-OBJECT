@@ -102,10 +102,15 @@ target_link_libraries(${PROJECT_NAME}
         /usr/lib/x86_64-linux-gnu/libtiff.so.5
         )
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR})
-add_executable(dsp_slam dsp_slam.cc)
-target_link_libraries(dsp_slam ${PROJECT_NAME})
+# set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR})
+# add_executable(dsp_slam dsp_slam.cc)
+# target_link_libraries(dsp_slam ${PROJECT_NAME})
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR})
 add_executable(dsp_slam_mono dsp_slam_mono.cc)
 target_link_libraries(dsp_slam_mono ${PROJECT_NAME})
+
+
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR})
+add_executable(dsp_slam_rgbd dsp_slam_rgbd.cc)
+target_link_libraries(dsp_slam_rgbd ${PROJECT_NAME})

@@ -80,8 +80,10 @@ public:
     void CreateNewMapObjects();
     void MapObjectCulling();
     void CreateNewObjectsFromDetections();
+    void Create_Multi_NewObjectsFromDetections();
     void ProcessDetectedObjects_byPythonReconstruct();
-
+    void Process_Multi_DetectedObjects_byPythonReconstruct();
+    
     map<int, py::object> mmPyOptimizers;
     map<int, py::object> mmPyMeshExtractors;
 

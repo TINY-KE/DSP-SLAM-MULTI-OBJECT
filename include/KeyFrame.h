@@ -254,6 +254,10 @@ protected:
     std::mutex mMutexConnections;
     std::mutex mMutexFeatures;
     std::mutex mMutexObjects;
+
+public:
+    cv::Mat color_img;   // rgb img 用于可视化和物体检测
+
 };
 
 } //namespace ORB_SLAM

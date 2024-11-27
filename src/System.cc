@@ -50,7 +50,6 @@ System::System(const string &strVocFile, const string &strSettingsFile, const st
     "under certain conditions. See LICENSE.txt." << endl << endl;
 
     cout << "Input sensor was set to: ";
-
     if(mSensor==MONOCULAR)
         cout << "Monocular" << endl;
     else if(mSensor==STEREO)

@@ -52,7 +52,7 @@ public:
     std::vector<int> mvKeysIndices;
     int nRays;
     int nPts;
-    bool isNew;
+    bool isNew;  //对于一个观测，在track的数据关联中，如果没有与地图中的现有物体匹配上，就是新的观测，即isNew=true, 否则isNew=false
     bool isGood;
     std::mutex mMutexFeatures;
     std::mutex mMutexDetection;

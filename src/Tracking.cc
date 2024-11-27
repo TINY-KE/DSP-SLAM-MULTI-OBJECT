@@ -51,7 +51,7 @@ Tracking::Tracking(System *pSys, ORBVocabulary* pVoc, FrameDrawer *pFrameDrawer,
     mpFrameDrawer(pFrameDrawer), mpMapDrawer(pMapDrawer), mpMap(pMap), mnLastRelocFrameId(0)
 {
     // Load camera parameters from settings file
-
+    mStrSettingPath = strSettingPath;
     cv::FileStorage fSettings(strSettingPath, cv::FileStorage::READ);
     float fx = fSettings["Camera.fx"];
     float fy = fSettings["Camera.fy"];
@@ -120,7 +120,7 @@ Tracking::Tracking(System *pSys, ORBVocabulary* pVoc, FrameDrawer *pFrameDrawer,
 
     mpORBextractorLeft = new ORBextractor(nFeatures,fScaleFactor,nLevels,fIniThFAST,fMinThFAST);
 
-    if(sensor==System::STEREO)
+    if(sensor==System::STEREO  || sensor==System::RGBD)
         mpORBextractorRight = new ORBextractor(nFeatures,fScaleFactor,nLevels,fIniThFAST,fMinThFAST);
 
     if(sensor==System::MONOCULAR)
@@ -142,6 +142,7 @@ Tracking::Tracking(System *pSys, ORBVocabulary* pVoc, FrameDrawer *pFrameDrawer,
     if(sensor==System::RGBD)
     {
         mDepthMapFactor = fSettings["DepthMapFactor"];
+        maskErrosion = fSettings["Objects.maskErrosion"];
         if(fabs(mDepthMapFactor)<1e-5)
             mDepthMapFactor=1;
         else
@@ -153,6 +154,10 @@ Tracking::Tracking(System *pSys, ORBVocabulary* pVoc, FrameDrawer *pFrameDrawer,
         maskErrosion = fSettings["Objects.maskErrosion"];
     }
     DetectorConfigFile = fSettings["DetectorConfigPath"].string();
+
+    mbUseRos = fSettings["use_ros"];
+    mDatasetPathRoot = fSettings["DatasetPathRoot"].string();
+    mMinimux_Points_To_Judge_Good = fSettings["Minimux_Points_To_Judge_Good"];
 }
 
 void Tracking::SetLocalMapper(LocalMapping *pLocalMapper)
@@ -235,8 +240,8 @@ cv::Mat Tracking::GrabImageRGBD(const cv::Mat &imRGB,const cv::Mat &imD, const d
     if((fabs(mDepthMapFactor-1.0f)>1e-5) || imDepth.type()!=CV_32F)
         imDepth.convertTo(imDepth,CV_32F,mDepthMapFactor);
 
-    mCurrentFrame = Frame(mImGray,imDepth,timestamp,mpORBextractorLeft,mpORBVocabulary,mK,mDistCoef,mbf,mThDepth);
-
+    mCurrentFrame = Frame(mImGray,imDepth,imRGB,timestamp,mpORBextractorLeft,mpORBVocabulary,mK,mDistCoef,mbf,mThDepth);
+    
     Track();
 
     return mCurrentFrame.mTcw.clone();
@@ -274,6 +279,7 @@ cv::Mat Tracking::GrabImageMonocular(const cv::Mat &im, const double &timestamp)
 
 void Tracking::Track()
 {
+
     if(mState==NO_IMAGES_YET)
     {
         mState = NOT_INITIALIZED;
@@ -517,7 +523,8 @@ void Tracking::Track()
 }
 
 void Tracking::StereoInitialization()
-{
+{   
+    std::cout<< "[zhjd-debug] StereoInitialization:"<<std::endl;
     if(mCurrentFrame.N>500)
     {
         // Set Frame pose to the origin
@@ -525,7 +532,10 @@ void Tracking::StereoInitialization()
 
         // Create KeyFrame
         KeyFrame* pKFini = new KeyFrame(mCurrentFrame, mpMap, mpKeyFrameDB);
-        GetObjectDetectionsLiDAR(pKFini);
+        
+        // zhjd：关闭初始时的物体观测生成
+        // GetObjectDetectionsLiDAR(pKFini);
+        
         // PyEval_ReleaseThread(PyThreadState_Get());
         // Insert KeyFrame in the map
         mpMap->AddKeyFrame(pKFini);
@@ -1072,6 +1082,7 @@ bool Tracking::NeedNewKeyFrame()
 
 void Tracking::CreateNewKeyFrame()
 {
+    std::cout<< "[zhjd-debug] CreateNewKeyFrame:"<<std::endl;
     if(!mpLocalMapper->SetNotStop(true))
         return;
 
@@ -1099,6 +1110,24 @@ void Tracking::CreateNewKeyFrame()
 
         double ttrack= std::chrono::duration_cast<std::chrono::duration<double> >(t2 - t1).count();
         cout << "Object detection takes " << ttrack << endl;
+    }
+    else if (mSensor == System::RGBD)
+    {
+        std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now();
+        GetObjectDetectionsRGBD(pKF);
+        //DetectObjects(pKF);
+        
+        // 物体的数据关联 todo：改为距离
+        if (!mpMap->GetAllMapObjects().empty())
+        {
+            // AssociateObjects(pKF);
+            AssociateObjectsByProjection(pKF);
+        }
+        
+        std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();
+
+        double ttrack= std::chrono::duration_cast<std::chrono::duration<double> >(t2 - t1).count();
+        cout << "Object detection and association takes " << ttrack << endl;
     }
 
     mpReferenceKF = pKF;
