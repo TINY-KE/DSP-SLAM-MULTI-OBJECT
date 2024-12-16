@@ -241,6 +241,16 @@ private:
     int mbUseRos;
     string mDatasetPathRoot;
     int mMinimux_Points_To_Judge_Good;
+
+// zhjd: 地面
+private:
+    bool miGroundPlaneState = false;
+    // g2o::plane mGroundPlane;
+
+    // 设置相机的真实位姿,但只用于第一帧
+    void SetRealPose();
+
+    
 };
 
 } //namespace ORB_SLAM

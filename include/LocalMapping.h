@@ -144,6 +144,10 @@ protected:
 
     bool mbAcceptKeyFrames;
     std::mutex mMutexAccept;
+
+// zhjd
+private:
+    std::vector<MapPoint*> AddCubePointsToMapObject(std::vector<MapPoint*> points);
 };
 
 } //namespace ORB_SLAM

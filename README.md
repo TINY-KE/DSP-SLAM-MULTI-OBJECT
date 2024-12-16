@@ -18,7 +18,7 @@
 + 运行成功dsp_slam_mono
 + 
 
-## 实现RGBD模式下多物体的dsp建模
+## 实现RGBD模式下多物体的dsp建模  commit f49700af3beebcbcf35977ad7daf908e5599375b
 + 在python对应的json文件中添加
     "image": {
     "mRow": 540,
@@ -33,9 +33,18 @@
   答： 第一个物体添加到map中后，并没有建模。是这个物体第二次被观测到时（根据feature point归属确定的），设置isNew = false， 才进行dsp建模的。
 + 利用AssociateObjectsByProjection，生成地图中的多个dsp物体
 
-# 
 
-+ 待： 添加地面
+## 
++ 在物体关联之后，将新的feature point添加进物体中，从而改进dsp模型
+  + 转到世界坐标系
+  + 将点加入到std::vector<MapPoint*> points_on_object = pMO->GetMapPointsOnObject();中
+  + 在每次AddMapPoints(pMP)之后，根据已有point的min和max xy，将0~maxz的点都加入pMO->GetMapPointsOnObject()中。
+  + 生成的时候，物体y轴要与地面z轴重合
++ 程序偶尔会卡死，但是在debug模式下没有遇到过卡死，这是为什么？
++ 
+
++ 待： GetMapPointsWithinBoundingCubeToGround()
+     应该与什么其他程序不要冲突呢？？
 + 待：优化物体关联，修改AssociateObjectsByProjection。暂时按照距离进行关联。
 + 待：使用单个床的rosbag，但是还是建模成为汽车
 + 待： 原物体没有classid？ auto pNewObj = new MapObject(mpCurrentKeyFrame, mpMap, class_id);
@@ -62,3 +71,9 @@ if (keep_raw_pose) {
 
 
 # 第二阶段：利用距离 进行数据关联
+
+
+# 移除离群点的方法
+  + ComputeCuboidPCA(bool updatePose)
+  + void MapObject::RemoveOutliersModel()
+  + 

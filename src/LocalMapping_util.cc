@@ -207,7 +207,7 @@ void LocalMapping::CreateNewMapObjects()
 /*
  * Tracking utils for monocular input on Freiburg Cars and Redwood OS
  */
-void LocalMapping::CreateNewObjectsFromDetections()
+void LocalMapping::CreateNewObjectsFromDetections()   // 用于单目模式
 {
     // cout << "LocalMapping: Started new objects creation" << endl;
 
@@ -473,7 +473,7 @@ void LocalMapping::ProcessDetectedObjects_byPythonReconstruct()
 /*
  * Tracking utils for monocular input on Freiburg Cars and Redwood OS
  */
-void LocalMapping::Create_Multi_NewObjectsFromDetections()
+void LocalMapping::Create_Multi_NewObjectsFromDetections()  // 用于RGBD模式
 {
     // cout << "LocalMapping: Started new objects creation" << endl;
 
@@ -512,6 +512,9 @@ void LocalMapping::Create_Multi_NewObjectsFromDetections()
             pNewObj->AddMapPoints(pMP);
             n_valid_points++;
         }
+        // pNewObj->GetMapPointsWithinBoundingCubeToGround();
+        // std::cout<<"[GetMapPointsWithinBoundingCubeToGround] end"<<std::endl;
+        
     }
 }
 
@@ -559,7 +562,8 @@ void LocalMapping::Process_Multi_DetectedObjects_byPythonReconstruct()
 //        int numKFsPassedSinceLastRecon = int(mpCurrentKeyFrame->mnId) - nLastReconKFID;
 //        if (numKFsPassedSinceLastRecon  < 8)
 //            continue;
-
+        
+        // 1. 统计物体 pMO 上有效（三维）地图点的数量，存储在变量 n_valid_points 中。
         std::vector<MapPoint*> points_on_object = pMO->GetMapPointsOnObject();
         int n_points = points_on_object.size();
         int n_valid_points = 0;
@@ -574,6 +578,7 @@ void LocalMapping::Process_Multi_DetectedObjects_byPythonReconstruct()
             n_valid_points++;
         }
 
+        // 2. 统计与检测到的（二维）特征点（FeaturePoints）相关联的、属于目标物体的有效射线数量，存储在变量 n_rays 中。
         int n_rays = 0;
         auto map_points_vector = mpCurrentKeyFrame->GetMapPointMatches();
         for (auto idx : det->GetFeaturePoints())
@@ -595,6 +600,7 @@ void LocalMapping::Process_Multi_DetectedObjects_byPythonReconstruct()
         if (n_valid_points >= 50 && n_rays > 20)
         {
             Eigen::MatrixXf surface_points_cam = Eigen::MatrixXf::Zero(n_valid_points, 3);
+            // 3. （三维）sdf表面的点，存储在 surface_points_cam 中。
             int p_i = 0;
             for (auto pMP : points_on_object)
             {
@@ -616,9 +622,11 @@ void LocalMapping::Process_Multi_DetectedObjects_byPythonReconstruct()
                 p_i++;
             }
 
-            // Rays
+            // 4. Rays 初始化射线和深度变量
             Eigen::MatrixXf ray_pixels = Eigen::MatrixXf::Zero(n_rays, 2);
             Eigen::VectorXf depth_obs = Eigen::VectorXf::Zero(n_rays);
+            
+            // 5. 遍历（二维）特征点并筛选有效的地图点
             int k_i = 0;
             for (auto point_idx : det->GetFeaturePoints())
             {
@@ -640,6 +648,7 @@ void LocalMapping::Process_Multi_DetectedObjects_byPythonReconstruct()
                 k_i++;
             }
 
+            // 6. 利用（二维）特征点ray_pixels，计算前景射线。将射线转换为相机坐标系下的射线
             Eigen::MatrixXf u_hom(n_rays, 3);
             u_hom << ray_pixels, Eigen::MatrixXf::Ones(n_rays, 1);
             Eigen::MatrixXf fg_rays(n_rays, 3);
@@ -649,6 +658,10 @@ void LocalMapping::Process_Multi_DetectedObjects_byPythonReconstruct()
                 auto x = u_hom.row(i).transpose();
                 fg_rays.row(i) = (invK * x).transpose();
             }
+
+            // 7. 背景射线。通过python程序get_detections获得
+            
+            // 8. 合并前景射线和背景射线。 推测：前景是二维特征点对应的线，背景是物体mask中每个像素对应的线
             Eigen::MatrixXf rays(fg_rays.rows() + det->background_rays.rows(), 3);
             rays << fg_rays, det->background_rays;
 
@@ -735,5 +748,64 @@ void LocalMapping::Process_Multi_DetectedObjects_byPythonReconstruct()
     }
 }
 
+
+// 根据已有point的min和max xy，将0~maxz的点都加入pMO->GetMapPointsOnObject()中。
+std::vector<MapPoint*> LocalMapping::AddCubePointsToMapObject(std::vector<MapPoint*> points){
+    // 计算points的float minX, float maxX, float minY, float maxY, float maxZ
+    float minX = std::numeric_limits<float>::max();
+    float maxX = std::numeric_limits<float>::lowest();
+    float minY = std::numeric_limits<float>::max();
+    float maxY = std::numeric_limits<float>::lowest();
+    float maxZ = std::numeric_limits<float>::lowest();
+
+    for (auto pMP : points) {
+        if (!pMP)
+            continue;
+        if (pMP->isBad())
+            continue;
+        if (pMP->isOutlier())
+            continue;
+
+        cv::Mat x3Dw = pMP->GetWorldPos();
+        float xc = x3Dw.at<float>(0);
+        float yc = x3Dw.at<float>(1);
+        float zc = x3Dw.at<float>(2);
+
+        // 更新 minX 和 maxX
+        if (xc < minX) minX = xc;
+        if (xc > maxX) maxX = xc;
+
+        // 更新 minY 和 maxY
+        if (yc < minY) minY = yc;
+        if (yc > maxY) maxY = yc;
+
+        // 更新 maxZ
+        if (zc > maxZ) maxZ = zc;
+    }
+
+    vector<MapPoint*> vpMP = mpMap->GetAllMapPoints();
+
+    // 存储到新的vector中
+    std::vector<MapPoint*> cube_points_on_object;
+    for (auto pMP : vpMP) {
+        if (!pMP)
+            continue;
+        if (pMP->isBad())
+            continue;
+        // if (pMP->isOutlier())
+        //     continue;
+
+        cv::Mat x3Dw = pMP->GetWorldPos();
+        float xc = x3Dw.at<float>(0);
+        float yc = x3Dw.at<float>(1);
+        float zc = x3Dw.at<float>(2);
+
+        if (xc >= minX && xc <= maxX && yc >= minY && yc <= maxY && zc <= maxZ) {
+            cube_points_on_object.push_back(pMP);
+        }
+    }
+
+    return cube_points_on_object;
+}
 
 }

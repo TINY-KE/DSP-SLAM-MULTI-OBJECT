@@ -124,6 +124,9 @@ public:
         return pMO1->mnId < pMO2->mnId;
     }
 
+// zhjd
+    void GetMapPointsWithinBoundingCubeToGround();
+
 };
 
 }

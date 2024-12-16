@@ -211,6 +211,9 @@ private:
 public:
     cv::Mat color_img;   // rgb img 用于可视化和物体检测
 
+    //地面
+    cv::Mat mGroundtruthPose_mat;           // camera groundtruth
+
 };
 
 }// namespace ORB_SLAM

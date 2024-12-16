@@ -242,6 +242,12 @@ cv::Mat Tracking::GrabImageRGBD(const cv::Mat &imRGB,const cv::Mat &imD, const d
 
     mCurrentFrame = Frame(mImGray,imDepth,imRGB,timestamp,mpORBextractorLeft,mpORBVocabulary,mK,mDistCoef,mbf,mThDepth);
     
+    // [改进] [位姿真值] [groundtruth] 初始帧的位姿
+    SetRealPose();
+
+    // 手动指定了平面
+    // ActivateGroundPlane(mGroundPlane);    //激活获取到的平面（可以来自自动平面估计，也可以来自手动设置）
+
     Track();
 
     return mCurrentFrame.mTcw.clone();
@@ -540,6 +546,18 @@ void Tracking::StereoInitialization()
         // Insert KeyFrame in the map
         mpMap->AddKeyFrame(pKFini);
 
+        //(1)将第一帧,  转为相对地面的真实位姿
+        cv::Mat Worldframe_to_Firstframe = mCurrentFrame.mGroundtruthPose_mat;
+        cv::Mat R = Worldframe_to_Firstframe.rowRange(0, 3).colRange(0, 3);
+        cv::Mat t = Worldframe_to_Firstframe.rowRange(0, 3).col(3);
+        cv::Mat Rinv = R.t();
+        cv::Mat Ow = -Rinv * t;
+        cv::Mat Firstframe_to_Worldframe = cv::Mat::eye(4, 4, CV_32F);
+        Rinv.copyTo (Firstframe_to_Worldframe.rowRange(0, 3).colRange(0, 3));
+        Ow.copyTo   (Firstframe_to_Worldframe.rowRange(0, 3).col(3));
+        pKFini->SetPose(pKFini->GetPose() * Firstframe_to_Worldframe);
+
+        //(2)将第一帧内部的point,  转为相对地面的真实位姿, 并添加到map中
         // Create MapPoints and asscoiate to KeyFrame
         for(int i=0; i<mCurrentFrame.N;i++)
         {
@@ -552,16 +570,19 @@ void Tracking::StereoInitialization()
                 pKFini->AddMapPoint(pNewMP,i);
                 pNewMP->ComputeDistinctiveDescriptors();
                 pNewMP->UpdateNormalAndDepth();
+                // 改变point坐标
+                pNewMP->SetWorldPos( Worldframe_to_Firstframe.rowRange(0, 3).colRange(0, 3)  * pNewMP->GetWorldPos()
+                                                + Worldframe_to_Firstframe.rowRange(0, 3).col(3)  );
                 mpMap->AddMapPoint(pNewMP);
-
                 mCurrentFrame.mvpMapPoints[i]=pNewMP;
             }
         }
-
         cout << "New map created with " << mpMap->MapPointsInMap() << " points" << endl;
 
+        //(3)当前帧 添加到localmap中
         mpLocalMapper->InsertKeyFrame(pKFini);
-
+        // 改变初始帧坐标
+        mCurrentFrame.SetPose(pKFini->GetPose());
         mLastFrame = Frame(mCurrentFrame);
         mnLastKeyFrameId=mCurrentFrame.mnId;
         mpLastKeyFrame = pKFini;

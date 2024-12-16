@@ -293,6 +293,8 @@ void MapObject::RemoveOutliersModel()
     w = (xmax - xmin) * scale;
     h = (ymax - ymin) * scale;
     l = (zmax - zmin) * scale;
+
+    // 定义三个缩放因子 sx、sy 和 sz，用于判断点是否在边界之外。
     float sx = 1.2;
     float sy = 1.5;
     float sz = 1.2;
@@ -309,6 +311,7 @@ void MapObject::RemoveOutliersModel()
         }
         else
         {
+            // 判断是否为离群点：
             auto x3Dw = Converter::toVector3f(pMP->GetWorldPos());
             auto x3Do = invScale * Rwo.inverse() * x3Dw - invScale * Rwo.inverse() * two;
             if (x3Do(0) > sx * xmax || x3Do(0) < sx * xmin ||
@@ -495,6 +498,7 @@ bool MapObject::isDynamic()
     unique_lock<mutex> lock(mMutexObject);
     return mbDynamic;
 }
+
 
 }
 

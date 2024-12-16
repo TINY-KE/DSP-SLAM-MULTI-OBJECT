@@ -352,7 +352,7 @@ void Tracking::AssociateObjectsByProjection(ORB_SLAM2::KeyFrame *pKF)
 
             // associated object
             auto pMO = mpMap->GetMapObject(object_id_max_matches);
-            pKF->AddMapObject(pMO, d_i);
+            pKF->AddMapObject(pMO, d_i);  //// Associated objects
             detKF1->isNew = false;
 
             // add newly detected feature points to object
@@ -379,6 +379,7 @@ void Tracking::AssociateObjectsByProjection(ORB_SLAM2::KeyFrame *pKF)
                     }
                 }
             }
+            // pMO->GetMapPointsWithinBoundingCubeToGround();
             /*cout <<  "Matches: " << max_matches << ", New points: " << newly_matched_points << ", Keypoints: " <<
                  detKF1->mvKeysIndices.size() << ", Associated to object by projection " << object_id_max_matches
                  << endl << endl;*/
