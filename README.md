@@ -1,4 +1,4 @@
-# 运行指令
+# 运行指令 [要记得在yaml中修改DatasetPathRoot]
 + 单目
 ./dsp_slam_mono Vocabulary/ORBvoc.bin configs/freiburg_001.yaml data/freiburg_cars/Car001 map/freiburg/001
 ./dsp_slam_mono Vocabulary/ORBvoc.bin configs/freiburg_001.yaml /media/robotlab/新加卷/ubuntu22/DSP-SLAM/data/freiburg_cars/Car001 map/freiburg/001
@@ -9,10 +9,9 @@
 转移到本地硬盘：
 ./dsp_slam_rgbd Vocabulary/ORBvoc.bin configs/self_allobject_ground.yaml /home/robotlab/ws_3d_vp/src/QSP-SLAM-my/data/MySimDataset/GroundObjects /home/robotlab/ws_3d_vp/src/QSP-SLAM-my/data/MySimDataset/GroundObjects/associate.txt map/self/GroundObjects
 
-
-
-
 + 多车辆：
++ ros:
+./dsp_slam_ros Vocabulary/ORBvoc.bin configs/self_allobject_ground.yaml /home/robotlab/ws_3d_vp/src/QSP-SLAM-my/data/MySimDataset/GroundObjects map/self/GroundObjects
   
 
 
@@ -89,7 +88,18 @@ if (keep_raw_pose) {
   + 可能是这一句起作用 include_directories(/usr/include/vtk-7.1)
 
 
-# 第3阶段：年后，
-  + 目前的物体关联，应该是用的project
-  + 利用gazebo绕桌子
+
+
+
+# 第三阶段：年后，
+
+
+# 准备阶段：
+  + 实现gazebo绕桌子
+  + 用于mask提取的本地图片： 存储到DatasetPathRoot
+  + 实现了ros topic的rgbd图像输入slam
   + 
+
+# 修改数据关联: 
++ 目前的物体关联，应该是用的project
++ 对于背景物体（床），距离小于2m，则认为是同一个物体。
