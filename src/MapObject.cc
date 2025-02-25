@@ -24,7 +24,7 @@ namespace ORB_SLAM2
 
 int MapObject::nNextId = 0;
 
-MapObject::MapObject(const Eigen::Matrix4f &T, const Eigen::Matrix<float, 64, 1> &vCode, KeyFrame *pRefKF, Map *pMap) :
+MapObject::MapObject(const Eigen::Matrix4f &T, const Eigen::Matrix<float, 64, 1> &vCode, KeyFrame *pRefKF, Map *pMap, int class_id) :
         mpRefKF(pRefKF), mpNewestKF(pRefKF), mnBALocalForKF(0), mnAssoRefID(0), mnFirstKFid(pRefKF->mnId),
         mnCorrectedByKF(0), mnCorrectedReference(0), mnLoopObjectForKF(0), mnBAGlobalForKF(0),
         w(1.), h(1.), l(1.), mbBad(false), mbDynamic(false), mpMap(pMap), nObs(0), mRenderId(-1)
@@ -50,9 +50,11 @@ MapObject::MapObject(const Eigen::Matrix4f &T, const Eigen::Matrix<float, 64, 1>
     vShapeCode = vCode;
     velocity = Eigen::Vector3f::Zero();
     mnId = nNextId++;
+
+    label = class_id;
 }
 
-MapObject::MapObject(KeyFrame *pRefKF, Map *pMap) :
+MapObject::MapObject(KeyFrame *pRefKF, Map *pMap, int class_id) :
         mpRefKF(pRefKF), mpNewestKF(pRefKF), mnBALocalForKF(0), mnAssoRefID(0), mnFirstKFid(pRefKF->mnId),
         mnCorrectedByKF(0), mnCorrectedReference(0), mnLoopObjectForKF(0), mnBAGlobalForKF(0),
         reconstructed(false), w(1.), h(1.), l(1.), mbBad(false), mbDynamic(false), mpMap(pMap), nObs(0), mRenderId(-1)
@@ -61,6 +63,7 @@ MapObject::MapObject(KeyFrame *pRefKF, Map *pMap) :
     scale = 1.;
     invScale = 1.;
     vShapeCode = Eigen::Matrix<float, 64, 1>::Zero();
+    label = class_id;
 }
 
 void MapObject::AddObservation(KeyFrame *pKF, int idx)

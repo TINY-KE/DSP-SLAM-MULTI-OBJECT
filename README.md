@@ -1,10 +1,16 @@
 # 运行指令
 + 单目
-./dsp_slam_mono Vocabulary/ORBvoc.bin configs/freiburg_001.yaml data/freiburg/001 map/freiburg/001
+./dsp_slam_mono Vocabulary/ORBvoc.bin configs/freiburg_001.yaml data/freiburg_cars/Car001 map/freiburg/001
 ./dsp_slam_mono Vocabulary/ORBvoc.bin configs/freiburg_001.yaml /media/robotlab/新加卷/ubuntu22/DSP-SLAM/data/freiburg_cars/Car001 map/freiburg/001
 
 + rgbd
 ./dsp_slam_rgbd Vocabulary/ORBvoc.bin configs/self_allobject_ground.yaml /media/robotlab/新加卷/ubuntu22/QSP-SLAM-all/MySimDataset/GroundObjects /media/robotlab/新加卷/ubuntu22/QSP-SLAM-all/MySimDataset/GroundObjects/associate.txt map/self/GroundObjects
+
+转移到本地硬盘：
+./dsp_slam_rgbd Vocabulary/ORBvoc.bin configs/self_allobject_ground.yaml /home/robotlab/ws_3d_vp/src/QSP-SLAM-my/data/MySimDataset/GroundObjects /home/robotlab/ws_3d_vp/src/QSP-SLAM-my/data/MySimDataset/GroundObjects/associate.txt map/self/GroundObjects
+
+
+
 
 + 多车辆：
   
@@ -76,4 +82,14 @@ if (keep_raw_pose) {
 # 移除离群点的方法
   + ComputeCuboidPCA(bool updatePose)
   + void MapObject::RemoveOutliersModel()
+  + 
+
+# 改为ros后pybind报错
+  + 解决方法，按照李建版本的程序，移植cmakelist
+  + 可能是这一句起作用 include_directories(/usr/include/vtk-7.1)
+
+
+# 第3阶段：年后，
+  + 目前的物体关联，应该是用的project
+  + 利用gazebo绕桌子
   + 

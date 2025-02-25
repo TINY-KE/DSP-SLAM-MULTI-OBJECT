@@ -5,6 +5,17 @@ cmake_minimum_required(VERSION 3.2)
 # c++ version
 set(CMAKE_CXX_STANDARD 17)
 
+set(cv_bridge_DIR /usr/local/share/cv_bridge/cmake)
+find_package(catkin REQUIRED COMPONENTS
+        roscpp
+        cv_bridge
+        sensor_msgs
+        #        image_transport
+        std_msgs
+        tf
+)
+catkin_package()   #for ros
+
 IF(NOT CMAKE_BUILD_TYPE)
     SET(CMAKE_BUILD_TYPE Release)
 ENDIF()
@@ -44,9 +55,29 @@ add_compile_options(
         -DPYTHON_EXECUTABLE=${PYTHON_EXECUTABLE}
 )
 
+include_directories(/usr/include/vtk-7.1)
+
+# # seach
+# find_package(OpenGL REQUIRED)
+# find_package(GLUT REQUIRED)
+# # include    
+# include_directories(${OPENGL_INCLUDE_DIRS})
+# include_directories(${GLUT_INCLUDE_DIRS})
+
+
+##for ros
+
+# set(PCL_DIR "home/zhjd/thirdparty/pcl-1.13.1/build")
+# set(PCL_DIR  /home/robotlab/thirdparty_install/pcl-1.13-eigen337/share/pcl-1.13)
+# FIND_PACKAGE( PCL REQUIRED )
+# list(REMOVE_ITEM PCL_LIBRARIES "vtkproj4")
+# ADD_DEFINITIONS( ${PCL_DEFINITIONS} )
+# INCLUDE_DIRECTORIES( ${PCL_INCLUDE_DIRS}  )
+# LINK_LIBRARIES( ${PCL_LIBRARY_DIRS} )
 
 
 include_directories(
+        ${catkin_INCLUDE_DIRS}   #for ros
         ${PROJECT_SOURCE_DIR}
         ${PROJECT_SOURCE_DIR}/include
         ${PROJECT_SOURCE_DIR}/Thirdparty/g2o
@@ -92,8 +123,10 @@ add_library(${PROJECT_NAME} SHARED
         src/MapObject.cc
         src/ObjectDrawer.cc
         src/ObjectRenderer.cc
+        src/MapPublisher.cc
         )
 target_link_libraries(${PROJECT_NAME}
+        ${catkin_LIBRARIES}  #for ros
         pybind11::embed
         ${OpenCV_LIBS}
         ${EIGEN3_LIBS}

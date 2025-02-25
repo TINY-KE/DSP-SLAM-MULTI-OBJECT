@@ -28,6 +28,8 @@
 #include <boost/filesystem.hpp>
 #include <sys/resource.h>
 #include <iostream>
+#include<ros/ros.h>
+
 
 using namespace std;
 
@@ -57,9 +59,9 @@ void LoadImages(const string &strAssociationFilename, vector<string> &vstrImageF
 
 int main(int argc, char **argv)
 {
-    // ros::init(argc, argv, "ASLAM_RGBD");
-    // ros::start();
-    // ros::NodeHandle nh;
+    ros::init(argc, argv, "ASLAM_RGBD");
+    ros::start();
+    ros::NodeHandle nh;
 
     if(argc != 6)
     {
@@ -210,7 +212,8 @@ int main(int argc, char **argv)
 
     // Stop all threads
     SLAM.Shutdown();
-
+    ros::shutdown();
+    
     cout << "End." << endl;
     return 0;
 }

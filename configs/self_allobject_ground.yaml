@@ -53,7 +53,7 @@ Viewer.ViewpointX: 0
 Viewer.ViewpointY: -10   # originally -10
 Viewer.ViewpointZ: -0.1
 Viewer.ViewpointF: 2000
-
+Viewer.UsePangolin: 1
 
 # dsp
 YoloClasses: [56, 57, 60, 59]
@@ -91,3 +91,4 @@ Tworld_camera.qw:  -0.4335
 Tworld_camera.qx: 0.5585
 Tworld_camera.qy: -0.5585
 Tworld_camera.qz:  0.4335
+

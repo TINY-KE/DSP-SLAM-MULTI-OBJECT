@@ -26,9 +26,9 @@
 namespace ORB_SLAM2
 {
 
-Viewer::Viewer(System* pSystem, FrameDrawer *pFrameDrawer, MapDrawer *pMapDrawer, ObjectDrawer *pObjectDrawer, Tracking *pTracking, const string &strSettingPath):
+Viewer::Viewer(System* pSystem, FrameDrawer *pFrameDrawer, MapDrawer *pMapDrawer, MapPublisher*  pMapPublisher,  ObjectDrawer *pObjectDrawer, Tracking *pTracking, const string &strSettingPath):
     mpSystem(pSystem), mpFrameDrawer(pFrameDrawer), mpMapDrawer(pMapDrawer), mpObjectDrawer(pObjectDrawer), mpTracker(pTracking),
-    mbFinishRequested(false), mbFinished(true), mbStopped(true), mbStopRequested(false)
+    mbFinishRequested(false), mbFinished(true), mbStopped(true), mbStopRequested(false), mpMapPublisher(pMapPublisher)
 {
     cv::FileStorage fSettings(strSettingPath, cv::FileStorage::READ);
 
@@ -49,6 +49,8 @@ Viewer::Viewer(System* pSystem, FrameDrawer *pFrameDrawer, MapDrawer *pMapDrawer
     mViewpointY = fSettings["Viewer.ViewpointY"];
     mViewpointZ = fSettings["Viewer.ViewpointZ"];
     mViewpointF = fSettings["Viewer.ViewpointF"];
+
+    mUsePangolin =  fSettings["Viewer.UsePangolin"];
 }
 
 cv::Mat Viewer::GetFrame()
@@ -105,52 +107,57 @@ void Viewer::Run()
 
     while(1)
     {
-        glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
+        mpMapPublisher->Refresh();
 
-        mpMapDrawer->GetCurrentOpenGLCameraMatrix(Twc);
-
-        if(menuFollowCamera && bFollow)
+        if(mUsePangolin)
         {
-            s_cam.Follow(Twc);
-        }
-        else if(menuFollowCamera && !bFollow)
-        {
-            s_cam.SetModelViewMatrix(pangolin::ModelViewLookAt(mViewpointX,mViewpointY,mViewpointZ, 0,0,0,0.0,-1.0, 0.0));
-            s_cam.Follow(Twc);
-            bFollow = true;
-        }
-        else if(!menuFollowCamera && bFollow)
-        {
-            bFollow = false;
-        }
+            glClear(GL_COLOR_BUFFER_BIT | GL_DEPTH_BUFFER_BIT);
 
-        if(menuLocalizationMode && !bLocalizationMode)
-        {
-            mpSystem->ActivateLocalizationMode();
-            bLocalizationMode = true;
+            mpMapDrawer->GetCurrentOpenGLCameraMatrix(Twc);
+
+            if(menuFollowCamera && bFollow)
+            {
+                s_cam.Follow(Twc);
+            }
+            else if(menuFollowCamera && !bFollow)
+            {
+                s_cam.SetModelViewMatrix(pangolin::ModelViewLookAt(mViewpointX,mViewpointY,mViewpointZ, 0,0,0,0.0,-1.0, 0.0));
+                s_cam.Follow(Twc);
+                bFollow = true;
+            }
+            else if(!menuFollowCamera && bFollow)
+            {
+                bFollow = false;
+            }
+
+            if(menuLocalizationMode && !bLocalizationMode)
+            {
+                mpSystem->ActivateLocalizationMode();
+                bLocalizationMode = true;
+            }
+            else if(!menuLocalizationMode && bLocalizationMode)
+            {
+                mpSystem->DeactivateLocalizationMode();
+                bLocalizationMode = false;
+            }
+
+            d_cam.Activate(s_cam);
+            // Used for object drawer
+            Tec = s_cam.GetModelViewMatrix();
+            Tec.row(1) = -Tec.row(1);
+            Tec.row(2) = -Tec.row(2);
+            glClearColor(1.0f,1.0f,1.0f,1.0f);
+            mpMapDrawer->DrawCurrentCamera(Twc);
+            if(menuShowKeyFrames || menuShowGraph)
+                mpMapDrawer->DrawKeyFrames(menuShowKeyFrames,menuShowGraph);
+            if(menuShowPoints)
+                mpMapDrawer->DrawMapPoints();
+
+            mpObjectDrawer->ProcessNewObjects();
+            mpObjectDrawer->DrawObjects(bFollow, Tec);
+
+            pangolin::FinishFrame();
         }
-        else if(!menuLocalizationMode && bLocalizationMode)
-        {
-            mpSystem->DeactivateLocalizationMode();
-            bLocalizationMode = false;
-        }
-
-        d_cam.Activate(s_cam);
-        // Used for object drawer
-        Tec = s_cam.GetModelViewMatrix();
-        Tec.row(1) = -Tec.row(1);
-        Tec.row(2) = -Tec.row(2);
-        glClearColor(1.0f,1.0f,1.0f,1.0f);
-        mpMapDrawer->DrawCurrentCamera(Twc);
-        if(menuShowKeyFrames || menuShowGraph)
-            mpMapDrawer->DrawKeyFrames(menuShowKeyFrames,menuShowGraph);
-        if(menuShowPoints)
-            mpMapDrawer->DrawMapPoints();
-
-        mpObjectDrawer->ProcessNewObjects();
-        mpObjectDrawer->DrawObjects(bFollow, Tec);
-
-        pangolin::FinishFrame();
 
         cv::Mat im = GetFrame();
 //        double scale = float(w) / im.size().width;

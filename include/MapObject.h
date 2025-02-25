@@ -31,8 +31,8 @@ class Frame;
 
 class MapObject {
 public:
-    MapObject(const Eigen::Matrix4f &T, const Eigen::Matrix<float, 64, 1> &vCode, KeyFrame *pRefKF, Map *pMap);
-    MapObject(KeyFrame *pRefKF, Map *pMap);
+    MapObject(const Eigen::Matrix4f &T, const Eigen::Matrix<float, 64, 1> &vCode, KeyFrame *pRefKF, Map *pMap, int class_id);
+    MapObject(KeyFrame *pRefKF, Map *pMap, int class_id);
 
     void AddObservation(KeyFrame *pKF, int idx);
     int Observations();
@@ -126,7 +126,7 @@ public:
 
 // zhjd
     void GetMapPointsWithinBoundingCubeToGround();
-
+    int label; // object label, 来自于物体检测
 };
 
 }

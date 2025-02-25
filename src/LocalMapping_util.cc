@@ -225,9 +225,10 @@ void LocalMapping::CreateNewObjectsFromDetections()   // 用于单目模式
             continue;
         if (!det->isGood)
             continue;
-
+        
         // Create object with associated feature points
-        auto pNewObj = new MapObject(mpCurrentKeyFrame, mpMap);
+        int class_id = det->label;
+        auto pNewObj = new MapObject(mpCurrentKeyFrame, mpMap, class_id);
         mpCurrentKeyFrame->AddMapObject(pNewObj, det_i);
         mpMap->AddMapObject(pNewObj);
 
@@ -391,7 +392,7 @@ void LocalMapping::ProcessDetectedObjects_byPythonReconstruct()
             PyThreadStateLock PyThreadLock;
 
             // 获取dsp优化器
-            int class_id = 60; //det->label;  //临时设置为table，用于debug
+            int class_id = det->label;  //临时设置为60table，用于debug
             py::object* optimizer_ptr;
             if(mmPyOptimizers.count(class_id) > 0) {
                 py::object* optimizer_ptr_local = &(mmPyOptimizers[class_id]);
@@ -493,7 +494,8 @@ void LocalMapping::Create_Multi_NewObjectsFromDetections()  // 用于RGBD模式
             continue;
 
         // Create object with associated feature points
-        auto pNewObj = new MapObject(mpCurrentKeyFrame, mpMap);
+        int class_id = det->label;
+        auto pNewObj = new MapObject(mpCurrentKeyFrame, mpMap, class_id);
         mpCurrentKeyFrame->AddMapObject(pNewObj, det_i);
         mpMap->AddMapObject(pNewObj);
 
@@ -668,7 +670,7 @@ void LocalMapping::Process_Multi_DetectedObjects_byPythonReconstruct()
             PyThreadStateLock PyThreadLock;
 
             // 获取dsp优化器
-            int class_id = 60; //det->label;  //临时设置为table，用于debug
+            int class_id = det->label;  //临时设置为60table，用于debug
             py::object* optimizer_ptr;
             if(mmPyOptimizers.count(class_id) > 0) {
                 py::object* optimizer_ptr_local = &(mmPyOptimizers[class_id]);

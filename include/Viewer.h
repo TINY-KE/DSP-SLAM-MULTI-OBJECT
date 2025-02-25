@@ -26,6 +26,7 @@
 #include "MapDrawer.h"
 #include "Tracking.h"
 #include "System.h"
+#include "MapPublisher.h"
 
 #include <mutex>
 
@@ -37,11 +38,12 @@ class FrameDrawer;
 class MapDrawer;
 class ObjectDrawer;
 class System;
+class MapPublisher;
 
 class Viewer
 {
 public:
-    Viewer(System* pSystem, FrameDrawer* pFrameDrawer, MapDrawer* pMapDrawer, ObjectDrawer* pObjectDrawer, Tracking *pTracking, const string &strSettingPath);
+    Viewer(System* pSystem, FrameDrawer* pFrameDrawer, MapDrawer* pMapDrawer, MapPublisher*  pMapPublisher,  ObjectDrawer* pObjectDrawer, Tracking *pTracking, const string &strSettingPath);
 
     // Main thread function. Draw points, keyframes, the current camera pose and the last processed
     // frame. Drawing is refreshed according to the camera fps. We use Pangolin.
@@ -84,6 +86,10 @@ private:
     bool mbStopped;
     bool mbStopRequested;
     std::mutex mMutexStop;
+
+    // rviz可视化
+    MapPublisher* mpMapPublisher;
+    int mUsePangolin;
 
 };
 
