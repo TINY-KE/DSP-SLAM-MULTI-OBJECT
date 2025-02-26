@@ -69,8 +69,8 @@ class Frame:
         elif sequence.data_type == "AllObjectsOnTable":
             self.object_class = object_classes_on_table
         elif sequence.data_type == "AllObjectsOnGround":
-            # self.object_class = object_classes_on_ground
-            self.object_class = object_classes
+            self.object_class = object_classes_on_ground
+            # self.object_class = object_classes
         
         # elif sequence.data_type=='Tum':
         #     self.object_class = "monitor"

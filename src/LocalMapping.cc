@@ -138,7 +138,7 @@ void LocalMapping::Run()
                     Create_Multi_NewObjectsFromDetections();
 
                     // TODO: 在此处增加一个合并相近同类物体的操作
-                    // AssociateObjects3D();
+                    AssociateObjects3D();
 
                     /* FIXME，在处理已经检测到的物体时，需要考虑是否增加的新的观测
                     * 这个函数中增加一个是否需要进行隐式位形优化的判断

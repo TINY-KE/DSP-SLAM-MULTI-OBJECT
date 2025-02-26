@@ -29,6 +29,8 @@ MapObject::MapObject(const Eigen::Matrix4f &T, const Eigen::Matrix<float, 64, 1>
         mnCorrectedByKF(0), mnCorrectedReference(0), mnLoopObjectForKF(0), mnBAGlobalForKF(0),
         w(1.), h(1.), l(1.), mbBad(false), mbDynamic(false), mpMap(pMap), nObs(0), mRenderId(-1)
 {
+    assert(false && "Debug: 用了到MapObject的默认构造函数，说明物体的位姿可以来自于初始化的时候!");
+
     // Transformation Matrix in Sim3
     Sim3Two = T;
     Sim3Tow = Sim3Two.inverse();
@@ -193,6 +195,7 @@ KeyFrame* MapObject::GetReferenceKeyFrame()
     return mpRefKF;
 }
 
+
 void MapObject::SetObjectPoseSim3(const Eigen::Matrix4f &Two)
 {
     unique_lock<mutex> lock(mMutexObject);
@@ -327,8 +330,137 @@ void MapObject::RemoveOutliersModel()
     }
 }
 
+// void MapObject::ComputeCuboidPCA(bool updatePose)
+// {
+//     // 1: 移除异常点
+//     RemoveOutliersSimple();
+//     auto mvpMapPoints = GetMapPointsOnObject();
+//     int N = mvpMapPoints.size();
+
+//     if (N == 0)
+//     {
+//         this->SetBadFlag();
+//         return;
+//     }
+
+//     //  2: 计算点云的均值和协方差矩阵
+//     Eigen::Vector3f x3D_mean = Eigen::Vector3f::Zero();
+//     Eigen::MatrixXf Xpts = Eigen::MatrixXf::Zero(N, 3);
+//     Eigen::MatrixXf Xpts_shifted = Eigen::MatrixXf::Zero(N, 3);
+//     for (int i = 0; i < N; i++)
+//     {
+//         auto pMP = mvpMapPoints[i];
+//         cv::Mat x3Dw = pMP->GetWorldPos();
+//         Xpts(i, 0) = x3Dw.at<float>(0);
+//         Xpts(i, 1) = x3Dw.at<float>(1);
+//         Xpts(i, 2) = x3Dw.at<float>(2);
+//         x3D_mean += Converter::toVector3f(pMP->GetWorldPos());
+//     }
+
+//     x3D_mean /= N;
+//     for (int i = 0; i < N; i++)
+//     {
+//         Xpts_shifted.row(i) = Xpts.row(i) - x3D_mean.transpose();
+//     }
+
+//     // 3：执行主成分分析 (PCA)
+//     auto covX = Xpts_shifted.transpose() * Xpts_shifted;
+//     // cout << covX << endl;
+//     Eigen::SelfAdjointEigenSolver<Eigen::Matrix3f> eigensolver(covX);
+
+//     auto eigenvectors = eigensolver.eigenvectors();
+
+//     // 4: 生成旋转矩阵
+//     // Get rotation matrix, following ShapeNet definition
+//     // x : right, y: up, z: back
+//     Eigen::Matrix3f R;
+//     // Assume the order of principal axis: y, x, -z
+//     R.col(0) = eigenvectors.col(1);
+//     R.col(1) = eigenvectors.col(0);
+//     R.col(2) = -eigenvectors.col(2);
+
+//     Eigen::Vector3f ground(0, 0, 1);  // Ground direction
+//     R.col(1) = ground;                // Set Y axis to target direction
+//     R.col(0) = R.col(2).cross(R.col(1));  // Recompute X axis as the cross product of Z and Y
+//     R.col(0).normalize();               // Normalize X axis
+//     R.col(2) = R.col(1).cross(R.col(0));  // Recompute Z axis as the cross product of Y and X
+//     R.col(2).normalize();               // Normalize Z axis
+
+//     // Check if det(R) = -1
+//     if (R.determinant() < 0)
+//         R.col(0) = -R.col(0);
+
+//     // Check if y direction is pointing upward by comparing its angle between camera
+//     auto neg_y = Eigen::Vector3f(0.f, -1.f, 0.f);
+//     if (neg_y.dot(R.col(1)) < 0)
+//     {
+//         R.col(0) = -R.col(0);
+//         R.col(1) = -R.col(1);
+//     }
+
+//     // 5: 计算包围盒尺寸
+//     int lo = int (0.05 * N);  // percentile threshold
+//     int hi = int (0.95 * N);
+//     auto Xpts_o = R.inverse() * Xpts.transpose(); // 3 x N
+//     Eigen::VectorXf x, y, z;
+//     x = Xpts_o.row(0);  // x corresponds to w
+//     y = Xpts_o.row(1);  // y corresponds to h
+//     z = Xpts_o.row(2);  // z corresponds to l
+//     // Sort the vectors
+//     std::sort(x.data(),x.data() + x.size());
+//     std::sort(y.data(),y.data() + y.size());
+//     std::sort(z.data(),z.data() + z.size());
+
+//     // PCA box dims
+//     w = (x(hi) - x(lo));
+//     h = (y(hi) - y(lo));
+//     l = (z(hi) - z(lo));
+//     Eigen::Vector3f cuboid_centre_o((x(hi) + x(lo)) / 2., (y(hi) + y(lo)) / 2., (z(hi) + z(lo)) / 2.);
+//     Eigen::Vector3f cuboid_centre_w = R * cuboid_centre_o;
+
+//     //  6: 移除异常点
+//     // // Remove outliers using computed PCA box
+//     // int num_outliers = 0;
+//     // float s = 1.2;
+//     // for (auto pMP : mvpMapPoints)
+//     // {
+//     //     if (!pMP)
+//     //         continue;
+
+//     //     if (pMP->isBad())
+//     //     {
+//     //         this->EraseMapPoint(pMP);
+//     //     }
+//     //     else
+//     //     {
+//     //         auto x3Dw = Converter::toVector3f(pMP->GetWorldPos());
+//     //         auto x3Do = R.inverse() * x3Dw - R.inverse() * cuboid_centre_w;
+//     //         if (x3Do(0) > s * w / 2 || x3Do(0) < -s * w / 2 ||
+//     //             x3Do(1) > s * h / 2 || x3Do(1) < -s * h / 2 ||
+//     //             x3Do(2) > s * l / 2 || x3Do(2) < -s * l / 2)
+//     //         {
+//     //             pMP->SetOutlierFlag();
+//     //             num_outliers++;
+//     //         }
+//     //     }
+//     // }
+
+//     // 7: 更新物体位姿
+//     // Update object pose with pose computed by PCA, only for the very first few frames
+//     if (updatePose)
+//     {
+//         Eigen::Matrix4f T = Eigen::Matrix4f::Identity();
+//         T.topLeftCorner(3, 3) = 0.40 * l * R;
+//         // cout << R.determinant() << " " << endl;
+//         // cout << pow(T.topLeftCorner(3, 3).determinant(), 1./3) << endl;
+//         T.topRightCorner(3, 1) = cuboid_centre_w;
+//         SetObjectPoseSim3(T);
+//     }
+// }
+
 void MapObject::ComputeCuboidPCA(bool updatePose)
 {
+    // 1: 移除异常点
     RemoveOutliersSimple();
     auto mvpMapPoints = GetMapPointsOnObject();
     int N = mvpMapPoints.size();
@@ -339,6 +471,7 @@ void MapObject::ComputeCuboidPCA(bool updatePose)
         return;
     }
 
+    //  2: 计算点云的均值和协方差矩阵
     Eigen::Vector3f x3D_mean = Eigen::Vector3f::Zero();
     Eigen::MatrixXf Xpts = Eigen::MatrixXf::Zero(N, 3);
     Eigen::MatrixXf Xpts_shifted = Eigen::MatrixXf::Zero(N, 3);
@@ -358,12 +491,124 @@ void MapObject::ComputeCuboidPCA(bool updatePose)
         Xpts_shifted.row(i) = Xpts.row(i) - x3D_mean.transpose();
     }
 
+
+
+    // 4: 生成旋转矩阵
+    // Get rotation matrix, following ShapeNet definition
+    // x : right, y: up, z: back
+    Eigen::Matrix3f R;
+
+    Eigen::Vector3f world_x(1, 0, 0);  // Ground direction
+    R.col(2) = world_x;                // Set Y axis to target direction
+    Eigen::Vector3f world_y(0, 1, 0);  // Ground direction
+    R.col(0) = world_y;                // Set Y axis to target direction
+    Eigen::Vector3f world_z(0, 0, 1);  // Ground direction
+    R.col(1) = world_z;                // Set Y axis to target direction
+
+    // Check if det(R) = -1
+    if (R.determinant() < 0)
+        R.col(0) = -R.col(0);
+
+    // Check if y direction is pointing upward by comparing its angle between camera
+    auto neg_y = Eigen::Vector3f(0.f, -1.f, 0.f);
+    if (neg_y.dot(R.col(1)) < 0)
+    {
+        R.col(0) = -R.col(0);
+        R.col(1) = -R.col(1);
+    }
+
+    // 5: 计算包围盒尺寸
+    int lo = int (0.05 * N);  // percentile threshold
+    int hi = int (0.95 * N);
+    auto Xpts_o = R.inverse() * Xpts.transpose(); // 3 x N
+    Eigen::VectorXf x, y, z;
+    x = Xpts_o.row(0);  // x corresponds to w
+    y = Xpts_o.row(1);  // y corresponds to h
+    z = Xpts_o.row(2);  // z corresponds to l
+    // Sort the vectors
+    std::sort(x.data(),x.data() + x.size());
+    std::sort(y.data(),y.data() + y.size());
+    std::sort(z.data(),z.data() + z.size());
+
+    // PCA box dims
+    w = (x(hi) - x(lo));
+    h = (y(hi) - 0);
+    l = (z(hi) - z(lo));
+    Eigen::Vector3f cuboid_centre_o((x(hi) + x(lo)) / 2., (y(hi) + 0) / 2., (z(hi) + z(lo)) / 2.);
+    Eigen::Vector3f cuboid_centre_w = R * cuboid_centre_o;
+
+    //  6: 加上地面的点
+    vector<MapPoint*> vpMP = mpMap->GetAllMapPoints();
+    for (auto pMP : vpMP) {
+        if (!pMP)
+            continue;
+        if (pMP->isBad())
+            continue;
+
+        cv::Mat pw_mat = pMP->GetWorldPos();
+        Eigen::Vector3f pw(pw_mat.at<float>(0), pw_mat.at<float>(1), pw_mat.at<float>(2));
+        auto po = R.inverse() * pw - cuboid_centre_w;
+
+        if (po(0) > -1*w/2.0 && po(0) < w/2.0 && po(1) > -1*h/2.0 && po(1) < h/2.0 && po(2) > -1*l/2.0 && po(2) < l/2.0) {
+            this->AddMapPoints(pMP);
+        }
+    }
+
+    // 7: 更新物体位姿
+    // Update object pose with pose computed by PCA, only for the very first few frames
+    if (updatePose)
+    {
+        Eigen::Matrix4f T = Eigen::Matrix4f::Identity();
+        T.topLeftCorner(3, 3) = 0.40 * l * R;
+        // cout << R.determinant() << " " << endl;
+        // cout << pow(T.topLeftCorner(3, 3).determinant(), 1./3) << endl;
+        T.topRightCorner(3, 1) = cuboid_centre_w;
+        SetObjectPoseSim3(T);
+    }
+}
+
+
+void MapObject::ComputeCuboidPCA_origin(bool updatePose)
+{
+    // 1: 移除异常点
+    RemoveOutliersSimple();
+    auto mvpMapPoints = GetMapPointsOnObject();
+    int N = mvpMapPoints.size();
+
+    if (N == 0)
+    {
+        this->SetBadFlag();
+        return;
+    }
+
+    //  2: 计算点云的均值和协方差矩阵
+    Eigen::Vector3f x3D_mean = Eigen::Vector3f::Zero();
+    Eigen::MatrixXf Xpts = Eigen::MatrixXf::Zero(N, 3);
+    Eigen::MatrixXf Xpts_shifted = Eigen::MatrixXf::Zero(N, 3);
+    for (int i = 0; i < N; i++)
+    {
+        auto pMP = mvpMapPoints[i];
+        cv::Mat x3Dw = pMP->GetWorldPos();
+        Xpts(i, 0) = x3Dw.at<float>(0);
+        Xpts(i, 1) = x3Dw.at<float>(1);
+        Xpts(i, 2) = x3Dw.at<float>(2);
+        x3D_mean += Converter::toVector3f(pMP->GetWorldPos());
+    }
+
+    x3D_mean /= N;
+    for (int i = 0; i < N; i++)
+    {
+        Xpts_shifted.row(i) = Xpts.row(i) - x3D_mean.transpose();
+    }
+
+    // 3：执行主成分分析 (PCA)
     auto covX = Xpts_shifted.transpose() * Xpts_shifted;
     // cout << covX << endl;
     Eigen::SelfAdjointEigenSolver<Eigen::Matrix3f> eigensolver(covX);
 
     auto eigenvectors = eigensolver.eigenvectors();
 
+    // 4: 生成旋转矩阵
     // Get rotation matrix, following ShapeNet definition
     // x : right, y: up, z: back
     Eigen::Matrix3f R;
@@ -384,6 +629,7 @@ void MapObject::ComputeCuboidPCA(bool updatePose)
         R.col(1) = -R.col(1);
     }
 
+    // 5: 计算包围盒尺寸
     int lo = int (0.05 * N);  // percentile threshold
     int hi = int (0.95 * N);
     auto Xpts_o = R.inverse() * Xpts.transpose(); // 3 x N
@@ -403,6 +649,7 @@ void MapObject::ComputeCuboidPCA(bool updatePose)
     Eigen::Vector3f cuboid_centre_o((x(hi) + x(lo)) / 2., (y(hi) + y(lo)) / 2., (z(hi) + z(lo)) / 2.);
     Eigen::Vector3f cuboid_centre_w = R * cuboid_centre_o;
 
+    //  6: 移除异常点
     // Remove outliers using computed PCA box
     int num_outliers = 0;
     float s = 1.2;
@@ -428,6 +675,8 @@ void MapObject::ComputeCuboidPCA(bool updatePose)
             }
         }
     }
+
+    // 7: 更新物体位姿
     // Update object pose with pose computed by PCA, only for the very first few frames
     if (updatePose)
     {
@@ -439,6 +688,7 @@ void MapObject::ComputeCuboidPCA(bool updatePose)
         SetObjectPoseSim3(T);
     }
 }
+
 
 void MapObject::AddMapPoints(MapPoint *pMP)
 {

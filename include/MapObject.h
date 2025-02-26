@@ -37,8 +37,8 @@ public:
     void AddObservation(KeyFrame *pKF, int idx);
     int Observations();
     std::map<KeyFrame*,size_t> GetObservations();
-    void SetObjectPoseSim3(const Eigen::Matrix4f &Two);
-    void SetObjectPoseSE3(const Eigen::Matrix4f &Two);
+    void SetObjectPoseSim3(const Eigen::Matrix4f &Two);  //用于localmapping
+    void SetObjectPoseSE3(const Eigen::Matrix4f &Two);   //用于loopclose
     void SetShapeCode(const Eigen::Matrix<float, 64, 1> &code);
     void UpdateReconstruction(const Eigen::Matrix4f &T, const Eigen::Matrix<float, 64, 1> &vCode);
     Eigen::Matrix4f GetPoseSim3();
@@ -58,6 +58,7 @@ public:
     void RemoveOutliersSimple();
     void RemoveOutliersModel();
     void ComputeCuboidPCA(bool updatePose);
+    void ComputeCuboidPCA_origin(bool updatePose);
     void EraseMapPoint(MapPoint *pMP);
 
     void SetRenderId(int id);

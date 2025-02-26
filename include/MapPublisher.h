@@ -74,6 +74,7 @@ public:
     // void PublishObjectInfo(const vector<MapObject*> &vpObjs );
     // void PublishEllipsoidInfo(const vector<ellipsoid*> &vpObjs );
     void PublishMapObjects(const vector<MapObject*> &vpObjs );
+    void PublishObjectPoints( MapObject* vObjs);
 
     // void PublishObject(const vector<Object_Map*> &vpObjs );
     // void PublishIE(const vector<Object_Map*> &vObjs );
@@ -108,11 +109,13 @@ private:
     ros::Publisher publisher_IEtext;
     ros::Publisher publisher_ObjectInfo;
     ros::Publisher publisher_SdfObject;
+    ros::Publisher publisher_ObjectPoints;
     //tf tree
     //tf::TransformBroadcaster odom_broadcaster;
     //tf::TransformBroadcaster camera_broadcaster;
 
     visualization_msgs::Marker mPoints;
+    visualization_msgs::Marker mObjectPoints;
     visualization_msgs::Marker mReferencePoints;
     visualization_msgs::Marker mKeyFrames;
     visualization_msgs::Marker mReferenceKeyFrames;
@@ -139,6 +142,7 @@ private:
     const char* OBJECTS_NAMESPACE = "MapObjects";
     const char* GRAPH_NAMESPACE = "Graph";
     const char* CAMERA_NAMESPACE = "Camera";
+    const char* OBJECTPOINTS_NAMESPACE = "MapPoints";
 
     std::vector<std::tuple<float, float, float>> mvObjectColors;
 };

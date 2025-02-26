@@ -111,8 +111,9 @@ if (keep_raw_pose) {
   + 沙发背面，无法识别
   + 黄桌子 无法识别
 
-# 使得物体z轴与地面对齐时，为最好
-
+# 使得物体模型z轴与地面对齐
+  + 修改ComputeCuboidPCA,直接将与地面之间的全部点加入
+  + 启用AssociateObjects3D();  根据距离的关联
 
 # （未用）修改数据关联: 
   + 目前的物体关联，应该是用的AssociateObjectsByProjection

@@ -39,6 +39,17 @@ MapPublisher::MapPublisher(Map* pMap, const string &strSettingPath):mpMap(pMap),
     mPoints.pose.orientation.w=1.0;
     mPoints.action=visualization_msgs::Marker::ADD;
     mPoints.color.a = 1.0;
+    
+    mObjectPoints.header.frame_id = MAP_FRAME_ID;
+    mObjectPoints.ns = OBJECTPOINTS_NAMESPACE;
+    mObjectPoints.id=0;
+    mObjectPoints.type = visualization_msgs::Marker::POINTS;
+    mObjectPoints.scale.x=fPointSize*2.0;
+    mObjectPoints.scale.y=fPointSize*2.0;
+    mObjectPoints.pose.orientation.w=1.0;
+    mObjectPoints.action=visualization_msgs::Marker::ADD;
+    mObjectPoints.color.a = 1.0;
+
 
     //Configure KeyFrames
     fCameraSize=0.04;
@@ -119,6 +130,7 @@ MapPublisher::MapPublisher(Map* pMap, const string &strSettingPath):mpMap(pMap),
     // publisher_IEtext = nh.advertise<visualization_msgs::Marker>("IEtext", 1);
     publisher_ObjectInfo = nh.advertise<std_msgs::Float32MultiArray>("/objects_info", 10);
     publisher_SdfObject = nh.advertise<visualization_msgs::Marker>("/objects", 10);
+    publisher_ObjectPoints = nh.advertise<visualization_msgs::Marker>("/objectpoint", 1000);
 
     publisher.publish(mPoints);
     publisher.publish(mReferencePoints);
@@ -459,8 +471,44 @@ void MapPublisher::PublishMapObjects(const vector<MapObject *> &vObjs) {
 
         // 发布网格
         publisher_SdfObject.publish(mesh_marker);
+
+        // 发布物体内的点
+        PublishObjectPoints(pMO);
     }
 }
+
+
+void MapPublisher::PublishObjectPoints( MapObject* vObjs)
+{
+    mObjectPoints.points.clear();
+    mObjectPoints.id=vObjs->mnId;
+
+    mObjectPoints.color.r =  get<0>(mvObjectColors[vObjs->label % 10]);
+    mObjectPoints.color.g =  get<1>(mvObjectColors[vObjs->label % 10]);
+    mObjectPoints.color.b =  get<2>(mvObjectColors[vObjs->label % 10]);
+
+    auto mvpMapPoints = vObjs->GetMapPointsOnObject();
+    for (auto pMP : mvpMapPoints)
+    {
+        if (!pMP)
+            continue;
+
+        if (pMP->isBad())
+            continue;
+        
+        geometry_msgs::Point p;
+        cv::Mat pos = pMP->GetWorldPos();
+        p.x=pos.at<float>(0);
+        p.y=pos.at<float>(1);
+        p.z=pos.at<float>(2);
+        mObjectPoints.points.push_back(p);
+        
+    }
+
+    mObjectPoints.header.stamp = ros::Time::now();
+    publisher_ObjectPoints.publish(mObjectPoints);
+}
+
 
 // void MapPublisher::PublishEllipsoidInfo(const vector<ellipsoid*> &vObjs ){
 
