@@ -174,6 +174,8 @@ void Optimizer::JointBundleAdjustment(const vector<KeyFrame *> &vpKFs, const vec
     }
 
     // Set MapObject Vertices
+    bool optimize_object = false;
+    if(optimize_object)
     for (size_t i = 0; i < vpMO.size(); i++) {
         auto pMO = vpMO[i];
 
@@ -281,29 +283,30 @@ void Optimizer::JointBundleAdjustment(const vector<KeyFrame *> &vpKFs, const vec
     }
 
     // Objects
-    for (size_t i = 0; i < vpMO.size(); i++) {
-        if (vbNotIncludedMO[i])
-            continue;
+    if(optimize_object)
+        for (size_t i = 0; i < vpMO.size(); i++) {
+            if (vbNotIncludedMO[i])
+                continue;
 
-        MapObject *pMO = vpMO[i];
+            MapObject *pMO = vpMO[i];
 
-        if (pMO->isBad())
-            continue;
-        if (pMO->isDynamic())
-            continue;
+            if (pMO->isBad())
+                continue;
+            if (pMO->isDynamic())
+                continue;
 
-        g2o::VertexSE3Expmap *vSE3Obj = static_cast<g2o::VertexSE3Expmap *>(optimizer.vertex(
-                pMO->mnId + maxKFid + maxMPid + 2));
-        g2o::SE3Quat SE3Tow = vSE3Obj->estimate();
+            g2o::VertexSE3Expmap *vSE3Obj = static_cast<g2o::VertexSE3Expmap *>(optimizer.vertex(
+                    pMO->mnId + maxKFid + maxMPid + 2));
+            g2o::SE3Quat SE3Tow = vSE3Obj->estimate();
 
-        if (nLoopKF == 0) {
-            Eigen::Matrix4f SE3Two = Converter::toMatrix4f(SE3Tow).inverse();
-            pMO->SetObjectPoseSE3(SE3Two);
-        } else {
-            pMO->mTwoGBA = Converter::toMatrix4f(SE3Tow).inverse();
-            pMO->mnBAGlobalForKF = nLoopKF;
+            if (nLoopKF == 0) {
+                Eigen::Matrix4f SE3Two = Converter::toMatrix4f(SE3Tow).inverse();
+                pMO->SetObjectPoseSE3(SE3Two);
+            } else {
+                pMO->mTwoGBA = Converter::toMatrix4f(SE3Tow).inverse();
+                pMO->mnBAGlobalForKF = nLoopKF;
+            }
         }
-    }
 }
 
 void Optimizer::LocalJointBundleAdjustment(KeyFrame *pKF, bool *pbStopFlag, Map *pMap)
@@ -541,6 +544,8 @@ void Optimizer::LocalJointBundleAdjustment(KeyFrame *pKF, bool *pbStopFlag, Map 
     }
 
     // Set map object vertices and edges
+    bool optimize_object = false;
+    if(optimize_object)
     for (auto pMO : lLocalMapObjects)
     {
         if (!pMO->isDynamic())
@@ -756,6 +761,7 @@ void Optimizer::LocalJointBundleAdjustment(KeyFrame *pKF, bool *pbStopFlag, Map 
     }
 
     //Objects
+    if(optimize_object)
     for (auto pMO : lLocalMapObjects)
     {
         if (!pMO->isDynamic() && !pMO->isBad())

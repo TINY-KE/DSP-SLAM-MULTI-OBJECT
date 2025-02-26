@@ -69,7 +69,8 @@ class Frame:
         elif sequence.data_type == "AllObjectsOnTable":
             self.object_class = object_classes_on_table
         elif sequence.data_type == "AllObjectsOnGround":
-            self.object_class = object_classes_on_ground
+            # self.object_class = object_classes_on_ground
+            self.object_class = object_classes
         
         # elif sequence.data_type=='Tum':
         #     self.object_class = "monitor"
@@ -83,8 +84,13 @@ class Frame:
             print("[zhjd-debug] read picture:"+os.path.join(self.root_dir, frame_name))
             rgb_file = os.path.join(self.root_dir, frame_name)
         # print(f"rgb_file = {rgb_file}")
+        print("Frame cvtColor 0")
         self.img_bgr = cv2.imread(rgb_file)
+        print("Frame cvtColor 1")
+        if self.img_bgr is None:
+            raise FileNotFoundError(f"Image not found at {rgb_file}")
         self.img_rgb = cv2.cvtColor(self.img_bgr, cv2.COLOR_BGR2RGB)
+        print("Frame cvtColor 2")
         self.img_h, self.img_w, _ = self.img_rgb.shape
         self.instances = []
         #print("Frame Init -4")

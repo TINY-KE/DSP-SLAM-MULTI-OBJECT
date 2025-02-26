@@ -810,4 +810,73 @@ std::vector<MapPoint*> LocalMapping::AddCubePointsToMapObject(std::vector<MapPoi
     return cube_points_on_object;
 }
 
+
+
+
+void LocalMapping::AssociateObjects3D()
+{
+    cout << "\n [LocalMapping_utils.cc] AssociateObjects3D" << endl;
+    auto allMapObjects = mpMap->GetAllMapObjects();
+    int obj_num = allMapObjects.size();
+
+    for (int i = 0; i < obj_num-1; i++) {
+        for (int j = obj_num - 1; j > i; j--) {
+
+            auto pMO_i = allMapObjects[i], pMO_j = allMapObjects[j];
+            
+
+            bool c0 = (pMO_i->label == pMO_j->label);
+
+            auto SE3Two_i = pMO_i->GetPoseSE3();
+            auto SE3Two_j = pMO_j->GetPoseSE3();
+
+
+            // TODO：这个距离是在世界坐标系中的，但是世界坐标系并不与地面对齐
+            Eigen::Vector3f dist3D = SE3Two_i.topRightCorner<3, 1>() - SE3Two_j.topRightCorner<3, 1>();
+            float dist3D_norm = dist3D.norm();
+
+            // FIXME: 这里的0.5有待改成配置文件中进行设置
+            // bool c1 = (dist3D_norm < dist_filt_param * dist_limit);
+            bool c1 = (dist3D_norm < 3);
+            // if (c0 && c1) {
+            if (c1) {
+                // 这里应该把 pMO_j 合并到 pMO_i 中
+                MergeMapObject(pMO_i, pMO_j);
+            }
+        }
+    }
+}
+
+
+// 先将j中的点加入到i物体中
+// 同时将每个点的object_id设置为i的id
+// 然后将j设置为bad
+
+// 物体对应的观测还没有处理？？？？？？？  pMO->AddObservation(pKF, i);    参考雷达点云建图中的ObjectDataAssociation(KeyFrame *pKF)
+// 关键帧对应的物体还没有处理？？？？？？？  pKF->AddMapObject(pMO, d_i);  参考单目建图中的AssociateObjectsByProjection(ORB_SLAM2::KeyFrame *pKF)
+
+// 如果物体融合了，会不会因此在图优化中引入错误mask误差项。
+void LocalMapping::MergeMapObject(MapObject* pMO_i, MapObject* pMO_j)
+{   
+    std::cout<<"[MergeMapObject] pMO_i->mnId: "<<pMO_i->mnId<<", pMO_j->mnId: "<<pMO_j->mnId<<std::endl;
+    std::vector<MapPoint*> points_on_object_j = pMO_j->GetMapPointsOnObject();
+    for (auto pMP : points_on_object_j)
+    {
+        if (!pMP)
+            continue;
+        if (pMP->isBad())
+            continue;
+        if (pMP->isOutlier())
+            continue;
+        
+        pMP->object_id = pMO_i->mnId;
+        pMO_i->AddMapPoints(pMP);
+    }
+
+    pMO_j->SetBadFlag();
+}
+
+
+
+
 }

@@ -111,10 +111,10 @@ class Detector2D(object):
         for object_class in object_classes:
             for object_id in object_class_table[object_class]:
                 o = object_id
-                n_det_bbox = len(self.predictions[0][o])
-                n_det_mask = len(self.predictions[1][o])
+                n_det_bbox = len(self.predictions[0][o])  # 该类别的边界框数量
+                n_det_mask = len(self.predictions[1][o])  # 该类别的掩膜数量
 
-                
+                # 如果当前类别有检测结果（即 n_det_bbox > 0）
                 if n_det_bbox:
                     any_detect = True
                     print(f"        识别到 = {n_det_bbox} {object_class}, ", end='\n')

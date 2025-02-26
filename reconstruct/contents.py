@@ -24,6 +24,7 @@ object_class_table = {
 
 object_classes = list(object_class_table.keys())
 
-object_classes_on_ground = ["benches", "chairs", "potted_plants", "beds", "dining_tables", "refrigerator"]
+# object_classes_on_ground = ["benches", "chairs", "potted_plants", "beds", "dining_tables", "refrigerator"]
+object_classes_on_ground = ["cars","benches", "chairs", "beds", "dining_tables", "refrigerator"]
 
 object_classes_on_table = [c for c in object_classes if c not in object_classes_on_ground ]

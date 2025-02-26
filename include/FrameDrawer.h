@@ -66,6 +66,8 @@ protected:
     Map* mpMap;
 
     std::mutex mMutex;
+    vector<cv::Mat> mvImObjectMasks;
+    vector<vector<int>> mvImObjectBboxs;
 };
 
 } //namespace ORB_SLAM

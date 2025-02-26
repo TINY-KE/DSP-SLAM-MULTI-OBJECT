@@ -248,8 +248,20 @@ void Tracking::GetObjectDetectionsMono(KeyFrame *pKF)
     mvImObjectMasks.clear();
     mvImObjectBboxs.clear();
 
+    // 调用python接口获取，物体检测结果
+    py::list detections;
+    if (mbUseRos) {
+        string file_name = "ros.png";
+        std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now();
+        cv::imwrite(mDatasetPathRoot+"/"+file_name, pKF->color_img);
+        std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();
+        double ttrack= std::chrono::duration_cast<std::chrono::duration<double> >(t2 - t1).count();
+        std::cout << "[zhjd-debug] 存储图片花费了 " << ttrack << std::endl;
+        detections= mpSystem->pySequence.attr("get_frame_by_name")(pKF->mnFrameId, file_name);
+    }
+    // py::list detections = mpSystem->pySequence.attr("get_frame_by_id")(pKF->mnFrameId);
 
-    py::list detections = mpSystem->pySequence.attr("get_frame_by_id")(pKF->mnFrameId);
+
     int num_dets = detections.size();
     // No detections, return immediately
     if (num_dets == 0)
@@ -326,7 +338,8 @@ void Tracking::AssociateObjectsByProjection(ORB_SLAM2::KeyFrame *pKF)
                 nOutliers++;
                 continue;
             }
-
+            
+            // 如果pMP->object_id小于0，说明该点还没有被分配到任何物体
             if (pMP->object_id < 0)
                 continue;
 

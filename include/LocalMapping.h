@@ -148,6 +148,9 @@ protected:
 // zhjd
 private:
     std::vector<MapPoint*> AddCubePointsToMapObject(std::vector<MapPoint*> points);
+    
+    void AssociateObjects3D();
+    void MergeMapObject(MapObject* pMO_i, MapObject* pMO_j); // Merge pMO_j into pMO_i
 };
 
 } //namespace ORB_SLAM

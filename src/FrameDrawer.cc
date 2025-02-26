@@ -44,10 +44,24 @@ cv::Mat FrameDrawer::DrawFrame()
     vector<bool> vbVO, vbMap; // Tracked MapPoints in current frame
     int state; // Tracking state
 
+    // cvshow中显示mask和bbox
+    vector<cv::Mat> vmasks;
+    vector<vector<int>> vbboxs;
+
     //Copy variables within scoped mutex
     {
         unique_lock<mutex> lock(mMutex);
         state=mState;
+
+        // cvshow中显示mask和bbox
+        for (auto mask: mvImObjectMasks) {
+            vmasks.push_back(mask);
+        }
+        for (auto bbox: mvImObjectBboxs) {
+            vbboxs.push_back(bbox);
+        }
+
+
         if(mState==Tracking::SYSTEM_NOT_READY)
             mState=Tracking::NO_IMAGES_YET;
 
@@ -71,8 +85,33 @@ cv::Mat FrameDrawer::DrawFrame()
         }
     } // destroy scoped mutex -> release mutex
 
+    // cvshow中显示mask和bbox
     if(im.channels()<3) //this should be always true
         cvtColor(im,im,CV_GRAY2BGR);
+
+    for (auto &mask: vmasks) {
+        cv::Mat mask_rgb = cv::Mat::zeros(mask.rows, mask.cols, CV_8UC3);
+        cv::Mat mask_grey = cv::Mat::zeros(mask.rows, mask.cols, CV_8UC1);
+        // 1、掩膜转换为单通道灰度图：
+        mask.convertTo(mask, CV_8U);
+        // cout << "       im info : " << im.rows << "," << im.cols << "," << im.type() << endl;
+        // cout << "     mask info : " << mask.rows << "," << mask.cols << "," << mask.type() << endl;
+        // cout << " mask_rgb info : " << mask_rgb.rows << "," << mask_rgb.cols << "," << mask_rgb.type() << endl;
+        // cout << "mask_grey info : " << mask_grey.rows << "," << mask_grey.cols << "," << mask_grey.type() << endl;
+        // 2、生成三通道的彩色掩膜：
+        vector<cv::Mat> channels;
+        channels.push_back(mask_grey);
+        channels.emplace_back(mask_grey);
+        channels.emplace_back(mask);
+        merge(channels, mask_rgb);
+        // 3、将掩膜叠加到原图：
+        cv::addWeighted(im, 1, mask_rgb, 0.2, 0.0, im);
+    }
+    for (auto &bbox: vbboxs) {
+        int x1 = bbox[0], y1 = bbox[1], x2 = bbox[2], y2 = bbox[3];
+        cv::rectangle(im, cv::Point2f(float(x1), float(y1)), cv::Point2f(float(x2), float(y2)), \
+                      cv::Scalar(0,0,200));
+    }
 
     //Draw
     if(state==Tracking::NOT_INITIALIZED) //INITIALIZING
@@ -174,6 +213,15 @@ void FrameDrawer::Update(Tracking *pTracker)
     mvbMap = vector<bool>(N,false);
     mbOnlyTracking = pTracker->mbOnlyTracking;
 
+    // cvshow中显示mask和bbox
+    mvImObjectMasks.clear();
+    mvImObjectBboxs.clear();
+    for (auto img: pTracker->mvImObjectMasks) {
+        mvImObjectMasks.push_back(img);
+    }
+    for (auto bbox: pTracker->mvImObjectBboxs) {
+        mvImObjectBboxs.push_back(bbox);
+    }
 
     if(pTracker->mLastProcessedState==Tracking::NOT_INITIALIZED)
     {
