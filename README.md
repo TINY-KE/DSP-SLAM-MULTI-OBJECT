@@ -111,7 +111,7 @@ if (keep_raw_pose) {
   + 沙发背面，无法识别
   + 黄桌子 无法识别
 
-# 使得物体模型z轴与地面对齐，修改基于点云的初始cube估计方法
+# commit 8f3a65a836a05f19cd04718d9c90247d747835eb  使得物体模型z轴与地面对齐，修改基于点云的初始cube估计方法
   + 修改ComputeCuboidPCA,直接将与地面之间的全部点加入
   + 启用AssociateObjects3D();  根据距离的关联
   + 只有一个物体，为什么不是所有点都参与生成物体模型
@@ -119,11 +119,18 @@ if (keep_raw_pose) {
   + 根据GetMapPointsOnObject可视化一个cube。
   + 录制rosbag 
   rosbag record -O circle.bag /rgb/image_raw /depth_to_rgb/image_raw
-  +
+  + 最终现象：可以运行，没有出现调用python计算物体位姿报错的现象
 
-# todo： 初始旋转矩阵错误，绕z轴90度
-  + 
+# 初始旋转矩阵错误，绕z轴90度
+  + 根据x-right,y-up,z-back，重新调整物体的初始位姿。也就是z轴从沙发的背面出去。
+  + 调整RemoveOutliersSimple()中的阈值： 1改为4
+  + 最终现象：可以运行，没有出现调用python计算物体位姿报错的现象
   
+# 调整距离过滤的阈值
+  + 
+
+
+
 # （未用）修改数据关联: 
   + 目前的物体关联，应该是用的AssociateObjectsByProjection
     错误反思：这里的关联是当前帧中的点云与map中物体的关联

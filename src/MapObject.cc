@@ -498,10 +498,16 @@ void MapObject::ComputeCuboidPCA(bool updatePose)
     // x : right, y: up, z: back
     Eigen::Matrix3f R;
 
+    // Eigen::Vector3f world_x(1, 0, 0);  // Ground direction
+    // R.col(2) = world_x;                // Set Y axis to target direction
+    // Eigen::Vector3f world_y(0, 1, 0);  // Ground direction
+    // R.col(0) = world_y;                // Set Y axis to target direction
+    // Eigen::Vector3f world_z(0, 0, 1);  // Ground direction
+    // R.col(1) = world_z;                // Set Y axis to target direction
     Eigen::Vector3f world_x(1, 0, 0);  // Ground direction
-    R.col(2) = world_x;                // Set Y axis to target direction
+    R.col(0) = -1*world_x;                // Set Y axis to target direction
     Eigen::Vector3f world_y(0, 1, 0);  // Ground direction
-    R.col(0) = world_y;                // Set Y axis to target direction
+    R.col(2) = world_y;                // Set Y axis to target direction
     Eigen::Vector3f world_z(0, 0, 1);  // Ground direction
     R.col(1) = world_z;                // Set Y axis to target direction
 
@@ -771,12 +777,12 @@ void MapObject::compute_corner() {
         // width ：corner_2[1] - corner_3[1]
         // height：corner_2[2] - corner_6[2]
         
-        float x_min_obj = (-0.5)*this->l;
-        float x_max_obj = (0.5)*this->l;
-        float y_min_obj = (-0.5)*this->w;
-        float y_max_obj = (0.5)*this->w;
-        float z_min_obj = (-0.5)*this->h;
-        float z_max_obj = (0.5)*this->h;
+        float x_min_obj = (-0.5)*this->w;
+        float x_max_obj = (0.5)*this->w;
+        float y_min_obj = (-0.5)*this->h;
+        float y_max_obj = (0.5)*this->h;
+        float z_min_obj = (-0.5)*this->l;
+        float z_max_obj = (0.5)*this->l;
   
         this->corner_1 = (Sim3Two * Eigen::Vector4f(x_min_obj, y_min_obj, z_min_obj, 1) ).head<3>();
         this->corner_2 = (Sim3Two * Eigen::Vector4f(x_max_obj, y_min_obj, z_min_obj, 1) ).head<3>();
