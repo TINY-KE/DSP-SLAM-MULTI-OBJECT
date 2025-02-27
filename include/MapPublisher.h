@@ -76,6 +76,12 @@ public:
     void PublishMapObjects(const vector<MapObject*> &vpObjs );
     void PublishObjectPoints( MapObject* vObjs);
 
+    // void PublishObject(const vector<Object_Map*> &vpObjs );
+    // void PublishIE(const vector<Object_Map*> &vObjs );
+    // void PublishMainDirection(const vector<Object_Map*> &vObjs );
+    geometry_msgs::Point corner_to_marker(Eigen::Vector3d& v);
+    geometry_msgs::Point corner_to_marker(const std::vector<float>& v);
+    geometry_msgs::Point corner_to_marker(const std::vector<double>& v);
     void SetCurrentCameraPose(const cv::Mat &Tcw);
 
 
@@ -103,7 +109,6 @@ private:
     ros::Publisher publisher_IEtext;
     ros::Publisher publisher_ObjectInfo;
     ros::Publisher publisher_SdfObject;
-    ros::Publisher publisher_CubeObject;
     ros::Publisher publisher_ObjectPoints;
     //tf tree
     //tf::TransformBroadcaster odom_broadcaster;
@@ -140,12 +145,6 @@ private:
     const char* OBJECTPOINTS_NAMESPACE = "MapPoints";
 
     std::vector<std::tuple<float, float, float>> mvObjectColors;
-
-    geometry_msgs::Point corner_to_marker(Eigen::Vector3f& v);
-    geometry_msgs::Point corner_to_marker(Eigen::Vector3d& v);
-    geometry_msgs::Point corner_to_marker(const std::vector<float>& v);
-    geometry_msgs::Point corner_to_marker(const std::vector<double>& v);
-
 };
 
 } //namespace ORB_SLAM

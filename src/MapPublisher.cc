@@ -130,7 +130,6 @@ MapPublisher::MapPublisher(Map* pMap, const string &strSettingPath):mpMap(pMap),
     // publisher_IEtext = nh.advertise<visualization_msgs::Marker>("IEtext", 1);
     publisher_ObjectInfo = nh.advertise<std_msgs::Float32MultiArray>("/objects_info", 10);
     publisher_SdfObject = nh.advertise<visualization_msgs::Marker>("/objects", 10);
-    publisher_CubeObject = nh.advertise<visualization_msgs::Marker>("/cubeobjects", 10);
     publisher_ObjectPoints = nh.advertise<visualization_msgs::Marker>("/objectpoint", 1000);
 
     publisher.publish(mPoints);
@@ -139,14 +138,14 @@ MapPublisher::MapPublisher(Map* pMap, const string &strSettingPath):mpMap(pMap),
     publisher_KF.publish(mKeyFrames);
     publisher_curframe.publish(mCurrentCamera);
 
-    mvObjectColors.push_back(std::tuple<float, float, float>({210. / 255., 245. / 255., 60. / 255.}));  //lime  0
+    mvObjectColors.push_back(std::tuple<float, float, float>({230. / 255., 0., 0.}));	 // red  0
     mvObjectColors.push_back(std::tuple<float, float, float>({60. / 255., 180. / 255., 75. / 255.}));   // green  1
     mvObjectColors.push_back(std::tuple<float, float, float>({0., 0., 255. / 255.}));	 // blue  2
     mvObjectColors.push_back(std::tuple<float, float, float>({255. / 255., 0, 255. / 255.}));   // Magenta  3
     mvObjectColors.push_back(std::tuple<float, float, float>({255. / 255., 165. / 255., 0}));   // orange 4
     mvObjectColors.push_back(std::tuple<float, float, float>({128. / 255., 0, 128. / 255.}));   //purple 5
     mvObjectColors.push_back(std::tuple<float, float, float>({0., 255. / 255., 255. / 255.}));   //cyan 6
-    mvObjectColors.push_back(std::tuple<float, float, float>({230. / 255., 0., 0.}));	 // red  7
+    mvObjectColors.push_back(std::tuple<float, float, float>({210. / 255., 245. / 255., 60. / 255.}));  //lime  7
     mvObjectColors.push_back(std::tuple<float, float, float>({250. / 255., 190. / 255., 190. / 255.})); //pink  8
     mvObjectColors.push_back(std::tuple<float, float, float>({0., 128. / 255., 128. / 255.}));   //Teal  9
 }
@@ -389,17 +388,39 @@ void MapPublisher::PublishCurrentCamera(const cv::Mat &Tcw) {
 }
 
 
+geometry_msgs::Point MapPublisher::corner_to_marker(Eigen::Vector3d& v){
+    geometry_msgs::Point point;
+    point.x = v[0];
+    point.y = v[1];
+    point.z = v[2];
+    return point;
+}
+
+geometry_msgs::Point MapPublisher::corner_to_marker(const std::vector<float>& v){
+    geometry_msgs::Point point;
+    point.x = v[0];
+    point.y = v[1];
+    point.z = v[2];
+    return point;
+}
+
+geometry_msgs::Point MapPublisher::corner_to_marker(const std::vector<double>& v){
+    geometry_msgs::Point point;
+    point.x = v[0];
+    point.y = v[1];
+    point.z = v[2];
+    return point;
+}
+
+
 void MapPublisher::PublishMapObjects(const vector<MapObject *> &vObjs) {
     std::cout<<"[PublishMapObjects]"<<std::endl;
-    int num = 0;
     for (auto pMO: vObjs) {
 
         if (!pMO)
             continue;
         if (pMO->isBad())
             continue;
-
-        // std::cout<<"[PublishMapObjects] 有效物体数量： "<<num++<<std::endl;
 
         // 使用 Eigen 矩阵来表示 verts 和 faces
         auto verts = pMO->vertices;
@@ -416,9 +437,9 @@ void MapPublisher::PublishMapObjects(const vector<MapObject *> &vObjs) {
 
         // 设置标记的颜色和透明度
         mesh_marker.color.a = 1.0f; // 设置透明度为 1.0（不透明）
-        mesh_marker.color.r =  get<0>(mvObjectColors[pMO->mnId % 10]);
-        mesh_marker.color.g =  get<1>(mvObjectColors[pMO->mnId % 10]);
-        mesh_marker.color.b =  get<2>(mvObjectColors[pMO->mnId % 10]);
+        mesh_marker.color.r =  get<0>(mvObjectColors[pMO->label % 10]);
+        mesh_marker.color.g =  get<1>(mvObjectColors[pMO->label % 10]);
+        mesh_marker.color.b =  get<2>(mvObjectColors[pMO->label % 10]);
 
         // 设置标记的缩放
         mesh_marker.scale.x = 1.0;
@@ -448,61 +469,8 @@ void MapPublisher::PublishMapObjects(const vector<MapObject *> &vObjs) {
             }
         }
 
-        // 发布网格物体
+        // 发布网格
         publisher_SdfObject.publish(mesh_marker);
-
-        // 发布Cube物体
-        visualization_msgs::Marker CubeMarker;
-        CubeMarker.id = pMO->mnId;
-        // CubeMarker.lifetime = ros::Duration(mObject_Duration);
-        CubeMarker.header.frame_id= MAP_FRAME_ID;
-        CubeMarker.header.stamp=ros::Time::now();
-        CubeMarker.type = visualization_msgs::Marker::LINE_LIST; //LINE_STRIP;
-        CubeMarker.action = visualization_msgs::Marker::ADD;
-        CubeMarker.color.a = 1.0f; // 设置透明度为 1.0（不透明）
-        CubeMarker.color.r =  get<0>(mvObjectColors[pMO->mnId % 10]);
-        CubeMarker.color.g =  get<1>(mvObjectColors[pMO->mnId % 10]);
-        CubeMarker.color.b =  get<2>(mvObjectColors[pMO->mnId % 10]);
-        CubeMarker.scale.x = 0.01;
-        //     8------7
-        //    /|     /|
-        //   / |    / |
-        //  5------6  |
-        //  |  4---|--3
-        //  | /    | /
-        //  1------2
-        // lenth ：corner_2[0] - corner_1[0]
-        // width ：corner_2[1] - corner_3[1]
-        // height：corner_2[2] - corner_6[2]
-
-        CubeMarker.points.push_back(corner_to_marker(pMO->corner_1));
-        CubeMarker.points.push_back(corner_to_marker(pMO->corner_2));
-        CubeMarker.points.push_back(corner_to_marker(pMO->corner_2));
-        CubeMarker.points.push_back(corner_to_marker(pMO->corner_3));
-        CubeMarker.points.push_back(corner_to_marker(pMO->corner_3));
-        CubeMarker.points.push_back(corner_to_marker(pMO->corner_4));
-        CubeMarker.points.push_back(corner_to_marker(pMO->corner_4));
-        CubeMarker.points.push_back(corner_to_marker(pMO->corner_1));
-
-        CubeMarker.points.push_back(corner_to_marker(pMO->corner_5));
-        CubeMarker.points.push_back(corner_to_marker(pMO->corner_1));
-        CubeMarker.points.push_back(corner_to_marker(pMO->corner_6));
-        CubeMarker.points.push_back(corner_to_marker(pMO->corner_2));
-        CubeMarker.points.push_back(corner_to_marker(pMO->corner_7));
-        CubeMarker.points.push_back(corner_to_marker(pMO->corner_3));
-        CubeMarker.points.push_back(corner_to_marker(pMO->corner_8));
-        CubeMarker.points.push_back(corner_to_marker(pMO->corner_4));
-
-        CubeMarker.points.push_back(corner_to_marker(pMO->corner_5));
-        CubeMarker.points.push_back(corner_to_marker(pMO->corner_6));
-        CubeMarker.points.push_back(corner_to_marker(pMO->corner_6));
-        CubeMarker.points.push_back(corner_to_marker(pMO->corner_7));
-        CubeMarker.points.push_back(corner_to_marker(pMO->corner_7));
-        CubeMarker.points.push_back(corner_to_marker(pMO->corner_8));
-        CubeMarker.points.push_back(corner_to_marker(pMO->corner_8));
-        CubeMarker.points.push_back(corner_to_marker(pMO->corner_5));
-
-        publisher_CubeObject.publish(CubeMarker);
 
         // 发布物体内的点
         PublishObjectPoints(pMO);
@@ -515,9 +483,9 @@ void MapPublisher::PublishObjectPoints( MapObject* vObjs)
     mObjectPoints.points.clear();
     mObjectPoints.id=vObjs->mnId;
 
-    mObjectPoints.color.r =  get<0>(mvObjectColors[vObjs->mnId % 10]);
-    mObjectPoints.color.g =  get<1>(mvObjectColors[vObjs->mnId % 10]);
-    mObjectPoints.color.b =  get<2>(mvObjectColors[vObjs->mnId % 10]);
+    mObjectPoints.color.r =  get<0>(mvObjectColors[vObjs->label % 10]);
+    mObjectPoints.color.g =  get<1>(mvObjectColors[vObjs->label % 10]);
+    mObjectPoints.color.b =  get<2>(mvObjectColors[vObjs->label % 10]);
 
     auto mvpMapPoints = vObjs->GetMapPointsOnObject();
     for (auto pMP : mvpMapPoints)
@@ -528,15 +496,13 @@ void MapPublisher::PublishObjectPoints( MapObject* vObjs)
         if (pMP->isBad())
             continue;
         
-        if (pMP->isOutlier())   //检查为什么沙发右侧那么点没有参与物体生成，是不是被判定为outlier了
-                continue;
-
         geometry_msgs::Point p;
         cv::Mat pos = pMP->GetWorldPos();
         p.x=pos.at<float>(0);
         p.y=pos.at<float>(1);
         p.z=pos.at<float>(2);
         mObjectPoints.points.push_back(p);
+        
     }
 
     mObjectPoints.header.stamp = ros::Time::now();
@@ -610,36 +576,6 @@ void MapPublisher::ResetCamFlag()
 {
     unique_lock<mutex> lock(mMutexCamera);
     mbCameraUpdated = false;
-}
-
-
-geometry_msgs::Point MapPublisher::corner_to_marker(Eigen::Vector3f& v){
-    geometry_msgs::Point point;
-    point.x = v[0];
-    point.y = v[1];
-    point.z = v[2];
-    return point;
-}
-geometry_msgs::Point MapPublisher::corner_to_marker(Eigen::Vector3d& v){
-    geometry_msgs::Point point;
-    point.x = v[0];
-    point.y = v[1];
-    point.z = v[2];
-    return point;
-}
-geometry_msgs::Point MapPublisher::corner_to_marker(const std::vector<float>& v){
-    geometry_msgs::Point point;
-    point.x = v[0];
-    point.y = v[1];
-    point.z = v[2];
-    return point;
-}
-geometry_msgs::Point MapPublisher::corner_to_marker(const std::vector<double>& v){
-    geometry_msgs::Point point;
-    point.x = v[0];
-    point.y = v[1];
-    point.z = v[2];
-    return point;
 }
 
 

@@ -128,17 +128,6 @@ public:
 // zhjd
     void GetMapPointsWithinBoundingCubeToGround();
     int label; // object label, 来自于物体检测
-
-    // 根据内部点云计算的8个顶点在world下的坐标
-    void compute_corner();
-    Eigen::Vector3f corner_1;
-    Eigen::Vector3f corner_2;
-    Eigen::Vector3f corner_3;
-    Eigen::Vector3f corner_4;
-    Eigen::Vector3f corner_5;
-    Eigen::Vector3f corner_6;
-    Eigen::Vector3f corner_7;
-    Eigen::Vector3f corner_8;
 };
 
 }

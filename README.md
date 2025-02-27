@@ -111,9 +111,10 @@ if (keep_raw_pose) {
   + 沙发背面，无法识别
   + 黄桌子 无法识别
 
-# 使得物体模型z轴与地面对齐，修改基于点云的初始cube估计方法
+# 使得物体模型z轴与地面对齐
   + 修改ComputeCuboidPCA,直接将与地面之间的全部点加入
   + 启用AssociateObjects3D();  根据距离的关联
+<<<<<<< HEAD
   + 只有一个物体，为什么不是所有点都参与生成物体模型
     + 关闭pMO->RemoveOutliersModel();
   + 根据GetMapPointsOnObject可视化一个cube。
@@ -122,8 +123,11 @@ if (keep_raw_pose) {
   +
 
 # todo： 初始旋转矩阵错误，绕z轴90度
-  + 
+  + 初始旋转矩阵错误，绕z轴90度
   
+=======
+
+>>>>>>> parent of 8f3a65a... 使得物体模型z轴与地面对齐，修改基于点云的初始cube估计方法
 # （未用）修改数据关联: 
   + 目前的物体关联，应该是用的AssociateObjectsByProjection
     错误反思：这里的关联是当前帧中的点云与map中物体的关联
@@ -131,6 +135,3 @@ if (keep_raw_pose) {
     在后端中merge背景物体。
   + 在图片中显示mask，以便于debug
 
-# todo： detection与最近物体的融合
-  + 遇到问题： 物体class为56的Detection包含point较少，设置为bad。
-  + sim3和se3的区别。 双目模式中，物体的初始位姿哪来的、

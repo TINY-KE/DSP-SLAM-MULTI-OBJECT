@@ -276,7 +276,7 @@ void MapObject::RemoveOutliersSimple()
     for (auto pMP : GetMapPointsOnObject())
     {
         Eigen::Vector3f x3Dw = Converter::toVector3f(pMP->GetWorldPos());
-        if ((x3Dw - x3D_mean).norm() > 4.0)
+        if ((x3Dw - x3D_mean).norm() > 1.0)
         {
             this->EraseMapPoint(pMP);
         }
@@ -520,17 +520,18 @@ void MapObject::ComputeCuboidPCA(bool updatePose)
     // 5: 计算包围盒尺寸
     int lo = int (0.05 * N);  // percentile threshold
     int hi = int (0.95 * N);
-    auto Xpts_o = R.inverse() * Xpts.transpose(); // 3 x N
+    auto Xpts_w = Xpts.transpose(); // 3 x N
     Eigen::VectorXf x, y, z;
-    x = Xpts_o.row(0);  // x corresponds to w
-    y = Xpts_o.row(1);  // y corresponds to h
-    z = Xpts_o.row(2);  // z corresponds to l
+    x = Xpts_w.row(0);  // x corresponds to w
+    y = Xpts_w.row(1);  // y corresponds to h
+    z = Xpts_w.row(2);  // z corresponds to l
     // Sort the vectors
     std::sort(x.data(),x.data() + x.size());
     std::sort(y.data(),y.data() + y.size());
     std::sort(z.data(),z.data() + z.size());
 
     // PCA box dims
+    // w h l 对应的是物体坐标系下的xyz轴
     w = (x(hi) - x(lo));
     h = (y(hi) - 0);
     l = (z(hi) - z(lo));
@@ -554,11 +555,7 @@ void MapObject::ComputeCuboidPCA(bool updatePose)
         }
     }
 
-    // 7:更新物体点云的包络框
-    compute_corner(); 
-    
-    
-    // 8:更新物体位姿
+    // 7: 更新物体位姿
     // Update object pose with pose computed by PCA, only for the very first few frames
     if (updatePose)
     {
@@ -754,39 +751,6 @@ bool MapObject::isDynamic()
 {
     unique_lock<mutex> lock(mMutexObject);
     return mbDynamic;
-}
-
-
-
-void MapObject::compute_corner() {
-
-        //     8------7
-        //    /|     /|
-        //   / |    / |
-        //  5------6  |
-        //  |  4---|--3
-        //  | /    | /
-        //  1------2
-        // lenth ：corner_2[0] - corner_1[0]
-        // width ：corner_2[1] - corner_3[1]
-        // height：corner_2[2] - corner_6[2]
-        
-        float x_min_obj = (-0.5)*this->l;
-        float x_max_obj = (0.5)*this->l;
-        float y_min_obj = (-0.5)*this->w;
-        float y_max_obj = (0.5)*this->w;
-        float z_min_obj = (-0.5)*this->h;
-        float z_max_obj = (0.5)*this->h;
-  
-        this->corner_1 = (Sim3Two * Eigen::Vector4f(x_min_obj, y_min_obj, z_min_obj, 1) ).head<3>();
-        this->corner_2 = (Sim3Two * Eigen::Vector4f(x_max_obj, y_min_obj, z_min_obj, 1) ).head<3>();
-        this->corner_3 = (Sim3Two * Eigen::Vector4f(x_max_obj, y_max_obj, z_min_obj, 1) ).head<3>();
-        this->corner_4 = (Sim3Two * Eigen::Vector4f(x_min_obj, y_max_obj, z_min_obj, 1) ).head<3>();
-        this->corner_5 = (Sim3Two * Eigen::Vector4f(x_min_obj, y_min_obj, z_max_obj, 1) ).head<3>();
-        this->corner_6 = (Sim3Two * Eigen::Vector4f(x_max_obj, y_min_obj, z_max_obj, 1) ).head<3>();
-        this->corner_7 = (Sim3Two * Eigen::Vector4f(x_max_obj, y_max_obj, z_max_obj, 1) ).head<3>();
-        this->corner_8 = (Sim3Two * Eigen::Vector4f(x_min_obj, y_max_obj, z_max_obj, 1) ).head<3>();
-
 }
 
 
