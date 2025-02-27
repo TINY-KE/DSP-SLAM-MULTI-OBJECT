@@ -122,7 +122,7 @@ if (keep_raw_pose) {
   +
 
 # todo： 初始旋转矩阵错误，绕z轴90度
-  + 
+  + 初始旋转矩阵错误，绕z轴90度
   
 # （未用）修改数据关联: 
   + 目前的物体关联，应该是用的AssociateObjectsByProjection
