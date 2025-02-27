@@ -121,16 +121,34 @@ if (keep_raw_pose) {
   rosbag record -O circle.bag /rgb/image_raw /depth_to_rgb/image_raw
   + 最终现象：可以运行，没有出现调用python计算物体位姿报错的现象
 
-# 初始旋转矩阵错误，绕z轴90度
+# commit 16825da7edfe1751aa8d1d4fd1f5a09803507214  初始旋转矩阵错误，绕z轴90度
   + 根据x-right,y-up,z-back，重新调整物体的初始位姿。也就是z轴从沙发的背面出去。
   + 调整RemoveOutliersSimple()中的阈值： 1改为4
   + 最终现象：可以运行，没有出现调用python计算物体位姿报错的现象
   
 # 调整距离过滤的阈值
+  + 每次dsp重建前都运行ComputeCuboidPCA  答:不行，虽然物体确实到了所需的中心位置，但是尺度不对。
+  + 如何让它尺度正确：
+    尝试修改 T.topLeftCorner(3, 3) = 0.40 * l * R;  
+
+# 对沙发和床有不错的建模效果
+  + 之前模型效果差应该是因为：Outlier点太多，进而影响了deepsdf生成时的尺度
+  + 恢复了RemoveOutliersModel()，去除了Outlier
+  + 启用AssociateObjects3D();  根据距离的关联
+  + 可视化的时候颜色还是有些问题，紫色点和红色北京点重合
+  + 对同一物体，基于先验的cube初始化，只会进行一次。且cube的效果比较差，应该是因为
   + 
 
+# todo：
+  + 用先验创建一个椭球体，还是用cube初始化一个椭球体？？？
+  + 保存相机位姿，
+  + 房间布局：
+      + 床 
+      + 长沙发，圆桌子
+      + 床，短沙发，椅子
+  + 导入李建的sdf模型
 
-
+  
 # （未用）修改数据关联: 
   + 目前的物体关联，应该是用的AssociateObjectsByProjection
     错误反思：这里的关联是当前帧中的点云与map中物体的关联

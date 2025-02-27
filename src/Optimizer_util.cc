@@ -174,7 +174,7 @@ void Optimizer::JointBundleAdjustment(const vector<KeyFrame *> &vpKFs, const vec
     }
 
     // Set MapObject Vertices
-    bool optimize_object = false;
+    bool optimize_object = true;
     if(optimize_object)
     for (size_t i = 0; i < vpMO.size(); i++) {
         auto pMO = vpMO[i];
@@ -544,7 +544,7 @@ void Optimizer::LocalJointBundleAdjustment(KeyFrame *pKF, bool *pbStopFlag, Map 
     }
 
     // Set map object vertices and edges
-    bool optimize_object = false;
+    bool optimize_object = true;
     if(optimize_object)
     for (auto pMO : lLocalMapObjects)
     {

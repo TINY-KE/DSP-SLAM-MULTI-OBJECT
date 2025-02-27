@@ -569,7 +569,9 @@ void MapObject::ComputeCuboidPCA(bool updatePose)
     if (updatePose)
     {
         Eigen::Matrix4f T = Eigen::Matrix4f::Identity();
-        T.topLeftCorner(3, 3) = 0.40 * l * R;
+        // 计算w l h的立方根
+        float s = sqrt(w*w + h*h + l*l);
+        T.topLeftCorner(3, 3) = 0.5* s* R;
         // cout << R.determinant() << " " << endl;
         // cout << pow(T.topLeftCorner(3, 3).determinant(), 1./3) << endl;
         T.topRightCorner(3, 1) = cuboid_centre_w;

@@ -549,10 +549,12 @@ void LocalMapping::Process_Multi_DetectedObjects_byPythonReconstruct()
 
         int numKFsPassedSinceInit = int(mpCurrentKeyFrame->mnId - pMO->mpRefKF->mnId);
 
+
+        
         if (numKFsPassedSinceInit < 50)
             pMO->ComputeCuboidPCA(numKFsPassedSinceInit < 15);   //更新物体的Sim3Two
-        // else  // when we have relative good object shape
-        //     pMO->RemoveOutliersModel();
+        else  // when we have relative good object shape
+            pMO->RemoveOutliersModel();
         // // only begin to reconstruct the object if it is observed for enough amoubt of time (15 KFs)
         // 修改：原程序中只有在观测到15帧之后才开始重建，我感觉没必要，因此注释掉
         // if(numKFsPassedSinceInit < 15)
@@ -705,9 +707,16 @@ void LocalMapping::Process_Multi_DetectedObjects_byPythonReconstruct()
             cout << "reconstruct_object 2" << std::endl;
 
             auto Sim3Tco = pyMapObject.attr("t_cam_obj").cast<Eigen::Matrix4f>();
+
             det->SetPoseMeasurementSim3(Sim3Tco);
             // Sim3, SE3, Sim3
+            // std::cbrt(Sim3Two.topLeftCorner<3, 3>().determinant());
+            std::cout << "Sim3Two  scale old = " << std::cbrt(pMO->Sim3Two.topLeftCorner<3, 3>().determinant()) << std::endl;
             Eigen::Matrix4f Sim3Two = SE3Twc * Sim3Tco;
+            // Sim3Two.topLeftCorner<3, 3>() *= 1.2;
+            std::cout << "Sim3Two scale new = " << std::cbrt(Sim3Two.topLeftCorner<3, 3>().determinant())  << std::endl;
+            std::cout << "Sim3Two scale cube = " << sqrt(pMO->w*pMO->w + pMO->h*pMO->h + pMO->l*pMO->l)/2.0 << std::endl;
+
             int code_len = optimizer_ptr->attr("code_len").cast<int>();
             Eigen::Matrix<float, 64, 1> code = Eigen::VectorXf::Zero(64);
             if (code_len == 32)

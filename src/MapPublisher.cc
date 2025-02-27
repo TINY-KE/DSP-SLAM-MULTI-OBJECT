@@ -460,9 +460,9 @@ void MapPublisher::PublishMapObjects(const vector<MapObject *> &vObjs) {
         CubeMarker.type = visualization_msgs::Marker::LINE_LIST; //LINE_STRIP;
         CubeMarker.action = visualization_msgs::Marker::ADD;
         CubeMarker.color.a = 1.0f; // 设置透明度为 1.0（不透明）
-        CubeMarker.color.r =  get<0>(mvObjectColors[pMO->mnId % 10]);
-        CubeMarker.color.g =  get<1>(mvObjectColors[pMO->mnId % 10]);
-        CubeMarker.color.b =  get<2>(mvObjectColors[pMO->mnId % 10]);
+        CubeMarker.color.r =  get<0>(mvObjectColors[(pMO->mnId+5) % 10]);
+        CubeMarker.color.g =  get<1>(mvObjectColors[(pMO->mnId+5) % 10]);
+        CubeMarker.color.b =  get<2>(mvObjectColors[(pMO->mnId+5) % 10]);
         CubeMarker.scale.x = 0.01;
         //     8------7
         //    /|     /|
@@ -515,9 +515,9 @@ void MapPublisher::PublishObjectPoints( MapObject* vObjs)
     mObjectPoints.points.clear();
     mObjectPoints.id=vObjs->mnId;
 
-    mObjectPoints.color.r =  get<0>(mvObjectColors[vObjs->mnId % 10]);
-    mObjectPoints.color.g =  get<1>(mvObjectColors[vObjs->mnId % 10]);
-    mObjectPoints.color.b =  get<2>(mvObjectColors[vObjs->mnId % 10]);
+    mObjectPoints.color.r =  get<0>(mvObjectColors[(vObjs->mnId+5) % 10]);
+    mObjectPoints.color.g =  get<1>(mvObjectColors[(vObjs->mnId+5) % 10]);
+    mObjectPoints.color.b =  get<2>(mvObjectColors[(vObjs->mnId+5) % 10]);
 
     auto mvpMapPoints = vObjs->GetMapPointsOnObject();
     for (auto pMP : mvpMapPoints)
