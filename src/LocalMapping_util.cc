@@ -81,6 +81,7 @@ void LocalMapping::MapObjectCulling()
     }
 }
 
+// 用于双目模式
 void LocalMapping::GetNewObservations()
 {
     // PyThreadStateLock PyThreadLock;
@@ -152,7 +153,7 @@ void LocalMapping::GetNewObservations()
     //     }
     // }
 }
-
+// 用于双目模式
 void LocalMapping::CreateNewMapObjects()
 {
     // PyThreadStateLock PyThreadLock;
@@ -550,8 +551,8 @@ void LocalMapping::Process_Multi_DetectedObjects_byPythonReconstruct()
 
         if (numKFsPassedSinceInit < 50)
             pMO->ComputeCuboidPCA(numKFsPassedSinceInit < 15);   //更新物体的Sim3Two
-        else  // when we have relative good object shape
-            pMO->RemoveOutliersModel();
+        // else  // when we have relative good object shape
+        //     pMO->RemoveOutliersModel();
         // // only begin to reconstruct the object if it is observed for enough amoubt of time (15 KFs)
         // 修改：原程序中只有在观测到15帧之后才开始重建，我感觉没必要，因此注释掉
         // if(numKFsPassedSinceInit < 15)
@@ -872,6 +873,8 @@ void LocalMapping::MergeMapObject(MapObject* pMO_i, MapObject* pMO_j)
         pMP->object_id = pMO_i->mnId;
         pMO_i->AddMapPoints(pMP);
     }
+
+    pMO_i->ComputeCuboidPCA(true);  //测试完，感觉没用
 
     pMO_j->SetBadFlag();
 }
