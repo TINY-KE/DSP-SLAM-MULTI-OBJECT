@@ -499,9 +499,9 @@ void MapObject::ComputeCuboidPCA(bool updatePose)
     Eigen::Matrix3f R;
 
     Eigen::Vector3f world_x(1, 0, 0);  // Ground direction
-    R.col(2) = world_x;                // Set Y axis to target direction
+    R.col(0) = -1*world_x;                // Set Y axis to target direction
     Eigen::Vector3f world_y(0, 1, 0);  // Ground direction
-    R.col(0) = world_y;                // Set Y axis to target direction
+    R.col(2) = world_y;                // Set Y axis to target direction
     Eigen::Vector3f world_z(0, 0, 1);  // Ground direction
     R.col(1) = world_z;                // Set Y axis to target direction
 
@@ -520,17 +520,18 @@ void MapObject::ComputeCuboidPCA(bool updatePose)
     // 5: 计算包围盒尺寸
     int lo = int (0.05 * N);  // percentile threshold
     int hi = int (0.95 * N);
-    auto Xpts_o = R.inverse() * Xpts.transpose(); // 3 x N
+    auto Xpts_w = Xpts.transpose(); // 3 x N
     Eigen::VectorXf x, y, z;
-    x = Xpts_o.row(0);  // x corresponds to w
-    y = Xpts_o.row(1);  // y corresponds to h
-    z = Xpts_o.row(2);  // z corresponds to l
+    x = Xpts_w.row(0);  // x corresponds to w
+    y = Xpts_w.row(1);  // y corresponds to h
+    z = Xpts_w.row(2);  // z corresponds to l
     // Sort the vectors
     std::sort(x.data(),x.data() + x.size());
     std::sort(y.data(),y.data() + y.size());
     std::sort(z.data(),z.data() + z.size());
 
     // PCA box dims
+    // w h l 对应的是物体坐标系下的xyz轴
     w = (x(hi) - x(lo));
     h = (y(hi) - 0);
     l = (z(hi) - z(lo));
