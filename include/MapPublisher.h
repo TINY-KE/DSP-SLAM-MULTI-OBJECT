@@ -75,7 +75,8 @@ public:
     // void PublishEllipsoidInfo(const vector<ellipsoid*> &vpObjs );
     void PublishMapObjects(const vector<MapObject*> &vpObjs );
     void PublishObjectPoints( MapObject* vObjs);
-
+    void PublishEllipsoid(MapObject* vObjs);
+    
     void SetCurrentCameraPose(const cv::Mat &Tcw);
 
 
@@ -105,6 +106,7 @@ private:
     ros::Publisher publisher_SdfObject;
     ros::Publisher publisher_CubeObject;
     ros::Publisher publisher_ObjectPoints;
+    ros::Publisher publisher_ellipsoid;
     //tf tree
     //tf::TransformBroadcaster odom_broadcaster;
     //tf::TransformBroadcaster camera_broadcaster;

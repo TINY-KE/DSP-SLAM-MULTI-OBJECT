@@ -132,6 +132,7 @@ MapPublisher::MapPublisher(Map* pMap, const string &strSettingPath):mpMap(pMap),
     publisher_SdfObject = nh.advertise<visualization_msgs::Marker>("/objects", 10);
     publisher_CubeObject = nh.advertise<visualization_msgs::Marker>("/cubeobjects", 10);
     publisher_ObjectPoints = nh.advertise<visualization_msgs::Marker>("/objectpoint", 1000);
+    publisher_ellipsoid = nh.advertise<visualization_msgs::Marker>("/ellipsoid", 1000);
 
     publisher.publish(mPoints);
     publisher.publish(mReferencePoints);
@@ -506,6 +507,7 @@ void MapPublisher::PublishMapObjects(const vector<MapObject *> &vObjs) {
 
         // 发布物体内的点
         PublishObjectPoints(pMO);
+        PublishEllipsoid(pMO);
     }
 }
 
@@ -541,6 +543,49 @@ void MapPublisher::PublishObjectPoints( MapObject* vObjs)
 
     mObjectPoints.header.stamp = ros::Time::now();
     publisher_ObjectPoints.publish(mObjectPoints);
+}
+
+
+void MapPublisher::PublishEllipsoid(MapObject* vObjs){
+    // 创建 Marker 消息
+    visualization_msgs::Marker marker;
+    marker.header.frame_id = MAP_FRAME_ID;
+    marker.header.stamp = ros::Time::now();
+    marker.ns = "ellipsoid_visualization";
+    marker.id = vObjs->mnId;  // 唯一的 ID
+    marker.type = visualization_msgs::Marker::SPHERE;  // 使用 SPHERE 类型表示椭球体
+    marker.action = visualization_msgs::Marker::ADD;
+
+    // 设置椭球体的位置
+    double z_offset = -0.1;
+    marker.pose.position.x = vObjs->SE3Two(0, 3);  // x 坐标
+    marker.pose.position.y = vObjs->SE3Two(1, 3);  // y 坐标
+    marker.pose.position.z = vObjs->SE3Two(2, 3)+z_offset;  // z 坐标
+
+    // 椭球体的比例尺寸，a, b, c 分别为 x, y, z 方向的轴长度
+    double mini = 0.8;
+    marker.scale.x = vObjs->w*2 * mini;  // x 轴长度
+    marker.scale.y = vObjs->l*2 * mini;  // y 轴长度
+    marker.scale.z = vObjs->h*2 * mini;  // z 轴长度
+
+    // 设置颜色 (RGBA)
+    marker.color.r = 0.0f;
+    marker.color.g = 1.0f;  
+    marker.color.b = 0.0f;
+    marker.color.a = 0.25f;  // 透明度
+    
+
+    
+
+    // // 创建四元数并设置旋转（Roll, Pitch, Yaw）
+    // tf2::Quaternion quat;
+    // quat.setRPY(0, 0, 0);  // 设置旋转角度 (弧度)
+
+    // // 将四元数转换为 geometry_msgs::Quaternion 并设置到 marker 中
+    // marker.pose.orientation = tf2::toMsg(quat);
+    marker.pose.orientation.w=1.0;
+    // 将 Marker 发布到 ROS 主题
+    publisher_ellipsoid.publish(marker);
 }
 
 

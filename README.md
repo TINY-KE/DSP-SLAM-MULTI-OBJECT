@@ -10,9 +10,13 @@
 ./dsp_slam_rgbd Vocabulary/ORBvoc.bin configs/self_allobject_ground.yaml /home/robotlab/ws_3d_vp/src/QSP-SLAM-my/data/MySimDataset/GroundObjects /home/robotlab/ws_3d_vp/src/QSP-SLAM-my/data/MySimDataset/GroundObjects/associate.txt map/self/GroundObjects
 
 + 多车辆：
+
 + ros:
-./dsp_slam_ros Vocabulary/ORBvoc.bin configs/self_allobject_ground.yaml /home/robotlab/ws_3d_vp/src/QSP-SLAM-my/data/MySimDataset/GroundObjects map/self/GroundObjects
+./dsp_slam_ros Vocabulary/ORBvoc.bin configs/self_allobject_ground_ros.yaml /home/robotlab/ws_3d_vp/src/QSP-SLAM-my/data/MySimDataset/GroundObjects map/self/GroundObjects
   
+rosbag record -O circle_sofa3.bag /rgb/image_raw /depth_to_rgb/image_raw
+
+rosrun sim_env circle  3.5 2 30.0  0.1
 
 
 # 第一阶段目标：实现无数据关联的多物体建图
@@ -131,12 +135,16 @@ if (keep_raw_pose) {
   + 如何让它尺度正确：
     尝试修改 T.topLeftCorner(3, 3) = 0.40 * l * R;  
 
-# 对沙发和床有不错的建模效果
+# commit 40eaa84d5aae6bbe67229dc46ca39f4c0dc1c814  对沙发和床有不错的建模效果
   + 之前模型效果差应该是因为：Outlier点太多，进而影响了deepsdf生成时的尺度
   + 恢复了RemoveOutliersModel()，去除了Outlier
   + 启用AssociateObjects3D();  根据距离的关联
   + 可视化的时候颜色还是有些问题，紫色点和红色北京点重合
   + 对同一物体，基于先验的cube初始化，只会进行一次。且cube的效果比较差，应该是因为
+  + 
+
+# RVIZ显示出椭球体
+  + 椭球体是从SDF模型中提取出来的。
   + 
 
 # todo：
