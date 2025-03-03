@@ -100,13 +100,13 @@ int main(int argc, char **argv)
     SLAM.Shutdown();
 
     // (4)Save camera trajectory
-    // SLAM.SaveKeyFrameTrajectoryTUM("/home/zhjd/active_eao/src/active_eao/eval/temp/KeyFrameTrajectory.txt");
-    // int SaveLocalObjects = fSettings["Viewer.savelocalobject"];
-    // if(SaveLocalObjects){
-    //     SLAM.SaveObjects(   "/home/zhjd/active_eao/src/active_eao/eval/temp/Objects.txt",
-    //                         "/home/zhjd/active_eao/src/active_eao/eval/temp/Objects_with_points.txt");
-    //     SLAM.SaveGlobalNBVPose("/home/zhjd/active_eao/src/active_eao/eval/temp/GlobalNBV.txt");
-    // }
+    SLAM.SaveKeyFrameTrajectoryTUM("/home/robotlab/ws_3d_vp/src/QSP-SLAM-my/eval/temp/");
+    int SaveLocalObjects = fSettings["saveobjects"];
+    if (SaveLocalObjects)
+        SLAM.SaveObjects( "/home/robotlab/ws_3d_vp/src/QSP-SLAM-my/eval/temp/objects/");
+    int SavePoints = fSettings["savepoints"];
+    if (SavePoints)
+        SLAM.SavePoints( "/home/robotlab/ws_3d_vp/src/QSP-SLAM-my/eval/temp/points/");
 
     ros::shutdown();
 

@@ -14,7 +14,7 @@
 + ros:
 ./dsp_slam_ros Vocabulary/ORBvoc.bin configs/self_allobject_ground_ros.yaml /home/robotlab/ws_3d_vp/src/QSP-SLAM-my/data/MySimDataset/GroundObjects map/self/GroundObjects
   
-rosbag record -O circle_sofa3.bag /rgb/image_raw /depth_to_rgb/image_raw
+rosbag record -O circle_bed-moveitvp-1.bag /rgb/image_raw /depth_to_rgb/image_raw  /tf  /joint_states
 
 rosrun sim_env circle  3.5 2 30.0  0.1
 
@@ -60,22 +60,6 @@ rosrun sim_env circle  3.5 2 30.0  0.1
 
 
 
-# 添加椭球体
-+ UpdateObjectObservation_GenerateEllipsoid
-
-
-+ lj这里的用意是什么？
-if (keep_raw_pose) {
-            cout << "Draw Sim3Two_raw " << endl;
-            pMO->UpdateReconstruction(Sim3Two_raw, code);
-        }
-        else {
-            pMO->UpdateReconstruction(Sim3Two, code);
-            
-        }
-
-
-
 
 
 
@@ -90,6 +74,9 @@ if (keep_raw_pose) {
 # 改为ros后pybind报错
   + 解决方法，按照李建版本的程序，移植cmakelist
   + 可能是这一句起作用 include_directories(/usr/include/vtk-7.1)
+
+
+
 
 
 
@@ -143,19 +130,25 @@ if (keep_raw_pose) {
   + 对同一物体，基于先验的cube初始化，只会进行一次。且cube的效果比较差，应该是因为
   + 
 
-# RVIZ显示出椭球体
+# commit a4f174d9583833cef79a22a4a155c21b33363359  RVIZ显示出椭球体
   + 椭球体是从SDF模型中提取出来的。
   + 
 
+# 取消
+  + 保存下sdf模型，每个物体单独保存一个文件
+  + 进行物体真值比较是，使用cube代表物体的真值。
+  + 录制6个rosbag，分别对应我们的方法和环视在3个房间内容的观测。
+  + 修改3dvp中的旋转方向
+
+
 # todo：
-  + 用先验创建一个椭球体，还是用cube初始化一个椭球体？？？
   + 保存相机位姿，
   + 房间布局：
       + 床 
       + 长沙发，圆桌子
       + 床，短沙发，椅子
   + 导入李建的sdf模型
-
+  + 最后一个困难：机器人在房间内的轨迹是否会丢失定位
   
 # （未用）修改数据关联: 
   + 目前的物体关联，应该是用的AssociateObjectsByProjection

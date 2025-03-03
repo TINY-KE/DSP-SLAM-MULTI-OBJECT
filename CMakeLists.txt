@@ -158,3 +158,11 @@ target_link_libraries(dsp_slam_ros ${PROJECT_NAME})
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR})
 add_executable(dsp_slam_ros_mono dsp_slam_ros_mono.cc)
 target_link_libraries(dsp_slam_ros_mono ${PROJECT_NAME})
+
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR})
+add_executable(show_local_objects eval/temp/show_local_objects.cpp)
+target_link_libraries(show_local_objects ${catkin_LIBRARIES}  ${OpenCV_LIBS}  ${EIGEN3_LIBS})
+
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR})
+add_executable(translate_gt eval/translate_gt.cpp)
+target_link_libraries(translate_gt ${catkin_LIBRARIES}  ${OpenCV_LIBS}  ${EIGEN3_LIBS})

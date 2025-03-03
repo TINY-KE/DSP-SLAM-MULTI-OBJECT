@@ -453,9 +453,9 @@ void System::SaveTrajectoryTUM(const string &filename)
 }
 
 
-void System::SaveKeyFrameTrajectoryTUM(const string &filename)
+void System::SaveKeyFrameTrajectoryTUM(const string &filepath)
 {
-    cout << endl << "Saving keyframe trajectory to " << filename << " ..." << endl;
+    cout << endl << "Saving keyframe trajectory in:  " << filepath << " ..." << endl;
 
     vector<KeyFrame*> vpKFs = mpMap->GetAllKeyFrames();
     sort(vpKFs.begin(),vpKFs.end(),KeyFrame::lId);
@@ -463,6 +463,8 @@ void System::SaveKeyFrameTrajectoryTUM(const string &filename)
     // Transform all keyframes so that the first keyframe is at the origin.
     // After a loop closure the first keyframe might not be at the origin.
     //cv::Mat Two = vpKFs[0]->GetPoseInverse();
+    std::string filename_head = filepath + "/KeyFrameTrajectory"; 
+    std::string filename = generateFileName(filename_head);
 
     ofstream f;
     f.open(filename.c_str());
@@ -488,6 +490,7 @@ void System::SaveKeyFrameTrajectoryTUM(const string &filename)
     f.close();
     cout << endl << "trajectory saved!" << endl;
 }
+
 
 void System::SaveTrajectoryKITTI(const string &filename)
 {
@@ -539,6 +542,135 @@ void System::SaveTrajectoryKITTI(const string &filename)
     cout << endl << "trajectory saved!" << endl;
 }
 
+
+void System::SaveObjects(const string &filepath ) {
+    cout << endl << "Saving Objects in: " << filepath << endl;
+    
+    char *yolo_id[] = {
+        "person",  //0
+        "bicycle", "car", "motorcycle", "airplane", "bus",   //1
+        "train", "truck", "boat", "traffic light",   "firehydrant", //6
+        "stopsign", "parkingmeter", "bench", "bird", "cat", //11
+        "dog", "horse", "sheep", "cow",  "elephant", //16
+        "bear", "zebra", "giraffe", "backpack", "umbrella", //21
+        "handbag", "tie", "suitcase", "frisbee",  "skis", //26
+        "snowboard", "sportsball", "kite", "baseballbat", "baseballglove", //31
+        "skateboard", "surfboard",  "tennis_racket", "bottle", "wine_glass", //36
+        "cup", "fork", "knife", "spoon", "bowl", //41
+        "banana", "apple",   "sandwich", "orange", "broccoli", //46
+        "carrot", "hot_dog", "pizza", "donut", "cake", //51
+        "chair", "couch",  "potted_plant", "bed", "dining_table",//56
+        "toilet", "tv", "laptop", "mouse", "remote", //61
+        "keyboard", "cell_phone",  "microwave", "oven", "toaster", //66
+        "sink", "refrigerator", "book", "clock", "vase", //71
+        "scissors", "teddy_bear",  "hair_drier", "toothbrush"};//76
+
+    auto mvpMapObjects = mpMap->GetAllMapObjects();
+
+    for (auto pMO: mvpMapObjects) {
+
+        if (!pMO)
+            continue;
+        if (pMO->isBad())
+            continue;
+
+        //  生成文件  例如 "filepath/file_1.txt"
+        std::string filename_head = filepath + "/object_" + yolo_id[pMO->label] + "_" + std::to_string(pMO->mnId); 
+        std::string filename = generateFileName(filename_head);
+        ofstream file;
+        file.open(filename.c_str());
+        if (!file) {
+            std::cerr << "文件创建失败: " << filename << std::endl;
+        }
+        file << fixed;
+
+        //只存储物体
+        file    
+            << pMO->mnId << " "
+            << pMO->label << "    "
+            << pMO->SE3Two(0, 3) << " "
+            << pMO->SE3Two(1, 3) << " "
+            << pMO->SE3Two(2, 3)<< "     "
+            << pMO->w << " "
+            << pMO->l << " "
+            << pMO->h << " "
+            << "#" <<yolo_id[pMO->label]
+            << endl;
+
+        // 使用 Eigen 矩阵来表示 verts 和 faces
+        auto verts = pMO->vertices;
+        auto faces = pMO->faces;
+
+        Eigen::Matrix4f Sim3Two = pMO->GetPoseSim3();
+
+        // 遍历每个 face，并从 verts 中提取顶点
+        for (int i = 0; i < faces.rows(); ++i) {
+            for (int j = 0; j < 3; ++j) {
+                int vertex_idx = faces(i, j); // 获取顶点索引
+
+                const Eigen::Vector3f &vertex = verts.row(vertex_idx); // 获取顶点的坐标
+
+                Eigen::Vector4f local_vertex(vertex(0), vertex(1), vertex(2), 1.0);  // 齐次坐标
+
+                // 将顶点转换到 world 坐标系
+                Eigen::Vector4f world_vertex = Sim3Two * local_vertex;
+
+                file   
+                    << world_vertex[0] << " "
+                    << world_vertex[1] << " "
+                    << world_vertex[2] << " "
+                    << endl;
+            }
+        }
+        file.close();
+    }
+
+    
+    cout << endl << "Object saved!" << endl;
+
+}
+
+void System::SavePoints(const string &filepath ) {
+    cout << endl << "Saving Points in: " << filepath << endl;
+    
+    std::string filename_head = filepath + "/points"; 
+    std::string filename = generateFileName(filename_head);
+    ofstream file;
+    file.open(filename.c_str());
+    if (!file) {
+        std::cerr << "文件创建失败: " << filename << std::endl;
+    }
+    file << fixed;
+
+    vector<MapPoint*> vpMP = mpMap->GetAllMapPoints();
+
+    for (auto pMP : vpMP) {
+        if (!pMP)
+            continue;
+        if (pMP->isBad())
+            continue;
+        // if (pMP->isOutlier())
+        //     continue;
+
+        cv::Mat x3Dw = pMP->GetWorldPos();
+        float xc = x3Dw.at<float>(0);
+        float yc = x3Dw.at<float>(1);
+        float zc = x3Dw.at<float>(2);
+
+        file   
+            << xc << " "
+            << yc << " "
+            << zc << " "
+            << endl;
+    }
+
+    file.close();
+        
+    cout << endl << "Points saved!" << endl;
+
+}
+
+
 int System::GetTrackingState()
 {
     unique_lock<mutex> lock(mMutexState);
@@ -555,6 +687,32 @@ vector<cv::KeyPoint> System::GetTrackedKeyPointsUn()
 {
     unique_lock<mutex> lock(mMutexState);
     return mTrackedKeyPointsUn;
+}
+
+std::string System::generateFileName(std::string head) {
+    // 获取当前系统时间
+    std::time_t now = std::time(0);
+    char timestamp[80];
+
+    // 格式化系统时间为年-月-日_时-分-秒
+    std::strftime(timestamp, sizeof(timestamp), "%Y-%m-%d_%H-%M-%S", std::localtime(&now));
+
+    // 生成文件名：cam_traj_当前时间.txt
+    std::string filename = head + "-" +std::string(timestamp) + ".txt";
+
+    // 如果文件名已存在，确保不会覆盖
+    int counter = 1;
+    while (fileExists(filename)) {
+        filename = "cam_traj_" + std::string(timestamp) + "_" + std::to_string(counter) + ".txt";
+        counter++;
+    }
+
+    return filename;
+}
+
+bool System::fileExists(const std::string &filename) {
+    struct stat buffer;
+    return (stat(filename.c_str(), &buffer) == 0);
 }
 
 } //namespace ORB_SLAM

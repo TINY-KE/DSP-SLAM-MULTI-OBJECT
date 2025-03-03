@@ -23,7 +23,7 @@
 #include "KeyFrame.h"
 #include <pangolin/pangolin.h>
 #include <mutex>
-
+#include <tuple>
 namespace ORB_SLAM2
 {
 

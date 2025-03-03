@@ -215,6 +215,12 @@ private:
     std::vector<MapPoint*> mTrackedMapPoints;
     std::vector<cv::KeyPoint> mTrackedKeyPointsUn;
     std::mutex mMutexState;
+    
+public:
+    void SaveObjects(const string &file_path );  //用于保存物体的位置信息和面片信息
+    void SavePoints(const string &filepath );  //用于保存地图点的位置信息
+    std::string generateFileName(std::string head);
+    bool fileExists(const std::string &filename);
 };
 
 }// namespace ORB_SLAM
