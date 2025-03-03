@@ -52,7 +52,7 @@ MapPublisher::MapPublisher(Map* pMap, const string &strSettingPath):mpMap(pMap),
 
 
     //Configure KeyFrames
-    float fCameraSize=0.04;
+    fCameraSize=0.04;
     mKeyFrames.header.frame_id = MAP_FRAME_ID;
     mKeyFrames.ns = KEYFRAMES_NAMESPACE;
     mKeyFrames.id=1;
