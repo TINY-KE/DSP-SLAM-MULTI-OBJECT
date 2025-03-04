@@ -427,6 +427,9 @@ void MapPublisher::PublishMapObjects(const vector<MapObject *> &vObjs) {
         mesh_marker.scale.z = 1.0;
 
         Eigen::Matrix4f Sim3Two = pMO->GetPoseSim3();
+        auto Rwo = Sim3Two.topLeftCorner<3, 3>();
+        Rwo *= 1.2;
+        Sim3Two.topLeftCorner<3, 3>() = Rwo;
 
         // 遍历每个 face，并从 verts 中提取顶点
         for (int i = 0; i < faces.rows(); ++i) {

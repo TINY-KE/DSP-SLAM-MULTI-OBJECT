@@ -41,6 +41,9 @@ LocalMapping::LocalMapping(System *pSys, Map *pMap, ObjectDrawer* pObjectDrawer,
     mpLastKeyFrame = static_cast<KeyFrame*>(NULL);
     nLastReconKFID = 0;
 
+    //控制，在localmapping物体建模时，是否将椅子转换为沙发
+    mbChair2counch = pSys->mbChair2counch;
+
     // 多物体dsp模型导入
     auto& pyDecoders = pSys->mmPyDecoders;
     for (auto it = pyDecoders.begin(); it != pyDecoders.end(); ++it) {

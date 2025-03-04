@@ -58,9 +58,11 @@ Viewer.ViewpointF: 2000
 Viewer.UsePangolin: 1
 
 # dsp
-YoloClasses: [56, 57, 60, 59]
+YoloClasses: [56, 57, 2, 75, 60, 59]
 DecoderPaths: ["weights/deepsdf/chairs_64",
                "weights/deepsdf/sofas_64",
+               "weights/deepsdf/cars_64",
+               "weights/deepsdf/vases_64_c",
                "weights/deepsdf/tables_64",  #table is default object in my code, so it's essential to keep the table.
                "weights/deepsdf/beds_64"]
 
@@ -88,14 +90,15 @@ Objects.maskErrosion: 5  #default 10
 
 # 保存本地
 saveobjects: 1
-savepoints: 1
+savepoints: 0
+
+# chair转counch(沙发)
+chair2counch: 0
 
 # 地面
 ConstraintType: 1 #3 rostf; 2 imu; 1 yaml
 
-Tworld_camera.tx: 0.0
-Tworld_camera.ty: 0.0
-Tworld_camera.tz: 2.0  
+
 
 
 #  相机俯视28度
@@ -112,10 +115,23 @@ Tworld_camera.tz: 2.0
 # Tworld_camera.qy: -0.6123724
 # Tworld_camera.qz:  0.3535534
 
-#  相机俯视30度
-# Euler angles (degrees) ZYX   [ x: 90, y: 0, z: -120.0000004 ]
-# Quaternion [x, y, z, w]   [ -0.6123724, 0.6123724, -0.3535534, 0.3535534 ]
-Tworld_camera.qw:  0.3535534
-Tworld_camera.qx: -0.6123724
-Tworld_camera.qy: 0.6123724
-Tworld_camera.qz:  -0.3535534
+# #  相机俯视30度   对应gazebo相机移动参数3.5 2 30.0  0.1
+# Tworld_camera.qw:  0.3535534
+# Tworld_camera.qx: -0.6123724
+# Tworld_camera.qy: 0.6123724
+# Tworld_camera.qz:  -0.3535534
+# Tworld_camera.tx: 0.0
+# Tworld_camera.ty: 0.0
+# Tworld_camera.tz: 2.0  
+
+#  相机俯视20度   对应gazebo相机移动参数3.5 1 20.0  1
+# https://www.andre-gaschler.com/rotationconverter/
+# Euler angles (degrees) ZYX   [ x: -110.0000003, y: 0, z: -90 ]
+# Quaternion [x, y, z, w]  [ -0.579228, 0.579228, -0.4055798, 0.4055798 ]
+Tworld_camera.qx: -0.579228
+Tworld_camera.qy: 0.579228
+Tworld_camera.qz:  -0.4055798
+Tworld_camera.qw:  0.4055798
+Tworld_camera.tx: 0.0
+Tworld_camera.ty: 0.0
+Tworld_camera.tz: 1.5

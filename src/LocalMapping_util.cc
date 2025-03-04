@@ -675,7 +675,12 @@ void LocalMapping::Process_Multi_DetectedObjects_byPythonReconstruct()
             // 获取dsp优化器
             int class_id = det->label;  //临时设置为60table，用于debug
             py::object* optimizer_ptr;
+            // chair2counch
             if(mmPyOptimizers.count(class_id) > 0) {
+                if(class_id==56 && mbChair2counch)  //56是椅子
+                    class_id = 57;  //57是沙发
+                if(class_id==62)  //62是电视
+                    class_id = 2;  //2是汽车
                 py::object* optimizer_ptr_local = &(mmPyOptimizers[class_id]);
                 optimizer_ptr = optimizer_ptr_local;
             }

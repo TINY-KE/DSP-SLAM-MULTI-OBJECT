@@ -18,6 +18,8 @@
 
 #include <ros/ros.h>
 #include <visualization_msgs/Marker.h>
+#include <tf2/LinearMath/Quaternion.h>
+#include <tf2/LinearMath/Transform.h>
 #include <fstream>
 #include <sstream>
 #include <vector>
@@ -253,6 +255,62 @@ void PublishCameras(const vector<cv::Mat> &VIEWs, int step = 15)
 
 
 
+geometry_msgs::Point transformPointToWorld(const geometry_msgs::Point& point_object, 
+                                           double tx, double ty, double tz,
+                                           double qx, double qy, double qz, double qw) {
+    // 1️⃣ 创建 TF2 变换
+    tf2::Transform transform;
+    transform.setOrigin(tf2::Vector3(tx, ty, tz));  // 设置平移
+    transform.setRotation(tf2::Quaternion(qx, qy, qz, qw));  // 设置旋转
+
+    // 2️⃣ 物体坐标系下的点
+    tf2::Vector3 point_local(point_object.x, point_object.y, point_object.z);
+
+    // 3️⃣ 进行变换
+    tf2::Vector3 point_transformed = transform * point_local;
+
+    // 4️⃣ 结果转换回 geometry_msgs::Point
+    geometry_msgs::Point point_world;
+    point_world.x = point_transformed.x();
+    point_world.y = point_transformed.y();
+    point_world.z = point_transformed.z();
+
+    return point_world;
+}
+
+geometry_msgs::Point transformPointToWorld_scale(const geometry_msgs::Point& point_object, 
+                                           double tx, double ty, double tz,
+                                           double degree /* 绕z轴的角度 */ ,
+                                           double scale_x /* 扩大的尺度 */,
+                                           double scale_y /* 扩大的尺度 */,
+                                           double scale_z /* 扩大的尺度 */                                
+                                           ) {
+    // 1️⃣ 计算四元数（绕 Z 轴旋转 degree 角度）
+    double radian = degree * M_PI / 180.0;  // 角度转弧度
+    tf2::Quaternion q;
+    q.setRPY(0, 0, radian); // 绕 Z 轴旋转
+
+    // 1️⃣ 创建 TF2 变换
+    tf2::Transform transform;
+    transform.setOrigin(tf2::Vector3(tx, ty, tz));  // 设置平移
+    transform.setRotation(q);  // 设置旋转
+
+    // 2️⃣ 物体坐标系下的点
+    tf2::Vector3 point_local(point_object.x * scale_x, 
+                             point_object.y * scale_y, 
+                             point_object.z * scale_z);
+
+    // 3️⃣ 进行变换
+    tf2::Vector3 point_transformed = transform * point_local;
+
+    // 4️⃣ 结果转换回 geometry_msgs::Point
+    geometry_msgs::Point point_world;
+    point_world.x = point_transformed.x();
+    point_world.y = point_transformed.y();
+    point_world.z = point_transformed.z();
+
+    return point_world;
+}
 
 
 
@@ -324,21 +382,31 @@ int main(int argc, char **argv) {
             mesh_marker.scale.y = 1.0;
             mesh_marker.scale.z = 1.0;
 
-            while (std::getline(file, line)) {
-                if (firstLine) {
-                    firstLine = false;  // 忽略第一行
-                    continue;
-                }
+            std::getline(file, line);
+            std::stringstream ss(line);
+            double mnId, label,    tx,ty,tz,  qx,qy,qz,qw,  w,h,l,   degree=1,   scale_x=1,scale_y=1,scale_z=1;  
+            ss >> mnId; ss >> label;
+            ss >> tx; ss >> ty; ss >> tz;
+            ss >> qx; ss >> qy; ss >> qz; ss >> qw;
+            ss >> w; ss >> h; ss >> l;
+            ss >> degree;
+            ss >> scale_x; ss >> scale_y; ss >> scale_z;
 
+
+            while (std::getline(file, line)) {
+                
                 std::stringstream ss(line);
+                
                 double temp;
                 
-                geometry_msgs::Point point;
-                ss >> temp; point.x = temp;
-                ss >> temp; point.y = temp;
-                ss >> temp; point.z = temp;
-
-                mesh_marker.points.push_back(point);
+                geometry_msgs::Point point_object;
+                ss >> temp; point_object.x = temp;
+                ss >> temp; point_object.y = temp;
+                ss >> temp; point_object.z = temp;
+                
+                geometry_msgs::Point point_world = transformPointToWorld_scale(point_object, tx, ty, tz, degree, scale_x,scale_y,scale_z);
+                
+                mesh_marker.points.push_back(point_world);
 
             }
             file.close();

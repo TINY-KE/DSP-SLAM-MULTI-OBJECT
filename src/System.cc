@@ -98,6 +98,7 @@ System::System(const string &strVocFile, const string &strSettingsFile, const st
     // pyDecoder = io_utils.attr("get_decoder")(pyCfg);
 
     // 多物体dsp模型导入
+    mbChair2counch = fSettings["Chair2counch"];  //控制，在localmapping物体建模时，是否将椅子转换为沙发
     py::module deep_sdf_utils = py::module::import("deep_sdf.workspace");
     vector<int> yolo_classes;
     fSettings["YoloClasses"] >> yolo_classes;
@@ -449,7 +450,7 @@ void System::SaveTrajectoryTUM(const string &filename)
         f << setprecision(6) << *lT << " " <<  setprecision(9) << twc.at<float>(0) << " " << twc.at<float>(1) << " " << twc.at<float>(2) << " " << q[0] << " " << q[1] << " " << q[2] << " " << q[3] << endl;
     }
     f.close();
-    cout << endl << "trajectory saved!" << endl;
+    cout << "trajectory saved in: "<< filename << endl;
 }
 
 
@@ -543,7 +544,7 @@ void System::SaveTrajectoryKITTI(const string &filename)
 }
 
 
-void System::SaveObjects(const string &filepath ) {
+void System::SaveObjects(const string &filepath , bool move_to_origin) {
     cout << endl << "Saving Objects in: " << filepath << endl;
     
     char *yolo_id[] = {
@@ -574,6 +575,9 @@ void System::SaveObjects(const string &filepath ) {
         if (pMO->isBad())
             continue;
 
+        if(pMO->faces.rows() == 0)
+            continue;
+
         //  生成文件  例如 "filepath/file_1.txt"
         std::string filename_head = filepath + "/object_" + yolo_id[pMO->label] + "_" + std::to_string(pMO->mnId); 
         std::string filename = generateFileName(filename_head);
@@ -591,6 +595,7 @@ void System::SaveObjects(const string &filepath ) {
             << pMO->SE3Two(0, 3) << " "
             << pMO->SE3Two(1, 3) << " "
             << pMO->SE3Two(2, 3)<< "     "
+            << "0 0 0 1     "
             << pMO->w << " "
             << pMO->l << " "
             << pMO->h << " "
@@ -615,14 +620,27 @@ void System::SaveObjects(const string &filepath ) {
                 // 将顶点转换到 world 坐标系
                 Eigen::Vector4f world_vertex = Sim3Two * local_vertex;
 
+                double px, py, pz;
+                if(move_to_origin){
+                    px = world_vertex[0] - pMO->SE3Two(0, 3);
+                    py = world_vertex[1] - pMO->SE3Two(1, 3);
+                    pz = world_vertex[2] - pMO->SE3Two(2, 3);
+                }
+                else{
+                    px = world_vertex[0];
+                    py = world_vertex[1];
+                    pz = world_vertex[2];
+                }
+
                 file   
-                    << world_vertex[0] << " "
-                    << world_vertex[1] << " "
-                    << world_vertex[2] << " "
+                    << px << " "
+                    << py << " "
+                    << pz << " "
                     << endl;
             }
         }
         file.close();
+        cout << "Saving Object in: " << filename << endl;
     }
 
     
@@ -666,7 +684,7 @@ void System::SavePoints(const string &filepath ) {
 
     file.close();
         
-    cout << endl << "Points saved!" << endl;
+    cout << "Points saved in: "<< filename << endl;
 
 }
 

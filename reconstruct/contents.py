@@ -4,7 +4,8 @@ object_class_table = {
     "cars": [2],
     "benches": [13], # 板凳
     "backpack": [24], # 背包
-    "chairs": [56, 57], # 椅子，沙发
+    "chairs": [56], # 椅子
+    "counchs": [57], # 沙发
     "bottles": [39], # 瓶子
     "wine_glasses": [40], # 酒杯
     "cups": [41], # 杯子
@@ -25,6 +26,8 @@ object_class_table = {
 object_classes = list(object_class_table.keys())
 
 # object_classes_on_ground = ["benches", "chairs", "potted_plants", "beds", "dining_tables", "refrigerator"]
-object_classes_on_ground = ["cars","benches", "chairs", "beds", "dining_tables", "refrigerator"]
+# object_classes_on_ground = ["cars","benches", "chairs", "counchs","beds", "dining_tables", "refrigerator"]
+# object_classes_on_ground = [c for c in object_classes]
+object_classes_on_ground = ["cars", "chairs", "counchs","beds", "dining_tables", "refrigerator"]
 
 object_classes_on_table = [c for c in object_classes if c not in object_classes_on_ground ]

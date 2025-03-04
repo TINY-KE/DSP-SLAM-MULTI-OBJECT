@@ -1,4 +1,4 @@
-# 运行指令 [要记得在yaml中修改DatasetPathRoot]
+# 常用指令 [要记得在yaml中修改DatasetPathRoot]
 + 单目
 ./dsp_slam_mono Vocabulary/ORBvoc.bin configs/freiburg_001.yaml data/freiburg_cars/Car001 map/freiburg/001
 ./dsp_slam_mono Vocabulary/ORBvoc.bin configs/freiburg_001.yaml /media/robotlab/新加卷/ubuntu22/DSP-SLAM/data/freiburg_cars/Car001 map/freiburg/001
@@ -11,13 +11,20 @@
 
 + 多车辆：
 
-+ ros:
++ ros版slam:
 ./dsp_slam_ros Vocabulary/ORBvoc.bin configs/self_allobject_ground_ros.yaml /home/robotlab/ws_3d_vp/src/QSP-SLAM-my/data/MySimDataset/GroundObjects map/self/GroundObjects
   
-rosbag record -O circle_bed-moveitvp-1.bag /rgb/image_raw /depth_to_rgb/image_raw  /tf  /joint_states
++ 录制rosbag
+rosbag record -O circle_bed-moveitvp-1***.bag /rgb/image_raw /depth_to_rgb/image_raw  /tf  /joint_states
+rosbag record -O circle-***-3.5-2-30.bag /rgb/image_raw /depth_to_rgb/image_raw  /tf  /joint_states
 
++ 控制相机运行circle
 rosrun sim_env circle  3.5 2 30.0  0.1
 
++ 旋转模型的常用四元数
+0 0 -0.7071 0.7071 左转90
+0 0 0.7071 0.7071  右转90
+0 0 1 0  180度翻转
 
 # 第一阶段目标：实现无数据关联的多物体建图
 
@@ -43,7 +50,7 @@ rosrun sim_env circle  3.5 2 30.0  0.1
 + 利用AssociateObjectsByProjection，生成地图中的多个dsp物体
 
 
-## 
+## TODO:
 + 在物体关联之后，将新的feature point添加进物体中，从而改进dsp模型
   + 转到世界坐标系
   + 将点加入到std::vector<MapPoint*> points_on_object = pMO->GetMapPointsOnObject();中
@@ -140,11 +147,14 @@ rosrun sim_env circle  3.5 2 30.0  0.1
   + 显示相机轨迹
   + 
 
-# 备份单个沙发的my和direct结果
+# 备份单个沙发的my和direct结果  commit ad2ff1cc93d3f6a030199bf06ced50dc13a9b1dc
   + 下一步：布置新的场景，核心是加个房间模型，用来防止不同物体间转移时丢失定位
   
 
 #   
+
+
+# 
   + 进行物体真值比较是，使用cube代表物体的真值。
   + 录制6个rosbag，分别对应我们的方法和环视在3个房间内容的观测。
   + 修改3dvp中的旋转方向

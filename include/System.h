@@ -217,10 +217,11 @@ private:
     std::mutex mMutexState;
     
 public:
-    void SaveObjects(const string &file_path );  //用于保存物体的位置信息和面片信息
+    void SaveObjects(const string &file_path , bool move_to_origin = false );  //用于保存物体的位置信息和面片信息
     void SavePoints(const string &filepath );  //用于保存地图点的位置信息
     std::string generateFileName(std::string head);
     bool fileExists(const std::string &filename);
+    int mbChair2counch = 0;  //控制，在localmapping物体建模时，是否将椅子转换为沙发
 };
 
 }// namespace ORB_SLAM
