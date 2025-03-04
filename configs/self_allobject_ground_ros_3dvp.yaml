@@ -87,7 +87,7 @@ DetectorConfigPath: configs/config_self_allobject_ground.json
 Objects.maskErrosion: 5  #default 10
 
 # 保存本地
-saveobjects: 1
+saveobjects: 0
 savepoints: 1
 
 # chair转counch(沙发)

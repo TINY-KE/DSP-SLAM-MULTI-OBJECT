@@ -424,7 +424,7 @@ int main(int argc, char **argv) {
             return 1;
         }
         visualization_msgs::Marker mPoints;
-        float fPointSize=0.01;
+        float fPointSize=0.015;
         mPoints.header.frame_id =  "world";
         mPoints.ns = "POINTS";
         mPoints.id=0;
@@ -433,7 +433,8 @@ int main(int argc, char **argv) {
         mPoints.scale.y=fPointSize;
         mPoints.pose.orientation.w=1.0;
         mPoints.action=visualization_msgs::Marker::ADD;
-        mPoints.color.a = 1.0;
+        mPoints.color.a = 1;
+        // mPoints.color.r = 1.0;
 
         std::string line;
         while (std::getline(points_file, line)) {

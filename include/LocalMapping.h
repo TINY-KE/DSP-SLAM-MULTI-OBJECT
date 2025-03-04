@@ -153,6 +153,8 @@ private:
     void MergeMapObject(MapObject* pMO_i, MapObject* pMO_j); // Merge pMO_j into pMO_i
 
     int mbChair2counch = 0;  //控制，在localmapping物体建模时，是否将椅子转换为沙发
+    int mbUseObjectConstruct = 1;  //控制是否使用物体建模
+
 };
 
 } //namespace ORB_SLAM

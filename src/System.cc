@@ -99,6 +99,7 @@ System::System(const string &strVocFile, const string &strSettingsFile, const st
 
     // 多物体dsp模型导入
     mbChair2counch = fSettings["Chair2counch"];  //控制，在localmapping物体建模时，是否将椅子转换为沙发
+    mbUseObjectConstruct = fSettings["useObjectConstruct"]; 
     py::module deep_sdf_utils = py::module::import("deep_sdf.workspace");
     vector<int> yolo_classes;
     fSettings["YoloClasses"] >> yolo_classes;

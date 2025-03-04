@@ -44,6 +44,10 @@ LocalMapping::LocalMapping(System *pSys, Map *pMap, ObjectDrawer* pObjectDrawer,
     //控制，在localmapping物体建模时，是否将椅子转换为沙发
     mbChair2counch = pSys->mbChair2counch;
 
+    // 控制是否使用物体建模.
+    mbUseObjectConstruct = pSys->mbUseObjectConstruct;
+
+
     // 多物体dsp模型导入
     auto& pyDecoders = pSys->mmPyDecoders;
     for (auto it = pyDecoders.begin(); it != pyDecoders.end(); ++it) {
@@ -137,17 +141,19 @@ void LocalMapping::Run()
             {
                 if (mpTracker->mState != Tracking::NOT_INITIALIZED)
                 {
+                    if(mbUseObjectConstruct)
+                    {
+                        Create_Multi_NewObjectsFromDetections();
 
-                    Create_Multi_NewObjectsFromDetections();
+                        // TODO: 在此处增加一个合并相近同类物体的操作
+                        AssociateObjects3D();
 
-                    // TODO: 在此处增加一个合并相近同类物体的操作
-                    AssociateObjects3D();
-
-                    /* FIXME，在处理已经检测到的物体时，需要考虑是否增加的新的观测
-                    * 这个函数中增加一个是否需要进行隐式位形优化的判断
-                    * 看看有无必要使用隐式位形优化结果中的Loss对物体点云进行剔除
-                    */
-                    Process_Multi_DetectedObjects_byPythonReconstruct();
+                        /* FIXME，在处理已经检测到的物体时，需要考虑是否增加的新的观测
+                        * 这个函数中增加一个是否需要进行隐式位形优化的判断
+                        * 看看有无必要使用隐式位形优化结果中的Loss对物体点云进行剔除
+                        */
+                        Process_Multi_DetectedObjects_byPythonReconstruct();
+                    }
 
                 }
             }

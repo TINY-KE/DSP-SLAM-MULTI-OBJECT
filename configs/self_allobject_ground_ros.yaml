@@ -89,11 +89,14 @@ DetectorConfigPath: configs/config_self_allobject_ground.json
 Objects.maskErrosion: 5  #default 10
 
 # 保存本地
-saveobjects: 1
-savepoints: 0
+saveobjects: 0
+savepoints: 1
 
 # chair转counch(沙发)
 chair2counch: 0
+
+# use_object
+useObjectConstruct: 0
 
 # 地面
 ConstraintType: 1 #3 rostf; 2 imu; 1 yaml
