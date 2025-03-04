@@ -155,8 +155,8 @@ rosrun sim_env circle  3.5 2 30.0  0.1
   + 完成
 
 # 备份：
-  + bedroom_my 完成
-  + 
+  + bedroom_my 完成, 对应bedroom_my_2.bag
+  + livingroom_my 完成, 对应living_room_my.bag
 
 # 
   + 进行物体真值比较是，使用cube代表物体的真值。
