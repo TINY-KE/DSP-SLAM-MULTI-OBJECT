@@ -154,17 +154,17 @@ rosrun sim_env circle  3.5 2 30.0  0.1
 #  预生成各个场景下物体的模型
   + 完成
 
-# 备份：
+# 备份： 
   + bedroom_my 完成, 对应bedroom_my_2.bag
   + livingroom_my 完成, 对应living_room_my.bag
   + bedroom_direct 完成, 对应bedroom_direct.bag
   + livingroom_direct 完成, 对应living_room_direct.bag
+  + suv_my 完成, 对应suv_my.bag
+  + suv_direct 完成, 对应suv_d.bag
 
-
-# 
+# 周三中午：
   + 进行物体真值比较是，使用cube代表物体的真值。
-  + 录制6个rosbag，分别对应我们的方法和环视在3个房间内容的观测。
-  + 修改3dvp中的旋转方向
+  + 保存底盘真值
   + 
 
 

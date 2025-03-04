@@ -176,7 +176,7 @@ void PublishCameras(const vector<cv::Mat> &VIEWs, int step = 15)
 
     std::cout<<"PublishCameras 1"<<endl;
 
-    float d = 0.03;
+    float d = 0.05;
 
     //Camera is a pyramid. Define in camera coordinate system
     cv::Mat o = (cv::Mat_<float>(4, 1) << 0, 0, 0, 1);
