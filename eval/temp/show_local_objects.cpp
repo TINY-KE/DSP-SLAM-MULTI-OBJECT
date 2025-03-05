@@ -18,6 +18,7 @@
 
 #include <ros/ros.h>
 #include <visualization_msgs/Marker.h>
+#include <geometry_msgs/PoseStamped.h>
 #include <tf2/LinearMath/Quaternion.h>
 #include <tf2/LinearMath/Transform.h>
 #include <fstream>
@@ -37,13 +38,14 @@ using namespace std;
 namespace fs = std::filesystem;
 
 #include <tuple>
-ros::Publisher publisher_GT;
+ros::Publisher publisher_CubeGT;
 ros::Publisher publisher_SdfObject;
 ros::Publisher publisher_points;
 ros::Publisher publisher_KF;
+ros::Publisher publisher_baselink_trajectory;
 std::vector<std::tuple<float, float, float>> mvObjectColors;
 
-
+double my_trajectory_length=0, direct_trajectory_length=0;
 
 // 获取目录下的所有文件名（Linux / Mac）
 std::vector<std::string> getFilesInDirectory(const std::string& targetpath) {
@@ -67,7 +69,172 @@ std::vector<std::string> getFilesInDirectory(const std::string& targetpath) {
 }
 
 
+void PublishObjectGroundtruth(string object_groundtruth_file_name){
+    std::ifstream infile(object_groundtruth_file_name, std::ios::in);
+    if (!infile.is_open())
+    {
+        std::cout << "open fail: " << object_groundtruth_file_name << " " << std::endl;
+        exit(233);
+    }
+    else
+    {
+        std::cout << "read Object Groundtruth" << std::endl;
+    }
 
+    std::vector<double> row;
+
+    std::string line;
+
+    int cubeId =0 ;
+    while (getline(infile, line))
+    {
+        // std::cout<<"读取新的一行:"<<endl;
+
+        std::istringstream istr(line);
+        double tx,ty,tz,qr,qp,qy, width,length,height, flag=0;
+
+        double temp;
+        cv::Vec3d translation;  // 存储 tx, ty, tz
+        cv::Vec4d quaternion;   // 存储 qx, qy, qz, qw
+        istr >> temp;  tx = temp;  //tx
+        istr >> temp;  ty = temp;  //ty
+        istr >> temp;  tz = temp;  //tz
+        istr >> temp;  qr = temp;  //qr
+        istr >> temp;  qp = temp;  //qp
+        istr >> temp;  qy = temp;  //qy
+        istr >> temp;  width = temp;  //w
+        istr >> temp;  length = temp;  //h
+        istr >> temp;  height = temp;  //l
+
+        // TODO:用于不在地面上的物体，目前只用在了花瓶vase上.
+        if(width==0.3 && length==0.3)
+        {
+            flag = 0.5;
+        }
+        
+
+        // 发布Cube物体
+        visualization_msgs::Marker CubeMarker;
+        CubeMarker.id = cubeId++;
+        // CubeMarker.lifetime = ros::Duration(mObject_Duration);
+        CubeMarker.header.frame_id= "world";
+        CubeMarker.header.stamp=ros::Time::now();
+        CubeMarker.type = visualization_msgs::Marker::LINE_LIST; //LINE_STRIP;
+        CubeMarker.action = visualization_msgs::Marker::ADD;
+        CubeMarker.color.a = 1.0f; // 设置透明度为 1.0（不透明）
+        // CubeMarker.color.r =  get<0>(mvObjectColors[(pMO->mnId+5) % 10]);
+        // CubeMarker.color.g =  get<1>(mvObjectColors[(pMO->mnId+5) % 10]);
+        // CubeMarker.color.b =  get<2>(mvObjectColors[(pMO->mnId+5) % 10]);
+        CubeMarker.scale.x = 0.01;
+        //     8------7
+        //    /|     /|
+        //   / |    / |
+        //  5------6  |
+        //  |  4---|--3
+        //  | /    | /
+        //  1------2
+        // lenth ：2 3
+        // width ：1 2
+        // height：2 6
+        std::vector<geometry_msgs::Point> vertices;
+        
+        // 空置位
+        geometry_msgs::Point p0;
+        p0.x = 0;
+        p0.y = 0;
+        p0.z = 0+flag;
+        vertices.push_back(p0);
+
+        // 顶点 1
+        geometry_msgs::Point p1;
+        p1.x = -width / 2 + tx;
+        p1.y = -length / 2 + ty;
+        p1.z = 0+flag;
+        vertices.push_back(p1);
+
+        // 顶点 2
+        geometry_msgs::Point p2;
+        p2.x = width / 2 + tx;
+        p2.y = -length / 2 + ty;
+        p2.z = 0+flag;
+        vertices.push_back(p2);
+
+        // 顶点 3
+        geometry_msgs::Point p3;
+        p3.x = width / 2 + tx;
+        p3.y = length / 2 + ty;
+        p3.z = 0+flag;
+        vertices.push_back(p3);
+
+        // 顶点 4
+        geometry_msgs::Point p4;
+        p4.x = -width / 2 + tx;
+        p4.y = length / 2 + ty;
+        p4.z = 0+flag;
+        vertices.push_back(p4);
+
+        // 顶点 5
+        geometry_msgs::Point p5;
+        p5.x = -width / 2 + tx;
+        p5.y = -length / 2 + ty;
+        p5.z = height;
+        vertices.push_back(p5);
+
+        // 顶点 6
+        geometry_msgs::Point p6;
+        p6.x = width / 2 + tx;
+        p6.y = -length / 2 + ty;
+        p6.z = height;
+        vertices.push_back(p6);
+
+        // 顶点 7
+        geometry_msgs::Point p7;
+        p7.x = width / 2 + tx;
+        p7.y = length / 2 + ty;
+        p7.z = height;
+        vertices.push_back(p7);
+
+        // 顶点 8
+        geometry_msgs::Point p8;
+        p8.x = -width / 2 + tx;
+        p8.y = length / 2 + ty;
+        p8.z = height;
+        vertices.push_back(p8);
+
+        CubeMarker.points.push_back(vertices[1]);
+        CubeMarker.points.push_back(vertices[2]);
+        CubeMarker.points.push_back(vertices[2]);
+        CubeMarker.points.push_back(vertices[3]);
+        CubeMarker.points.push_back(vertices[3]);
+        CubeMarker.points.push_back(vertices[4]);
+        CubeMarker.points.push_back(vertices[4]);
+        CubeMarker.points.push_back(vertices[1]);
+
+        CubeMarker.points.push_back(vertices[5]);
+        CubeMarker.points.push_back(vertices[1]);
+        CubeMarker.points.push_back(vertices[6]);
+        CubeMarker.points.push_back(vertices[2]);
+        CubeMarker.points.push_back(vertices[7]);
+        CubeMarker.points.push_back(vertices[3]);
+        CubeMarker.points.push_back(vertices[8]);
+        CubeMarker.points.push_back(vertices[4]);
+
+        CubeMarker.points.push_back(vertices[5]);
+        CubeMarker.points.push_back(vertices[6]);
+        CubeMarker.points.push_back(vertices[6]);
+        CubeMarker.points.push_back(vertices[7]);
+        CubeMarker.points.push_back(vertices[7]);
+        CubeMarker.points.push_back(vertices[8]);
+        CubeMarker.points.push_back(vertices[8]);
+        CubeMarker.points.push_back(vertices[5]);
+
+        publisher_CubeGT.publish(CubeMarker);
+
+        row.clear();
+        istr.clear();
+        line.clear();
+    }
+}
 
 void read_view(const std::string filePath, std::vector<cv::Mat>& views){
     std::ifstream infile(filePath, std::ios::in);
@@ -148,107 +315,324 @@ void read_view(const std::string filePath, std::vector<cv::Mat>& views){
     }
 }
 
-void PublishCameras(const vector<cv::Mat> &VIEWs, int step = 15)
+void PublishCameras(const vector<cv::Mat> &VIEWs, int step = 15, int type = 0 /* 相机0  底盘1*/)
 {
-    visualization_msgs::Marker mKeyFrames;
-    float fCameraSize=0.04;
-    mKeyFrames.header.frame_id = "world";
-    mKeyFrames.ns = "KEYFRAMES";
-    mKeyFrames.id=1;
-    mKeyFrames.type = visualization_msgs::Marker::LINE_LIST;
-    mKeyFrames.scale.x=0.005;
-    mKeyFrames.pose.orientation.w=1.0;
-    mKeyFrames.action=visualization_msgs::Marker::ADD;
-    mKeyFrames.color.b=1.0f;
-    mKeyFrames.color.a = 1.0;
-    visualization_msgs::Marker mMST;
-    mMST.header.frame_id = "world";
-    mMST.ns = "MST";
-    mMST.id=3;
-    mMST.type = visualization_msgs::Marker::LINE_LIST;
-    mMST.scale.x=0.005;
-    mMST.pose.orientation.w=1.0;
-    mMST.action=visualization_msgs::Marker::ADD;
-    mMST.color.r=0.0f;
-    mMST.color.b=0.0f;
-    mMST.color.g=1.0f;
-    mMST.color.a = 1.0;
+    if(type==0)
+    {
+        visualization_msgs::Marker mKeyFrames;
+        float fCameraSize=0.04;
+        mKeyFrames.header.frame_id = "world";
+        mKeyFrames.ns = "KEYFRAMES";
+        mKeyFrames.id=1;
+        mKeyFrames.type = visualization_msgs::Marker::LINE_LIST;
+        mKeyFrames.scale.x=0.005;
+        mKeyFrames.pose.orientation.w=1.0;
+        mKeyFrames.action=visualization_msgs::Marker::ADD;
+        mKeyFrames.color.b=1.0f;
+        mKeyFrames.color.a = 1.0;
+        visualization_msgs::Marker mMST;
+        mMST.header.frame_id = "world";
+        mMST.ns = "MST";
+        mMST.id=3;
+        mMST.type = visualization_msgs::Marker::LINE_LIST;
+        mMST.scale.x=0.005;
+        mMST.pose.orientation.w=1.0;
+        mMST.action=visualization_msgs::Marker::ADD;
+        mMST.color.r=0.0f;
+        mMST.color.b=0.0f;
+        mMST.color.g=1.0f;
+        mMST.color.a = 1.0;
 
-    std::cout<<"PublishCameras 1"<<endl;
+        float d = 0.025;
 
-    float d = 0.05;
-
-    //Camera is a pyramid. Define in camera coordinate system
-    cv::Mat o = (cv::Mat_<float>(4, 1) << 0, 0, 0, 1);
-    cv::Mat p1 = (cv::Mat_<float>(4, 1) << d, d * 0.8, d * 0.5, 1);
-    cv::Mat p2 = (cv::Mat_<float>(4, 1) << d, -d * 0.8, d * 0.5, 1);
-    cv::Mat p3 = (cv::Mat_<float>(4, 1) << -d, -d * 0.8, d * 0.5, 1);
-    cv::Mat p4 = (cv::Mat_<float>(4, 1) << -d, d * 0.8, d * 0.5, 1);
+        //Camera is a pyramid. Define in camera coordinate system
+        cv::Mat o = (cv::Mat_<float>(4, 1) << 0, 0, 0, 1);
+        cv::Mat p1 = (cv::Mat_<float>(4, 1) << d, d * 0.8, d * 0.5, 1);
+        cv::Mat p2 = (cv::Mat_<float>(4, 1) << d, -d * 0.8, d * 0.5, 1);
+        cv::Mat p3 = (cv::Mat_<float>(4, 1) << -d, -d * 0.8, d * 0.5, 1);
+        cv::Mat p4 = (cv::Mat_<float>(4, 1) << -d, d * 0.8, d * 0.5, 1);
 
 
-    for (size_t i = 0, iend = VIEWs.size(); i < iend; i++) {
+        for (size_t i = 0, iend = VIEWs.size(); i < iend; i++) {
 
-        if( i%step!=0) continue;
+            if( i%step!=0) continue;
 
-        cv::Mat Twc = VIEWs[i];
-        //根据 Ow.copyTo(Twc.rowRange(0,3).col(3));
-        cv::Mat ow = VIEWs[i].rowRange(0, 3).col(3).clone();//->GetCameraCenter();
-        cv::Mat p1w = Twc * p1;
-        cv::Mat p2w = Twc * p2;
-        cv::Mat p3w = Twc * p3;
-        cv::Mat p4w = Twc * p4;
+            cv::Mat Twc = VIEWs[i];
+            //根据 Ow.copyTo(Twc.rowRange(0,3).col(3));
+            cv::Mat ow = VIEWs[i].rowRange(0, 3).col(3).clone();//->GetCameraCenter();
+            cv::Mat p1w = Twc * p1;
+            cv::Mat p2w = Twc * p2;
+            cv::Mat p3w = Twc * p3;
+            cv::Mat p4w = Twc * p4;
 
-        geometry_msgs::Point msgs_o, msgs_p1, msgs_p2, msgs_p3, msgs_p4;
-        msgs_o.x = ow.at<float>(0);
-        msgs_o.y = ow.at<float>(1);
-        msgs_o.z = ow.at<float>(2);
-        msgs_p1.x = p1w.at<float>(0);
-        msgs_p1.y = p1w.at<float>(1);
-        msgs_p1.z = p1w.at<float>(2);
-        msgs_p2.x = p2w.at<float>(0);
-        msgs_p2.y = p2w.at<float>(1);
-        msgs_p2.z = p2w.at<float>(2);
-        msgs_p3.x = p3w.at<float>(0);
-        msgs_p3.y = p3w.at<float>(1);
-        msgs_p3.z = p3w.at<float>(2);
-        msgs_p4.x = p4w.at<float>(0);
-        msgs_p4.y = p4w.at<float>(1);
-        msgs_p4.z = p4w.at<float>(2);
+            geometry_msgs::Point msgs_o, msgs_p1, msgs_p2, msgs_p3, msgs_p4;
+            msgs_o.x = ow.at<float>(0);
+            msgs_o.y = ow.at<float>(1);
+            msgs_o.z = ow.at<float>(2);
+            msgs_p1.x = p1w.at<float>(0);
+            msgs_p1.y = p1w.at<float>(1);
+            msgs_p1.z = p1w.at<float>(2);
+            msgs_p2.x = p2w.at<float>(0);
+            msgs_p2.y = p2w.at<float>(1);
+            msgs_p2.z = p2w.at<float>(2);
+            msgs_p3.x = p3w.at<float>(0);
+            msgs_p3.y = p3w.at<float>(1);
+            msgs_p3.z = p3w.at<float>(2);
+            msgs_p4.x = p4w.at<float>(0);
+            msgs_p4.y = p4w.at<float>(1);
+            msgs_p4.z = p4w.at<float>(2);
 
-        mKeyFrames.points.push_back(msgs_o);
-        mKeyFrames.points.push_back(msgs_p1);
-        mKeyFrames.points.push_back(msgs_o);
-        mKeyFrames.points.push_back(msgs_p2);
-        mKeyFrames.points.push_back(msgs_o);
-        mKeyFrames.points.push_back(msgs_p3);
-        mKeyFrames.points.push_back(msgs_o);
-        mKeyFrames.points.push_back(msgs_p4);
-        mKeyFrames.points.push_back(msgs_p1);
-        mKeyFrames.points.push_back(msgs_p2);
-        mKeyFrames.points.push_back(msgs_p2);
-        mKeyFrames.points.push_back(msgs_p3);
-        mKeyFrames.points.push_back(msgs_p3);
-        mKeyFrames.points.push_back(msgs_p4);
-        mKeyFrames.points.push_back(msgs_p4);
-        mKeyFrames.points.push_back(msgs_p1);
+            mKeyFrames.points.push_back(msgs_o);
+            mKeyFrames.points.push_back(msgs_p1);
+            mKeyFrames.points.push_back(msgs_o);
+            mKeyFrames.points.push_back(msgs_p2);
+            mKeyFrames.points.push_back(msgs_o);
+            mKeyFrames.points.push_back(msgs_p3);
+            mKeyFrames.points.push_back(msgs_o);
+            mKeyFrames.points.push_back(msgs_p4);
+            mKeyFrames.points.push_back(msgs_p1);
+            mKeyFrames.points.push_back(msgs_p2);
+            mKeyFrames.points.push_back(msgs_p2);
+            mKeyFrames.points.push_back(msgs_p3);
+            mKeyFrames.points.push_back(msgs_p3);
+            mKeyFrames.points.push_back(msgs_p4);
+            mKeyFrames.points.push_back(msgs_p4);
+            mKeyFrames.points.push_back(msgs_p1);
 
-        if (i > step) {
-            cv::Mat Owp = VIEWs[i - step].rowRange(0, 3).col(3).clone();//->GetCameraCenter();;
-            geometry_msgs::Point msgs_op;
-            msgs_op.x = Owp.at<float>(0);
-            msgs_op.y = Owp.at<float>(1);
-            msgs_op.z = Owp.at<float>(2);
-            mMST.points.push_back(msgs_o);
-            mMST.points.push_back(msgs_op);
+            if (i > step) {
+                cv::Mat Owp = VIEWs[i - step].rowRange(0, 3).col(3).clone();//->GetCameraCenter();;
+                geometry_msgs::Point msgs_op;
+                msgs_op.x = Owp.at<float>(0);
+                msgs_op.y = Owp.at<float>(1);
+                msgs_op.z = Owp.at<float>(2);
+                mMST.points.push_back(msgs_o);
+                mMST.points.push_back(msgs_op);
+            }
         }
+
+        mKeyFrames.header.stamp = ros::Time::now();
+        //mCovisibilityGraph.header.stamp = ros::Time::now();
+        mMST.header.stamp = ros::Time::now();
+
+        publisher_KF.publish(mKeyFrames);
+        publisher_KF.publish(mMST);
     }
+    else if(type==1)
+    {
+        visualization_msgs::Marker mKeyFrames;
+        float fCameraSize=0.04;
+        mKeyFrames.header.frame_id = "world";
+        mKeyFrames.ns = "baselink_my";
+        mKeyFrames.id=1;
+        mKeyFrames.type = visualization_msgs::Marker::LINE_LIST;
+        mKeyFrames.scale.x=0.005;
+        mKeyFrames.pose.orientation.w=1.0;
+        mKeyFrames.action=visualization_msgs::Marker::ADD;
+        mKeyFrames.color.b=1.0f;
+        mKeyFrames.color.a = 1.0;
+        visualization_msgs::Marker mMST;
+        mMST.header.frame_id = "world";
+        mMST.ns = "baselink_my_MST";
+        mMST.id=3;
+        mMST.type = visualization_msgs::Marker::LINE_LIST;
+        mMST.scale.x=0.01;
+        mMST.pose.orientation.w=1.0;
+        mMST.action=visualization_msgs::Marker::ADD;
+        mMST.color.r=0.0f;
+        mMST.color.b=1.0f;
+        mMST.color.g=0.0f;
+        mMST.color.a = 1.0;
 
-    mKeyFrames.header.stamp = ros::Time::now();
-    //mCovisibilityGraph.header.stamp = ros::Time::now();
-    mMST.header.stamp = ros::Time::now();
+        float d = 0.05;
 
-    publisher_KF.publish(mKeyFrames);
-    publisher_KF.publish(mMST);
+        //Camera is a pyramid. Define in camera coordinate system
+        cv::Mat o = (cv::Mat_<float>(4, 1) << 0, 0, 0, 1);
+        cv::Mat p1 = (cv::Mat_<float>(4, 1) << d, d * 0.8, d * 0.5, 1);
+        cv::Mat p2 = (cv::Mat_<float>(4, 1) << d, -d * 0.8, d * 0.5, 1);
+        cv::Mat p3 = (cv::Mat_<float>(4, 1) << -d, -d * 0.8, d * 0.5, 1);
+        cv::Mat p4 = (cv::Mat_<float>(4, 1) << -d, d * 0.8, d * 0.5, 1);
+
+
+        for (size_t i = 0, iend = VIEWs.size(); i < iend; i++) {
+
+            if( i%step!=0) continue;
+
+            cv::Mat Twc = VIEWs[i];
+            //根据 Ow.copyTo(Twc.rowRange(0,3).col(3));
+            cv::Mat ow = VIEWs[i].rowRange(0, 3).col(3).clone();//->GetCameraCenter();
+            cv::Mat p1w = Twc * p1;
+            cv::Mat p2w = Twc * p2;
+            cv::Mat p3w = Twc * p3;
+            cv::Mat p4w = Twc * p4;
+
+            geometry_msgs::Point msgs_o, msgs_p1, msgs_p2, msgs_p3, msgs_p4;
+            msgs_o.x = ow.at<float>(0);
+            msgs_o.y = ow.at<float>(1);
+            msgs_o.z = ow.at<float>(2);
+            msgs_p1.x = p1w.at<float>(0);
+            msgs_p1.y = p1w.at<float>(1);
+            msgs_p1.z = p1w.at<float>(2);
+            msgs_p2.x = p2w.at<float>(0);
+            msgs_p2.y = p2w.at<float>(1);
+            msgs_p2.z = p2w.at<float>(2);
+            msgs_p3.x = p3w.at<float>(0);
+            msgs_p3.y = p3w.at<float>(1);
+            msgs_p3.z = p3w.at<float>(2);
+            msgs_p4.x = p4w.at<float>(0);
+            msgs_p4.y = p4w.at<float>(1);
+            msgs_p4.z = p4w.at<float>(2);
+
+            mKeyFrames.points.push_back(msgs_o);
+            mKeyFrames.points.push_back(msgs_p1);
+            mKeyFrames.points.push_back(msgs_o);
+            mKeyFrames.points.push_back(msgs_p2);
+            mKeyFrames.points.push_back(msgs_o);
+            mKeyFrames.points.push_back(msgs_p3);
+            mKeyFrames.points.push_back(msgs_o);
+            mKeyFrames.points.push_back(msgs_p4);
+            mKeyFrames.points.push_back(msgs_p1);
+            mKeyFrames.points.push_back(msgs_p2);
+            mKeyFrames.points.push_back(msgs_p2);
+            mKeyFrames.points.push_back(msgs_p3);
+            mKeyFrames.points.push_back(msgs_p3);
+            mKeyFrames.points.push_back(msgs_p4);
+            mKeyFrames.points.push_back(msgs_p4);
+            mKeyFrames.points.push_back(msgs_p1);
+
+            if (i > step) {
+                cv::Mat Owp = VIEWs[i - step].rowRange(0, 3).col(3).clone();//->GetCameraCenter();;
+                geometry_msgs::Point msgs_op;
+                msgs_op.x = Owp.at<float>(0);
+                msgs_op.y = Owp.at<float>(1);
+                msgs_op.z = Owp.at<float>(2);
+                mMST.points.push_back(msgs_o);
+                mMST.points.push_back(msgs_op);
+
+                // 计算相邻两个相机中心之间的距离，并累加到 trajectory_length
+                double dx = msgs_o.x - msgs_op.x;
+                double dy = msgs_o.y - msgs_op.y;
+                double dz = msgs_o.z - msgs_op.z;
+                my_trajectory_length += std::sqrt(dx * dx + dy * dy + dz * dz);
+                
+            }
+        }
+
+        mKeyFrames.header.stamp = ros::Time::now();
+        //mCovisibilityGraph.header.stamp = ros::Time::now();
+        mMST.header.stamp = ros::Time::now();
+
+        // publisher_KF.publish(mKeyFrames);
+        publisher_baselink_trajectory.publish(mMST);
+    }
+    else if(type==2)
+    {
+        visualization_msgs::Marker mKeyFrames;
+        float fCameraSize=0.04;
+        mKeyFrames.header.frame_id = "world";
+        mKeyFrames.ns = "baselink_direct";
+        mKeyFrames.id=1;
+        mKeyFrames.type = visualization_msgs::Marker::LINE_LIST;
+        mKeyFrames.scale.x=0.01;
+        mKeyFrames.pose.orientation.w=1.0;
+        mKeyFrames.action=visualization_msgs::Marker::ADD;
+        mKeyFrames.color.b=1.0f;
+        mKeyFrames.color.a = 1.0;
+        visualization_msgs::Marker mMST;
+        mMST.header.frame_id = "world";
+        mMST.ns = "baselink_direct_MST";
+        mMST.id=3;
+        mMST.type = visualization_msgs::Marker::LINE_LIST;
+        mMST.scale.x=0.005;
+        mMST.pose.orientation.w=1.0;
+        mMST.action=visualization_msgs::Marker::ADD;
+        // mMST.color.r=0.0f;
+        // mMST.color.b=0.0f;
+        // mMST.color.g=1.0f;
+        mMST.color.a = 1.0;
+
+        float d = 0.05;
+
+        //Camera is a pyramid. Define in camera coordinate system
+        cv::Mat o = (cv::Mat_<float>(4, 1) << 0, 0, 0, 1);
+        cv::Mat p1 = (cv::Mat_<float>(4, 1) << d, d * 0.8, d * 0.5, 1);
+        cv::Mat p2 = (cv::Mat_<float>(4, 1) << d, -d * 0.8, d * 0.5, 1);
+        cv::Mat p3 = (cv::Mat_<float>(4, 1) << -d, -d * 0.8, d * 0.5, 1);
+        cv::Mat p4 = (cv::Mat_<float>(4, 1) << -d, d * 0.8, d * 0.5, 1);
+
+
+        for (size_t i = 0, iend = VIEWs.size(); i < iend; i++) {
+
+            if( i%step!=0) continue;
+
+            cv::Mat Twc = VIEWs[i];
+            //根据 Ow.copyTo(Twc.rowRange(0,3).col(3));
+            cv::Mat ow = VIEWs[i].rowRange(0, 3).col(3).clone();//->GetCameraCenter();
+            cv::Mat p1w = Twc * p1;
+            cv::Mat p2w = Twc * p2;
+            cv::Mat p3w = Twc * p3;
+            cv::Mat p4w = Twc * p4;
+
+            geometry_msgs::Point msgs_o, msgs_p1, msgs_p2, msgs_p3, msgs_p4;
+            msgs_o.x = ow.at<float>(0);
+            msgs_o.y = ow.at<float>(1);
+            msgs_o.z = ow.at<float>(2);
+            msgs_p1.x = p1w.at<float>(0);
+            msgs_p1.y = p1w.at<float>(1);
+            msgs_p1.z = p1w.at<float>(2);
+            msgs_p2.x = p2w.at<float>(0);
+            msgs_p2.y = p2w.at<float>(1);
+            msgs_p2.z = p2w.at<float>(2);
+            msgs_p3.x = p3w.at<float>(0);
+            msgs_p3.y = p3w.at<float>(1);
+            msgs_p3.z = p3w.at<float>(2);
+            msgs_p4.x = p4w.at<float>(0);
+            msgs_p4.y = p4w.at<float>(1);
+            msgs_p4.z = p4w.at<float>(2);
+
+            mKeyFrames.points.push_back(msgs_o);
+            mKeyFrames.points.push_back(msgs_p1);
+            mKeyFrames.points.push_back(msgs_o);
+            mKeyFrames.points.push_back(msgs_p2);
+            mKeyFrames.points.push_back(msgs_o);
+            mKeyFrames.points.push_back(msgs_p3);
+            mKeyFrames.points.push_back(msgs_o);
+            mKeyFrames.points.push_back(msgs_p4);
+            mKeyFrames.points.push_back(msgs_p1);
+            mKeyFrames.points.push_back(msgs_p2);
+            mKeyFrames.points.push_back(msgs_p2);
+            mKeyFrames.points.push_back(msgs_p3);
+            mKeyFrames.points.push_back(msgs_p3);
+            mKeyFrames.points.push_back(msgs_p4);
+            mKeyFrames.points.push_back(msgs_p4);
+            mKeyFrames.points.push_back(msgs_p1);
+
+            if (i > step) {
+                cv::Mat Owp = VIEWs[i - step].rowRange(0, 3).col(3).clone();//->GetCameraCenter();;
+                geometry_msgs::Point msgs_op;
+                msgs_op.x = Owp.at<float>(0);
+                msgs_op.y = Owp.at<float>(1);
+                msgs_op.z = Owp.at<float>(2);
+                mMST.points.push_back(msgs_o);
+                mMST.points.push_back(msgs_op);
+
+                // 计算相邻两个相机中心之间的距离，并累加到 trajectory_length
+                double dx = msgs_o.x - msgs_op.x;
+                double dy = msgs_o.y - msgs_op.y;
+                double dz = msgs_o.z - msgs_op.z;
+                direct_trajectory_length += std::sqrt(dx * dx + dy * dy + dz * dz);
+            }
+        }
+
+        mKeyFrames.header.stamp = ros::Time::now();
+        //mCovisibilityGraph.header.stamp = ros::Time::now();
+        mMST.header.stamp = ros::Time::now();
+
+        // publisher_KF.publish(mKeyFrames);
+        publisher_baselink_trajectory.publish(mMST);
+    }
+    else{
+        std::cout<<"[PublishCameras] 无效的Views类型"<<std::endl;
+    }
     
 }
 
@@ -319,11 +703,12 @@ int main(int argc, char **argv) {
     
     ros::init ( argc, argv, "show_local_object" );
     ros::NodeHandle nh;
-    publisher_GT = nh.advertise<visualization_msgs::Marker>("/objectmap_groudtruth", 1000);
+    publisher_CubeGT = nh.advertise<visualization_msgs::Marker>("/object_cube_groudtruth", 1000);
     publisher_SdfObject = nh.advertise<visualization_msgs::Marker>("/local_objects", 1000);
     publisher_points = nh.advertise<visualization_msgs::Marker>("/Point", 1000);
     publisher_points = nh.advertise<visualization_msgs::Marker>("/Point", 1000);
     publisher_KF = nh.advertise<visualization_msgs::Marker>("/KeyFrame", 1000);
+    publisher_baselink_trajectory = nh.advertise<visualization_msgs::Marker>("/baselink_trajectory", 1000);
     ros::start();
 
 
@@ -457,15 +842,44 @@ int main(int argc, char **argv) {
 
         // 发布轨迹真值
         string cam_traj_file_name = "/home/robotlab/ws_3d_vp/src/QSP-SLAM-my/eval/show/cam_traj.txt";
-        std::vector<cv::Mat> cameras;
-        read_view(cam_traj_file_name, cameras);
-        std::cout<<"PublishCameras 0"<<endl;
+        std::vector<cv::Mat> camera_groundTruths;
+        read_view(cam_traj_file_name, camera_groundTruths);
+        std::cout<<"Publish Camera GroundTruth"<<endl;
         int step = 15;
         if(argc > 1 )
         {
             step = atoi(argv[1]);
         }
-        PublishCameras(cameras,step);
+        PublishCameras(camera_groundTruths,step);
+
+        
+        // 发布my底盘轨迹
+        my_trajectory_length=0;
+        string my_baselink_traj_file_name = "/home/robotlab/ws_3d_vp/src/QSP-SLAM-my/eval/show/baselink_traj/my.txt";
+        std::vector<cv::Mat> my_baselink_groundTruths;
+        read_view(my_baselink_traj_file_name, my_baselink_groundTruths);
+        std::cout<<"Publish my_baselink GroundTruth"<<endl;
+        step = 1;
+        PublishCameras(my_baselink_groundTruths, step, 1);
+
+        // 发布my底盘轨迹
+        direct_trajectory_length=0;
+        string direct_baselink_traj_file_name = "/home/robotlab/ws_3d_vp/src/QSP-SLAM-my/eval/show/baselink_traj/direct.txt";
+        std::vector<cv::Mat> direct_baselink_groundTruths;
+        read_view(direct_baselink_traj_file_name, direct_baselink_groundTruths);
+        std::cout<<"Publish baselink GroundTruth"<<endl;
+        step = 1;
+        PublishCameras(direct_baselink_groundTruths, step, 2);
+
+        std::cout<<"[轨迹长度]  my_trajectory_length:"<<my_trajectory_length<<",  direct_trajectory_length:"<<direct_trajectory_length
+        <<",  增长比例："<< (direct_trajectory_length-my_trajectory_length) / my_trajectory_length
+        <<std::endl;
+
+
+        // 发布物体cube真值
+        string object_groundtruth_file_name = "/home/robotlab/ws_3d_vp/src/QSP-SLAM-my/eval/show/object_groundtruth.txt";
+        PublishObjectGroundtruth(object_groundtruth_file_name);
+
 
         rate.sleep();
     }

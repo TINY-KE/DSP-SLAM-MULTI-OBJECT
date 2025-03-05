@@ -162,10 +162,10 @@ rosrun sim_env circle  3.5 2 30.0  0.1
   + suv_my 完成, 对应suv_my.bag
   + suv_direct 完成, 对应suv_d.bag
 
-# 周三中午：
+# 实验数据后续处理：
   + 进行物体真值比较是，使用cube代表物体的真值。
-  + 保存底盘真值
-  + 
+  + 保存底盘真值：bedroom残缺
+  + 已完成所需的数据
 
 
 # todo：
