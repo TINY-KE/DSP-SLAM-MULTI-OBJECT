@@ -10,6 +10,7 @@ Camera.fy: 554.254691191187
 Camera.cx: 320.5
 Camera.cy: 240.5
 
+Camera.kinectdk: 0
 Camera.k1: 0.0
 Camera.k2: 0.0
 Camera.p1: 0.0
@@ -58,13 +59,17 @@ Viewer.ViewpointF: 2000
 Viewer.UsePangolin: 1
 
 # dsp
-YoloClasses: [56, 57, 2, 75, 60, 59]
+YoloClasses: [56, 57, 2, 75, 60, 59, 62, 63, 73]
 DecoderPaths: ["weights/deepsdf/chairs_64",
                "weights/deepsdf/sofas_64",
                "weights/deepsdf/cars_64",
                "weights/deepsdf/vases_64_c",
-               "weights/deepsdf/tables_64",  #table is default object in my code, so it's essential to keep the table.
-               "weights/deepsdf/beds_64"]
+              #  "weights/deepsdf/tables_64",  #table is default object in my code, so it's essential to keep the table.
+               "weights/deepsdf/cups_64_c",  #table is default object in my code, so it's essential to keep the table.
+               "weights/deepsdf/beds_64",
+               "weights/deepsdf/displays_64",
+               "weights/deepsdf/laptops_64",
+               "weights/deepsdf/books_64_c"]
 
 # ros
 use_ros: 1
@@ -80,8 +85,8 @@ Camera.RGB: 1
 # Close/Far threshold. Baseline times.
 ThDepth: 40.0
 
-# Deptmap values factor
-DepthMapFactor: 1
+# Deptmap values factor  
+DepthMapFactor: 1  #对应
 
 #物体检测
 # Config path for Python detectors
@@ -89,14 +94,16 @@ DetectorConfigPath: configs/config_self_allobject_ground.json
 Objects.maskErrosion: 5  #default 10
 
 # 保存本地
-saveobjects: 0
+saveobjects: 1
 savepoints: 1
 
 # chair转counch(沙发)
 chair2counch: 0
 
 # use_object
-useObjectConstruct: 0
+useObjectConstruct: 1    
+# + 修改物体识别的物体种类
+# /home/robotlab/ws_3d_vp/src/QSP-SLAM-my/reconstruct/contents.py
 
 # 地面
 ConstraintType: 1 #3 rostf; 2 imu; 1 yaml
@@ -137,4 +144,4 @@ Tworld_camera.qz:  -0.4055798
 Tworld_camera.qw:  0.4055798
 Tworld_camera.tx: 0.0
 Tworld_camera.ty: 0.0
-Tworld_camera.tz: 1.5
+Tworld_camera.tz: 1.3

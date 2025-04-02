@@ -17,14 +17,15 @@
 + 录制rosbag
 rosbag record -O circle_bed-moveitvp-1***.bag /rgb/image_raw /depth_to_rgb/image_raw  /tf  /joint_states
 rosbag record -O circle-***-3.5-2-30.bag /rgb/image_raw /depth_to_rgb/image_raw  /tf  /joint_states
+rosbag record -O realhoom.bag /rgb/image_raw /depth_to_rgb/image_raw  /tf  /scan
 
 + 控制相机运行circle
-rosrun sim_env circle  3.5 2 30.0  0.1
-
-+ 旋转模型的常用四元数
-0 0 -0.7071 0.7071 左转90
-0 0 0.7071 0.7071  右转90
-0 0 1 0  180度翻转
+source ws_kinect/devel/setup.bash   &&  roslaunch sim_env test_demo.launch
+rosrun sim_env circle  3.5 2 30.0  0.1   #旋转半径  相机高度  俯仰角  移动1角度需要的时间
+rosrun sim_env circle  3 1.3 30.0  0.5   #旋转半径  相机高度  俯仰角  移动1角度需要的时间
+ 
++ 修改物体识别的物体种类
+/home/robotlab/ws_3d_vp/src/QSP-SLAM-my/reconstruct/contents.py
 
 # 第一阶段目标：实现无数据关联的多物体建图
 

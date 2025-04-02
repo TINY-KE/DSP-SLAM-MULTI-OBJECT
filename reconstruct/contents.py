@@ -13,7 +13,7 @@ object_class_table = {
     "bananas": [46], "apples": [47], "oranges": [49],
     "potted_plants": [58], # 盆栽植物
     "beds": [59],
-    "dining_tables": [60],
+    "dining_tables": [60], #桌子
     "tv_monitor": [62],
     "laptop": [63],
     "mouse": [64],
@@ -26,8 +26,12 @@ object_class_table = {
 object_classes = list(object_class_table.keys())
 
 # object_classes_on_ground = ["benches", "chairs", "potted_plants", "beds", "dining_tables", "refrigerator"]
-# object_classes_on_ground = ["cars","benches", "chairs", "counchs","beds", "dining_tables", "refrigerator"]
+object_classes_on_ground = ["cars","benches", "chairs", "counchs","beds", "dining_tables", "refrigerator"]
 # object_classes_on_ground = [c for c in object_classes]
-object_classes_on_ground = ["cars", "chairs", "counchs","beds", "dining_tables", "refrigerator"]
+# object_classes_on_ground = ["cars", "chairs", "counchs","beds", "dining_tables", "refrigerator"]
+# object_classes_on_ground = [c for c in object_classes if c != "beds"]
+# object_classes_on_ground = [c for c in object_classes if c == "laptop"]
+# object_classes_on_ground = [c for c in object_classes if c == "dining_tables"]
+
 
 object_classes_on_table = [c for c in object_classes if c not in object_classes_on_ground ]

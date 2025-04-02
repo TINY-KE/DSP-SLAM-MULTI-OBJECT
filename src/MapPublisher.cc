@@ -132,7 +132,7 @@ MapPublisher::MapPublisher(Map* pMap, const string &strSettingPath):mpMap(pMap),
     publisher_SdfObject = nh.advertise<visualization_msgs::Marker>("/objects", 10);
     publisher_CubeObject = nh.advertise<visualization_msgs::Marker>("/cubeobjects", 10);
     publisher_ObjectPoints = nh.advertise<visualization_msgs::Marker>("/objectpoint", 1000);
-    publisher_ellipsoid = nh.advertise<visualization_msgs::Marker>("/ellipsoid", 1000);
+    publisher_ellipsoid = nh.advertise<visualization_msgs::Marker>("/ellipsoid_slam", 1000);
 
     publisher.publish(mPoints);
     publisher.publish(mReferencePoints);

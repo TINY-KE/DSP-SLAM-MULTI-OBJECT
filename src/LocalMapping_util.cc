@@ -393,7 +393,8 @@ void LocalMapping::ProcessDetectedObjects_byPythonReconstruct()
             PyThreadStateLock PyThreadLock;
 
             // 获取dsp优化器
-            int class_id = det->label;  //临时设置为60table，用于debug
+            int class_id = det->label;  
+            // class_id = 60;  //临时设置为60table，用于debug
             py::object* optimizer_ptr;
             if(mmPyOptimizers.count(class_id) > 0) {
                 py::object* optimizer_ptr_local = &(mmPyOptimizers[class_id]);
@@ -602,7 +603,8 @@ void LocalMapping::Process_Multi_DetectedObjects_byPythonReconstruct()
         // cout << "Object " << pMO->mnId << ": " << n_points << " points observed, " << "with " << n_valid_points << " valid points, and " << n_rays << " rays" << endl;
 
         // Surface points
-        if (n_valid_points >= 50 && n_rays > 20)
+        // if (n_valid_points >= 50 && n_rays > 20)
+        if (n_valid_points >= 20 && n_rays > 10)
         {
             Eigen::MatrixXf surface_points_cam = Eigen::MatrixXf::Zero(n_valid_points, 3);
             // 3. （三维）sdf表面的点，存储在 surface_points_cam 中。
@@ -674,13 +676,14 @@ void LocalMapping::Process_Multi_DetectedObjects_byPythonReconstruct()
 
             // 获取dsp优化器
             int class_id = det->label;  //临时设置为60table，用于debug
+            std::cout<<"[zhjd-debug] Process_Multi_DetectedObjects class_id: "<<class_id<<std::endl;
             py::object* optimizer_ptr;
             // chair2counch
             if(mmPyOptimizers.count(class_id) > 0) {
                 if(class_id==56 && mbChair2counch)  //56是椅子
                     class_id = 57;  //57是沙发
-                if(class_id==62)  //62是电视
-                    class_id = 2;  //2是汽车
+                // if(class_id==62)  //62是电视
+                //     class_id = 2;  //2是汽车
                 py::object* optimizer_ptr_local = &(mmPyOptimizers[class_id]);
                 optimizer_ptr = optimizer_ptr_local;
             }
@@ -852,9 +855,9 @@ void LocalMapping::AssociateObjects3D()
 
             // FIXME: 这里的0.5有待改成配置文件中进行设置
             // bool c1 = (dist3D_norm < dist_filt_param * dist_limit);
-            bool c1 = (dist3D_norm < 3);
-            // if (c0 && c1) {
-            if (c1) {
+            bool c1 = (dist3D_norm < 1);
+            if (c0 && c1) {
+            // if (c1) {
                 // 这里应该把 pMO_j 合并到 pMO_i 中
                 MergeMapObject(pMO_i, pMO_j);
             }

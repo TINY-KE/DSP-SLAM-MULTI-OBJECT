@@ -830,7 +830,7 @@ int main(int argc, char **argv) {
             geometry_msgs::Point point;
             ss >> temp; point.x = temp;
             ss >> temp; point.y = temp;
-            ss >> temp; point.z = temp;
+            ss >> temp; point.z = temp-0.65;
 
             mPoints.points.push_back(point);
 
