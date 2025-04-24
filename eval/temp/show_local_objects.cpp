@@ -136,6 +136,23 @@ void PublishObjectGroundtruth(string object_groundtruth_file_name){
         // height：2 6
         std::vector<geometry_msgs::Point> vertices;
         
+        // 角度转弧度
+        double angle_rad = angle * M_PI / 180.0;
+        double cos_a = cos(angle_rad);
+        double sin_a = sin(angle_rad);
+
+        // 计算立方体顶点（局部坐标绕中心旋转）
+        std::vector<cv::Point3d> local_points = {
+            {-width/2, -length/2, 0},
+            { width/2, -length/2, 0},
+            { width/2,  length/2, 0},
+            {-width/2,  length/2, 0},
+            {-width/2, -length/2, height},
+            { width/2, -length/2, height},
+            { width/2,  length/2, height},
+            {-width/2,  length/2, height}
+        };
+
         // 空置位
         geometry_msgs::Point p0;
         p0.x = 0;
@@ -143,69 +160,14 @@ void PublishObjectGroundtruth(string object_groundtruth_file_name){
         p0.z = 0+flag;
         vertices.push_back(p0);
 
-        // 顶点 1
-        geometry_msgs::Point p1;
-        p1.x = -width / 2 + tx;
-        p1.y = -length / 2 + ty;
-        // p1.z = -height / 2 + tz;
-        p1.z = 0 + flag;
-        vertices.push_back(p1);
 
-        // 顶点 2
-        geometry_msgs::Point p2;
-        p2.x = width / 2 + tx;
-        p2.y = -length / 2 + ty;
-        // p2.z = -height / 2 + tz;
-        p2.z = 0 + flag;
-        vertices.push_back(p2);
-
-        // 顶点 3
-        geometry_msgs::Point p3;
-        p3.x = width / 2 + tx;
-        p3.y = length / 2 + ty;
-        // p3.z = -height / 2 + tz;
-        p3.z = 0 + flag;
-        vertices.push_back(p3);
-
-        // 顶点 4
-        geometry_msgs::Point p4;
-        p4.x = -width / 2 + tx;
-        p4.y = length / 2 + ty;
-        // p4.z = -height / 2 + tz;
-        p4.z = 0 + flag;
-        vertices.push_back(p4);
-
-        // 顶点 5
-        geometry_msgs::Point p5;
-        p5.x = -width / 2 + tx;
-        p5.y = -length / 2 + ty;
-        // p5.z = height / 2 + tz;
-        p5.z = height + flag;
-        vertices.push_back(p5);
-
-        // 顶点 6
-        geometry_msgs::Point p6;
-        p6.x = width / 2 + tx;
-        p6.y = -length / 2 + ty;
-        // p6.z = height / 2 + tz;
-        p6.z = height + flag;
-        vertices.push_back(p6);
-
-        // 顶点 7
-        geometry_msgs::Point p7;
-        p7.x = width / 2 + tx;
-        p7.y = length / 2 + ty;
-        // p7.z = height / 2 + tz;
-        p7.z = height + flag;
-        vertices.push_back(p7);
-
-        // 顶点 8
-        geometry_msgs::Point p8;
-        p8.x = -width / 2 + tx;
-        p8.y = length / 2 + ty;
-        // p8.z = height / 2 + tz;
-        p8.z = height + flag;
-        vertices.push_back(p8);
+        for (const auto& pt : local_points) {
+            geometry_msgs::Point p;
+            p.x = tx + pt.x * cos_a - pt.y * sin_a;
+            p.y = ty + pt.x * sin_a + pt.y * cos_a;
+            p.z = pt.z + flag;
+            vertices.push_back(p);
+        }
 
         CubeMarker.points.push_back(vertices[1]);
         CubeMarker.points.push_back(vertices[2]);
@@ -815,7 +777,7 @@ int main(int argc, char **argv) {
             return 1;
         }
         visualization_msgs::Marker mPoints;
-        float fPointSize=0.018;
+        float fPointSize=0.008;
         mPoints.header.frame_id =  "world";
         mPoints.ns = "POINTS";
         mPoints.id=0;
