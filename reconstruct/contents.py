@@ -12,7 +12,7 @@ object_class_table = {
     "bowls": [45], # 碗
     "bananas": [46], "apples": [47], "oranges": [49],
     "potted_plants": [58], # 盆栽植物
-    "beds": [59],
+    "beds": [59], #床
     "dining_tables": [60], #桌子
     "tv_monitor": [62],
     "laptop": [63],
