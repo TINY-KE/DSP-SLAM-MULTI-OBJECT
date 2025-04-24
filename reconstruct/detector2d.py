@@ -117,7 +117,7 @@ class Detector2D(object):
                 # 如果当前类别有检测结果（即 n_det_bbox > 0）
                 if n_det_bbox:
                     any_detect = True
-                    print(f"        识别到 = {n_det_bbox} {object_class}, ", end='\n')
+                    print(f"        识别到 = {n_det_bbox} {object_class} {object_id}, ", end='\n')
                     # print("\n")
 
                 assert n_det_bbox == n_det_mask,  f"len(bbox[{o}]) != len(mask[{o}])"

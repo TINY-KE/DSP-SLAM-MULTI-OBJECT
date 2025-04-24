@@ -19,9 +19,10 @@ rosbag record -O circle_bed-moveitvp-1***.bag /rgb/image_raw /depth_to_rgb/image
 rosbag record -O circle-***-3.5-2-30.bag /rgb/image_raw /depth_to_rgb/image_raw  /tf  /joint_states
 rosbag record -O realhoom.bag /rgb/image_raw /depth_to_rgb/image_raw  /tf  /scan
 
-+ 控制相机运行circle
++ 启动建模单个物体的gazebo环境
 source ws_kinect/devel/setup.bash   &&  roslaunch sim_env test_demo.launch
-rosrun sim_env circle  3.5 2 30.0  0.1   #旋转半径  相机高度  俯仰角  移动1角度需要的时间
++ 控制相机运行circle
+rosrun sim_env circle  3.5 1.3 30.0  0.1   #旋转半径  相机高度  俯仰角  移动1角度需要的时间
 rosrun sim_env circle  3 1.3 30.0  0.5   #旋转半径  相机高度  俯仰角  移动1角度需要的时间
  
 + 修改物体识别的物体种类

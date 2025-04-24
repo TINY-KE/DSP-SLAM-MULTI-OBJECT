@@ -91,7 +91,7 @@ void PublishObjectGroundtruth(string object_groundtruth_file_name){
         // std::cout<<"读取新的一行:"<<endl;
 
         std::istringstream istr(line);
-        double tx,ty,tz,qr,qp,qy, width,length,height, flag=0;
+        double tx,ty,tz,qr,qp,qy, width,length,height, angle, flag=0;
 
         double temp;
         cv::Vec3d translation;  // 存储 tx, ty, tz
@@ -106,11 +106,9 @@ void PublishObjectGroundtruth(string object_groundtruth_file_name){
         istr >> temp;  length = temp;  //h
         istr >> temp;  height = temp;  //l
 
-        // TODO:用于不在地面上的物体，目前只用在了花瓶vase上.
-        if(width==0.3 && length==0.3)
-        {
-            flag = 0.5;
-        }
+        istr >> temp;  angle = temp;  //旋转角度
+        istr >> temp;  flag = temp;  //flag
+
         
 
         // 发布Cube物体
@@ -149,56 +147,64 @@ void PublishObjectGroundtruth(string object_groundtruth_file_name){
         geometry_msgs::Point p1;
         p1.x = -width / 2 + tx;
         p1.y = -length / 2 + ty;
-        p1.z = 0+flag;
+        // p1.z = -height / 2 + tz;
+        p1.z = 0 + flag;
         vertices.push_back(p1);
 
         // 顶点 2
         geometry_msgs::Point p2;
         p2.x = width / 2 + tx;
         p2.y = -length / 2 + ty;
-        p2.z = 0+flag;
+        // p2.z = -height / 2 + tz;
+        p2.z = 0 + flag;
         vertices.push_back(p2);
 
         // 顶点 3
         geometry_msgs::Point p3;
         p3.x = width / 2 + tx;
         p3.y = length / 2 + ty;
-        p3.z = 0+flag;
+        // p3.z = -height / 2 + tz;
+        p3.z = 0 + flag;
         vertices.push_back(p3);
 
         // 顶点 4
         geometry_msgs::Point p4;
         p4.x = -width / 2 + tx;
         p4.y = length / 2 + ty;
-        p4.z = 0+flag;
+        // p4.z = -height / 2 + tz;
+        p4.z = 0 + flag;
         vertices.push_back(p4);
 
         // 顶点 5
         geometry_msgs::Point p5;
         p5.x = -width / 2 + tx;
         p5.y = -length / 2 + ty;
-        p5.z = height;
+        // p5.z = height / 2 + tz;
+        p5.z = height + flag;
         vertices.push_back(p5);
 
         // 顶点 6
         geometry_msgs::Point p6;
         p6.x = width / 2 + tx;
         p6.y = -length / 2 + ty;
-        p6.z = height;
+        // p6.z = height / 2 + tz;
+        p6.z = height + flag;
         vertices.push_back(p6);
 
         // 顶点 7
         geometry_msgs::Point p7;
         p7.x = width / 2 + tx;
         p7.y = length / 2 + ty;
-        p7.z = height;
+        // p7.z = height / 2 + tz;
+        p7.z = height + flag;
         vertices.push_back(p7);
 
         // 顶点 8
         geometry_msgs::Point p8;
         p8.x = -width / 2 + tx;
         p8.y = length / 2 + ty;
-        p8.z = height;
+        // p8.z = height / 2 + tz;
+        p8.z = height + flag;
         vertices.push_back(p8);
 
         CubeMarker.points.push_back(vertices[1]);
@@ -809,7 +815,7 @@ int main(int argc, char **argv) {
             return 1;
         }
         visualization_msgs::Marker mPoints;
-        float fPointSize=0.015;
+        float fPointSize=0.018;
         mPoints.header.frame_id =  "world";
         mPoints.ns = "POINTS";
         mPoints.id=0;
@@ -845,7 +851,7 @@ int main(int argc, char **argv) {
         std::vector<cv::Mat> camera_groundTruths;
         read_view(cam_traj_file_name, camera_groundTruths);
         std::cout<<"Publish Camera GroundTruth"<<endl;
-        int step = 15;
+        int step = 1;
         if(argc > 1 )
         {
             step = atoi(argv[1]);

@@ -604,7 +604,7 @@ void LocalMapping::Process_Multi_DetectedObjects_byPythonReconstruct()
 
         // Surface points
         // if (n_valid_points >= 50 && n_rays > 20)
-        if (n_valid_points >= 20 && n_rays > 10)
+        if (n_valid_points >= 10 && n_rays > 10)
         {
             Eigen::MatrixXf surface_points_cam = Eigen::MatrixXf::Zero(n_valid_points, 3);
             // 3. （三维）sdf表面的点，存储在 surface_points_cam 中。
@@ -673,9 +673,38 @@ void LocalMapping::Process_Multi_DetectedObjects_byPythonReconstruct()
             rays << fg_rays, det->background_rays;
 
             PyThreadStateLock PyThreadLock;
+            
 
+            // object_class_table = {
+            //     "cars": [2],
+            //     "benches": [13], # 板凳
+            //     "backpack": [24], # 背包
+            //     "chairs": [56], # 椅子
+            //     "counchs": [57], # 沙发
+            //     "bottles": [39], # 瓶子
+            //     "wine_glasses": [40], # 酒杯
+            //     "cups": [41], # 杯子
+            //     "bowls": [45], # 碗
+            //     "bananas": [46], "apples": [47], "oranges": [49],
+            //     "potted_plants": [58], # 盆栽植物
+            //     "beds": [59],
+            //     "dining_tables": [60], #桌子
+            //     "tv_monitor": [62],
+            //     "laptop": [63],
+            //     "mouse": [64],
+            //     "keyboard": [66],
+            //     "microwave": [68], "oven":[69], "toaster": [70], "refrigerator": [72],
+            //     "book": [73], "clock": [74], "vase": [75], "teddy_bears": [77]
+            // }
             // 获取dsp优化器
             int class_id = det->label;  //临时设置为60table，用于debug
+            // class_id = 57; //counchs 沙发
+            // class_id = 75; //vase 花瓶
+            class_id = 60;  //桌子
+            // class_id = 56;  //椅子
+            // class_id = 62;  //显示器
+            // class_id = 63;  //笔记本 laptop
+
             std::cout<<"[zhjd-debug] Process_Multi_DetectedObjects class_id: "<<class_id<<std::endl;
             py::object* optimizer_ptr;
             // chair2counch

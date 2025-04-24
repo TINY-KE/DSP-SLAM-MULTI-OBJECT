@@ -506,18 +506,24 @@ void MapObject::ComputeCuboidPCA(bool updatePose)
     // R.col(1) = world_z;                // Set Y axis to target direction
     if(label == 59)   //57是沙发  59是床
     {
-        // Eigen::Vector3f world_x(1, 0, 0);  // Ground direction
+        Eigen::Vector3f world_x(1, 0, 0);  // Ground direction
+        Eigen::Vector3f world_y(0, 1, 0);  // Ground direction
+        Eigen::Vector3f world_z(0, 0, 1);  // Ground direction
+
+        // 床的背面（主朝向）与y轴相反
         // R.col(0) = world_x;                // Set Y axis to target direction
-        // Eigen::Vector3f world_y(0, 1, 0);  // Ground direction
         // R.col(2) = -1*world_y;                // Set Y axis to target direction
-        // Eigen::Vector3f world_z(0, 0, 1);  // Ground direction
         // R.col(1) = world_z;                // Set Y axis to target direction
-            Eigen::Vector3f world_x(1, 0, 0);  // Ground direction
-            Eigen::Vector3f world_y(0, 1, 0);  // Ground direction
-            Eigen::Vector3f world_z(0, 0, 1);  // Ground direction
-            R.col(0) = world_y;                // Set Y axis to target direction
-            R.col(2) = world_x;                // Set Y axis to target direction
-            R.col(1) = world_z;                // Set Y axis to target direction
+            
+        // 床的背面（主朝向）与x轴一致
+        // R.col(0) = world_y;                // Set Y axis to target direction
+        // R.col(2) = world_x;                // Set Y axis to target direction
+        // R.col(1) = world_z;                // Set Y axis to target direction
+
+        // 床的背面（主朝向）与y轴一致
+        R.col(0) = -1*world_x; 
+        R.col(2) = world_y;  
+        R.col(1) = world_z; 
     }
     // else if(label == 57)   //57是沙发  59是床
     // {
