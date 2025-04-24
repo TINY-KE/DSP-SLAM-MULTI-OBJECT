@@ -724,11 +724,6 @@ int main(int argc, char **argv) {
             mesh_marker.type = visualization_msgs::Marker::TRIANGLE_LIST; // 三角形列表类型
             mesh_marker.action = visualization_msgs::Marker::ADD;
 
-            // 设置标记的颜色和透明度
-            mesh_marker.color.a = 1.0f; // 设置透明度为 1.0（不透明）
-            mesh_marker.color.r =  std::get<0>(mvObjectColors[Id % 10]);
-            mesh_marker.color.g =  std::get<1>(mvObjectColors[Id % 10]);
-            mesh_marker.color.b =  std::get<2>(mvObjectColors[Id % 10]);
 
             // 设置标记的缩放
             mesh_marker.scale.x = 1.0;
@@ -738,13 +733,20 @@ int main(int argc, char **argv) {
             std::getline(file, line);
             std::stringstream ss(line);
             double mnId, label,    tx,ty,tz,  qx,qy,qz,qw,  w,h,l,   degree=1,   scale_x=1,scale_y=1,scale_z=1;  
+            double color = 0;
             ss >> mnId; ss >> label;
             ss >> tx; ss >> ty; ss >> tz;
             ss >> qx; ss >> qy; ss >> qz; ss >> qw;
             ss >> w; ss >> h; ss >> l;
             ss >> degree;
             ss >> scale_x; ss >> scale_y; ss >> scale_z;
+            ss >> color;  //设定颜色的种类
 
+            // 设置标记的颜色和透明度
+            mesh_marker.color.a = 1.0f; // 设置透明度为 1.0（不透明）
+            mesh_marker.color.r =  std::get<0>(mvObjectColors[int(color) % 10]);
+            mesh_marker.color.g =  std::get<1>(mvObjectColors[int(color) % 10]);
+            mesh_marker.color.b =  std::get<2>(mvObjectColors[int(color) % 10]);
 
             while (std::getline(file, line)) {
                 

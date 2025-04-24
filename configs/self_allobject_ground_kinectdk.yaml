@@ -150,25 +150,25 @@ ConstraintType: 1 #3 rostf; 2 imu; 1 yaml
 # Tworld_camera.tz: 1.8
 
 #  相机俯视12度  
+# https://www.andre-gaschler.com/rotationconverter/
+# Euler angles (degrees) ZYX   [ x: -102.0000003, y: 0, z: -90 ]
+# Quaternion [x, y, z, w] [ -0.5495252, 0.5495252, -0.4449967, 0.4449967 ]
+Tworld_camera.qx: -0.5495252
+Tworld_camera.qy: 0.5495252
+Tworld_camera.qz: -0.4449967
+Tworld_camera.qw: 0.4449967
+Tworld_camera.tx: 0.0
+Tworld_camera.ty: 0.0
+Tworld_camera.tz: 1.3
+
+# #  相机俯视27.5度  
 # # https://www.andre-gaschler.com/rotationconverter/
-# # Euler angles (degrees) ZYX   [ x: -102.0000003, y: 0, z: -90 ]
-# # Quaternion [x, y, z, w] [ -0.5495252, 0.5495252, -0.4449967, 0.4449967 ]
-# Tworld_camera.qx: -0.5495252
-# Tworld_camera.qy: 0.5495252
-# Tworld_camera.qz: -0.4449967
-# Tworld_camera.qw: 0.4449967
+# # Euler angles (degrees) ZYX   [ x: -117.5.0000003, y: 0, z: -90 ]
+# # Quaternion [x, y, z, w][ -0.604514, 0.604514, -0.3668281, 0.3668281 ]
+# Tworld_camera.qx: -0.604514
+# Tworld_camera.qy: 0.604514
+# Tworld_camera.qz: -0.3668281
+# Tworld_camera.qw: 0.3668281
 # Tworld_camera.tx: 0.0
 # Tworld_camera.ty: 0.0
 # Tworld_camera.tz: 1.15
-
-#  相机俯视27.5度  
-# https://www.andre-gaschler.com/rotationconverter/
-# Euler angles (degrees) ZYX   [ x: -117.5.0000003, y: 0, z: -90 ]
-# Quaternion [x, y, z, w][ -0.604514, 0.604514, -0.3668281, 0.3668281 ]
-Tworld_camera.qx: -0.604514
-Tworld_camera.qy: 0.604514
-Tworld_camera.qz: -0.3668281
-Tworld_camera.qw: 0.3668281
-Tworld_camera.tx: 0.0
-Tworld_camera.ty: 0.0
-Tworld_camera.tz: 1.15
