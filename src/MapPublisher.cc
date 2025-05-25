@@ -391,7 +391,7 @@ void MapPublisher::PublishCurrentCamera(const cv::Mat &Tcw) {
 
 
 void MapPublisher::PublishMapObjects(const vector<MapObject *> &vObjs) {
-    std::cout<<"[PublishMapObjects]"<<std::endl;
+    // std::cout<<"[PublishMapObjects]"<<std::endl;
     int num = 0;
     for (auto pMO: vObjs) {
 
