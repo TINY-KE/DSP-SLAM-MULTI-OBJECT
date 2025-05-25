@@ -67,8 +67,7 @@ DecoderPaths: ["weights/deepsdf/chairs_64",
                "weights/deepsdf/sofas_64",
                "weights/deepsdf/cars_64",
                "weights/deepsdf/vases_64_c",
-              #  "weights/deepsdf/tables_64",  #table is default object in my code, so it's essential to keep the table.
-               "weights/deepsdf/cups_64_c",  #table is default object in my code, so it's essential to keep the table.
+               "weights/deepsdf/tables_64",  #table is default object in my code, so it's essential to keep the table.
                "weights/deepsdf/beds_64",
                "weights/deepsdf/displays_64",
                "weights/deepsdf/laptops_64",
@@ -104,7 +103,7 @@ savepoints: 1
 chair2counch: 0
 
 # use_object
-useObjectConstruct: 0
+useObjectConstruct: 1
 # + 修改物体识别的物体种类
 # /home/robotlab/ws_3d_vp/src/QSP-SLAM-my/reconstruct/contents.py
 

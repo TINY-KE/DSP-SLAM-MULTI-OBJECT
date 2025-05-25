@@ -29,6 +29,8 @@
 #include "System.h"
 #include <mutex>
 
+namespace py = pybind11;
+
 namespace ORB_SLAM2
 {
 

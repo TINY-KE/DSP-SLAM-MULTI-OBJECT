@@ -32,6 +32,9 @@
 
 #include <opencv2/opencv.hpp>
 
+// ellipsoid-version
+#include "geometry/Ellipsoid.h"
+
 namespace ORB_SLAM2
 {
 #define FRAME_GRID_ROWS 48
@@ -213,6 +216,11 @@ public:
 
     //地面
     cv::Mat mGroundtruthPose_mat;           // camera groundtruth
+
+
+// ellipsoid-version
+public:
+    std::vector<g2o::ellipsoid*> mpLocalObjects; // local 3d ellipsoid
 
 };
 

@@ -84,13 +84,13 @@ class Frame:
             print("[zhjd-debug] read picture:"+os.path.join(self.root_dir, frame_name))
             rgb_file = os.path.join(self.root_dir, frame_name)
         # print(f"rgb_file = {rgb_file}")
-        print("Frame cvtColor 0")
+        # print("Frame cvtColor 0")
         self.img_bgr = cv2.imread(rgb_file)
-        print("Frame cvtColor 1")
+        # print("Frame cvtColor 1")
         if self.img_bgr is None:
             raise FileNotFoundError(f"Image not found at {rgb_file}")
         self.img_rgb = cv2.cvtColor(self.img_bgr, cv2.COLOR_BGR2RGB)
-        print("Frame cvtColor 2")
+        # print("Frame cvtColor 2")
         self.img_h, self.img_w, _ = self.img_rgb.shape
         self.instances = []
         #print("Frame Init -4")
@@ -254,7 +254,7 @@ class MonoSequence:
 
 
     def get_frame_by_id(self, frame_id):
-        # print("[zhjd-debug] get_frame_by_id")
+        print("[zhjd-debug] get_frame_by_id")
         self.current_frame = Frame(self, frame_id = frame_id)
         # print("[zhjd-debug] get_frame_by_id -1")
         self.current_frame.get_detections()

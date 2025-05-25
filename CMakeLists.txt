@@ -1,5 +1,5 @@
 cmake_policy(SET CMP0048 NEW)
-project("DSP-SLAM")
+project("EDSP-SLAM")
 cmake_minimum_required(VERSION 3.2)
 
 # c++ version
@@ -35,12 +35,13 @@ set(Pangolin_DIR "/home/robotlab/thirdparty/for_dspslam/Pangolin/build")
 set(PYTHON_LIBRARIES  "/home/robotlab/anaconda3/envs/dsp-slam/lib/libpython3.7m.so")
 set(PYTHON_INCLUDE_DIRS  "/home/robotlab/anaconda3/envs/dsp-slam/include/python3.7m")
 set(PYTHON_EXECUTABLE  "/home/robotlab/anaconda3/envs/dsp-slam/bin/python3.7")
-
+set(PCL_DIR  /home/robotlab/thirdparty_install/pcl-1.13/share/pcl-1.13)
 
 find_package(OpenCV 3.2 REQUIRED)
 find_package(Eigen3 3.4.0 REQUIRED)
 find_package(Pangolin REQUIRED)
 include_directories(/usr/include/eigen3)
+FIND_PACKAGE( PCL REQUIRED )
 
 # 打印 Eigen 版本信息
 message(STATUS "Eigen version: ${EIGEN3_VERSION}")
@@ -90,6 +91,24 @@ include_directories(
 add_subdirectory(pybind11)
 
 set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
+
+# # add modules
+add_library(utils SHARED
+    src/utils/matrix_utils.cpp
+    src/utils/dataprocess_utils.cpp
+)
+target_link_libraries(utils
+    ${OpenCV_LIBS}
+)
+add_subdirectory(src/dense_builder)
+add_subdirectory(src/symmetry)
+add_subdirectory(src/config)
+# add_subdirectory(src/pca)
+add_subdirectory(src/plane)
+add_subdirectory(src/Polygon)
+add_subdirectory(src/Relationship)
+# add_subdirectory(src/tum_rgbd)
+
 add_library(${PROJECT_NAME} SHARED
         src/System.cc
         src/System_util.cc
@@ -140,14 +159,14 @@ target_link_libraries(${PROJECT_NAME}
 # add_executable(dsp_slam dsp_slam.cc)
 # target_link_libraries(dsp_slam ${PROJECT_NAME})
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR})
-add_executable(dsp_slam_mono dsp_slam_mono.cc)
-target_link_libraries(dsp_slam_mono ${PROJECT_NAME})
+# set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR})
+# add_executable(dsp_slam_mono dsp_slam_mono.cc)
+# target_link_libraries(dsp_slam_mono ${PROJECT_NAME})
 
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR})
-add_executable(dsp_slam_rgbd dsp_slam_rgbd.cc)
-target_link_libraries(dsp_slam_rgbd ${PROJECT_NAME})
+# set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR})
+# add_executable(dsp_slam_rgbd dsp_slam_rgbd.cc)
+# target_link_libraries(dsp_slam_rgbd ${PROJECT_NAME})
 
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR})
@@ -155,14 +174,14 @@ add_executable(dsp_slam_ros dsp_slam_ros.cc)
 target_link_libraries(dsp_slam_ros ${PROJECT_NAME})
 
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR})
-add_executable(dsp_slam_ros_mono dsp_slam_ros_mono.cc)
-target_link_libraries(dsp_slam_ros_mono ${PROJECT_NAME})
+# set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR})
+# add_executable(dsp_slam_ros_mono dsp_slam_ros_mono.cc)
+# target_link_libraries(dsp_slam_ros_mono ${PROJECT_NAME})
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR})
-add_executable(show_local_objects eval/temp/show_local_objects.cpp)
-target_link_libraries(show_local_objects ${catkin_LIBRARIES}  ${OpenCV_LIBS}  ${EIGEN3_LIBS})
+# set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR})
+# add_executable(show_local_objects eval/temp/show_local_objects.cpp)
+# target_link_libraries(show_local_objects ${catkin_LIBRARIES}  ${OpenCV_LIBS}  ${EIGEN3_LIBS})
 
-set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR})
-add_executable(translate_gt eval/translate_gt.cpp)
-target_link_libraries(translate_gt ${catkin_LIBRARIES}  ${OpenCV_LIBS}  ${EIGEN3_LIBS})
+# set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR})
+# add_executable(translate_gt eval/translate_gt.cpp)
+# target_link_libraries(translate_gt ${catkin_LIBRARIES}  ${OpenCV_LIBS}  ${EIGEN3_LIBS})
