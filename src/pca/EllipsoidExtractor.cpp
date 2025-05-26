@@ -26,7 +26,7 @@
 #include "Thirdparty/g2o/g2o/core/robust_kernel_impl.h"
 
 #include <src/config/Config.h>
-#include <core/Geometry.h>
+#include <geometry/Geometry.h>
 
 namespace EllipsoidSLAM
 {

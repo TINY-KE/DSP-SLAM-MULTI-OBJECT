@@ -231,7 +231,7 @@ namespace ORB_SLAM2
             std::cout << "Objects in frame : " << pFrameIn->mpLocalObjects.size() << std::endl;
             std::cout << "obj_id : " << obj_id << std::endl;
             std::cout << "vec : " << vec.transpose() << std::endl;
-            std::cout << "timestamp of frame : " << std::to_string(pFrameIn->timestamp) << std::endl;
+            std::cout << "timestamp of frame : " << std::to_string(pFrameIn->mTimeStamp) << std::endl;
             return false;
         }
 

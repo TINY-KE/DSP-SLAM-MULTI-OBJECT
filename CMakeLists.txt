@@ -107,7 +107,7 @@ add_subdirectory(src/config)
 add_subdirectory(src/plane)
 add_subdirectory(src/Polygon)
 add_subdirectory(src/Relationship)
-# add_subdirectory(src/tum_rgbd)
+add_subdirectory(src/tum_rgbd)
 
 add_library(${PROJECT_NAME} SHARED
         src/System.cc
