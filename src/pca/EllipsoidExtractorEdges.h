@@ -80,7 +80,7 @@ public:
 } // namespace g2o
 
 // 一些几何函数
-namespace EllipsoidSLAM
+namespace ORB_SLAM2
 {
 
 bool JudgeCross(g2o::plane& pl, g2o::ellipsoid& e);

@@ -16,7 +16,7 @@
 #include <opencv2/opencv.hpp> 
 // LJ修改
 # define pcl_isfinite(x) std::isfinite(x)
-using namespace EllipsoidSLAM;
+using namespace ORB_SLAM2;
 
 static int calcu_time = 0;
 
@@ -33,7 +33,7 @@ bool isInFrustrum(int x, int y, int range_x, int range_y)
     return isInRange(x,y,0,range_x,0,range_y);
 }
 
-bool checkValidPoint(EllipsoidSLAM::PointXYZRGB &p)
+bool checkValidPoint(ORB_SLAM2::PointXYZRGB &p)
 {
     return (pcl_isfinite(p.x) && pcl_isfinite(p.y) && pcl_isfinite(p.z));
 }
@@ -346,7 +346,7 @@ SymmetrySolverData SymmetrySolver::getResult()
     return mData;
 }
 
-void SymmetrySolver::SetBorders(EllipsoidSLAM::PointCloud* pBorders){
+void SymmetrySolver::SetBorders(ORB_SLAM2::PointCloud* pBorders){
     mpBorders = pBorders;
     mbOpenSparseEstimation = true;
 }
@@ -420,7 +420,7 @@ namespace g2o
         pcl::PointCloud<pcl::PointXYZ>::Ptr cloudPCL (new pcl::PointCloud<pcl::PointXYZ>);    
         int num = mpCloud->size();
         for(int i=0;i<num;i++){
-            EllipsoidSLAM::PointXYZRGB pT = (*mpCloud)[i];
+            ORB_SLAM2::PointXYZRGB pT = (*mpCloud)[i];
             
             pcl::PointXYZ p;
             p.x = pT.x;
@@ -505,7 +505,7 @@ namespace g2o
         pcl::PointCloud<pcl::PointXYZ>::Ptr cloudPCL (new pcl::PointCloud<pcl::PointXYZ>);    
         int num = mpCloud->size();
         for(int i=0;i<num;i++){
-            EllipsoidSLAM::PointXYZRGB pT = (*mpCloud)[i];
+            ORB_SLAM2::PointXYZRGB pT = (*mpCloud)[i];
             
             pcl::PointXYZ p;
             p.x = pT.x;

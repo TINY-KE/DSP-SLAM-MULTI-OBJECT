@@ -263,4 +263,4 @@ namespace ORB_SLAM2
         return 4 + 4;
     }
 
-} // namespace EllipsoidSLAM
+} // namespace ORB_SLAM2

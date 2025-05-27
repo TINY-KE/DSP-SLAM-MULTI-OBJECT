@@ -69,6 +69,7 @@
         "*.ipp": "cpp",
         "any": "cpp",
         "strstream": "cpp",
-        "cfenv": "cpp"
+        "cfenv": "cpp",
+        "geometry": "cpp"
     }
 }

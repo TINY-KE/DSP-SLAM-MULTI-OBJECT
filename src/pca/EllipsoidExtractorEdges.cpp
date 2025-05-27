@@ -3,7 +3,7 @@
 
 // ***************** DEBUG 可视化 ***************
 #include "Map.h"
-extern EllipsoidSLAM::Map* expMap;
+extern ORB_SLAM2::Map* expMap;
 
 bool g_bVisualize = false;
 // *********************************************
@@ -120,8 +120,8 @@ namespace g2o{
             Vector3d point_w = homo_to_real_coord_vec<double>(transformMat * real_to_homo_coord_vec<double>(point));
 
             // 1) 可视化这个最近点.
-            EllipsoidSLAM::PointCloud* pCloud = new EllipsoidSLAM::PointCloud;
-            EllipsoidSLAM::PointXYZRGB p;
+            ORB_SLAM2::PointCloud* pCloud = new ORB_SLAM2::PointCloud;
+            ORB_SLAM2::PointXYZRGB p;
             p.x = point_w[0];
             p.y = point_w[1];
             p.z = point_w[2];
@@ -421,7 +421,7 @@ namespace g2o{
         double error;
         
         // 1) 判断平面是否与椭球体相交
-        bool bCross = EllipsoidSLAM::JudgeCross(pl, e);
+        bool bCross = ORB_SLAM2::JudgeCross(pl, e);
         // std::cout << "bCross : " << bCross << std::endl;
 
         // 1.1 若相交, 则error为0
@@ -447,7 +447,7 @@ namespace g2o{
 
 } // g2o
 
-namespace EllipsoidSLAM
+namespace ORB_SLAM2
 {
 
     // 传入坐标系: 都为世界坐标系

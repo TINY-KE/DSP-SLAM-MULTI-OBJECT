@@ -47,6 +47,6 @@ namespace ORB_SLAM2
 
     };
 
-} // namespace EllipsoidSLAM
+} // namespace ORB_SLAM2
 
 #endif

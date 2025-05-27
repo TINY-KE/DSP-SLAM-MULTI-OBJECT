@@ -85,6 +85,7 @@ include_directories(
         ${PROJECT_SOURCE_DIR}/Thirdparty/DBoW2
         ${EIGEN3_INCLUDE_DIR}
         ${Pangolin_INCLUDE_DIRS}
+        ${PCL_INCLUDE_DIRS} 
 )
 
 # You need to set to your own Python paths
@@ -103,7 +104,7 @@ target_link_libraries(utils
 add_subdirectory(src/dense_builder)
 add_subdirectory(src/symmetry)
 add_subdirectory(src/config)
-# add_subdirectory(src/pca)
+add_subdirectory(src/pca)
 add_subdirectory(src/plane)
 add_subdirectory(src/Polygon)
 add_subdirectory(src/Relationship)
@@ -153,6 +154,7 @@ target_link_libraries(${PROJECT_NAME}
         ${PROJECT_SOURCE_DIR}/Thirdparty/DBoW2/lib/libDBoW2.so
         ${PROJECT_SOURCE_DIR}/Thirdparty/g2o/lib/libg2o.so
         /usr/lib/x86_64-linux-gnu/libtiff.so.5
+        ${PCL_LIBRARY_DIRS}
         )
 
 # set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR})

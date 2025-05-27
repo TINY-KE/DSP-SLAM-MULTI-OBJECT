@@ -11,4 +11,5 @@ target_link_libraries(EllipsoidExtractor
         ${OpenCV_LIBS}
         symmetry
         utils
+        ${PCL_LIBRARY_DIRS}
         )
