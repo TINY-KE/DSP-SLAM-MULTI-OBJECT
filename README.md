@@ -45,7 +45,12 @@ pybind11::handle::dec_ref() is being called while the GIL is either not held or 
 + 多帧生成椭球
 
 
-+ 
++ 为什么要用到json中的"slam_config_path"
+
++ 修改为icl数据集的读取本地
+
++ 相机第一帧的位姿 怎么设置？
+
 
 
 

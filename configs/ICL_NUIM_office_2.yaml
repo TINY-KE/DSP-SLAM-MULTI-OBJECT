@@ -5,19 +5,19 @@
 #--------------------------------------------------------------------------------------------
 
 # Camera calibration and distortion parameters (OpenCV)
-Camera.fx: 984.697
-Camera.fy: 984.697
-Camera.cx: 480.0
-Camera.cy: 270.0
+Camera.fx: 481.20
+Camera.fy: 480.00
+Camera.cx: 319.50
+Camera.cy: 239.50
 
-Camera.k1: -0.133543
-Camera.k2: -0.15436
+Camera.k1: 0.0
+Camera.k2: 0.0
 Camera.p1: 0.0
 Camera.p2: 0.0
 
 # Camera frames per second
 Camera.fps: 25.0
-
+Camera.bf: 40.0  # IR projector baseline times fx (aprox.)
 # Color order of the images (0: BGR, 1: RGB. It is ignored if images are grayscale)
 Camera.RGB: 1
 
@@ -89,7 +89,7 @@ Camera.height: 480
 ThDepth: 40.0
 
 # Deptmap values factor  
-DepthMapFactor: 1  #对应
+DepthMapFactor: 5000  #对应
 
 # 保存本地
 saveobjects: 0
@@ -109,37 +109,15 @@ ConstraintType: 1 #3 rostf; 2 imu; 1 yaml
 
 
 
-#  相机俯视28度
-# Tworld_camera.qw: -0.364187
-# Tworld_camera.qx: 0.606109
-# Tworld_camera.qy: 0.606109
-# Tworld_camera.qz: -0.364187
-
-#  相机俯视30度
-# Euler angles (degrees) ZYX   [ x: 90, y: 0, z: -120.0000004 ]
-# Quaternion [x, y, z, w]   [ -0.6123724, -0.6123724, 0.3535534, 0.3535534 ]
-# Tworld_camera.qw:  0.3535534
-# Tworld_camera.qx: -0.6123724
-# Tworld_camera.qy: -0.6123724
-# Tworld_camera.qz:  0.3535534
-
-# #  相机俯视30度   对应gazebo相机移动参数3.5 2 30.0  0.1
-Tworld_camera.qw:  0.3535534
-Tworld_camera.qx: -0.6123724
-Tworld_camera.qy: 0.6123724
-Tworld_camera.qz:  -0.3535534
-Tworld_camera.tx: 0.0
-Tworld_camera.ty: 0.0
-Tworld_camera.tz: 1.3  
 
 # #  相机俯视20度   对应gazebo相机移动参数3.5 1 20.0  1
 # # https://www.andre-gaschler.com/rotationconverter/
-# # Euler angles (degrees) ZYX   [ x: -110.0000003, y: 0, z: -90 ]
-# # Quaternion [x, y, z, w]  [ -0.579228, 0.579228, -0.4055798, 0.4055798 ]
-# Tworld_camera.qx: -0.579228
-# Tworld_camera.qy: 0.579228
-# Tworld_camera.qz:  -0.4055798
-# Tworld_camera.qw:  0.4055798
-# Tworld_camera.tx: 0.0
-# Tworld_camera.ty: 0.0
-# Tworld_camera.tz: 1
+# # Euler angles (degrees) ZYX   [ x: -90.00, y: 0, z: -90 ]
+# # Quaternion [x, y, z, w]  [ -0.5, 0.5, -0.5, 0.5 ]
+Tworld_camera.qx: -0.5
+Tworld_camera.qy: 0.5
+Tworld_camera.qz: -0.5
+Tworld_camera.qw: 0.5
+Tworld_camera.tx: 0.0
+Tworld_camera.ty: 0.0
+Tworld_camera.tz: 1
