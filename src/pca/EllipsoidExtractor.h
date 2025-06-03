@@ -5,10 +5,10 @@
 
 #include <opencv2/opencv.hpp>
 
-#include <geometry/Ellipsoid.h>
-#include <geometry/Geometry.h>
+#include <ellipsoid-version/Ellipsoid.h>
+#include <ellipsoid-version/Geometry.h>
 #include <Map.h>
-#include <geometry/BasicEllipsoidEdges.h>
+#include <ellipsoid-version/BasicEllipsoidEdges.h>
 
 #include <src/symmetry/PointCloudFilter.h>
 #include <src/symmetry/Symmetry.h>

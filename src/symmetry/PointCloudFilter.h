@@ -13,8 +13,8 @@
 typedef pcl::PointXYZRGB PointT;
 typedef pcl::PointCloud<PointT> PointCloudPCL;
 
-#include <geometry/Geometry.h>
-#include <geometry/Ellipsoid.h>
+#include <ellipsoid-version/Geometry.h>
+#include <ellipsoid-version/Ellipsoid.h>
 
 #include <opencv2/opencv.hpp>
 

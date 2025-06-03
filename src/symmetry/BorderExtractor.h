@@ -13,7 +13,7 @@
 
 #include "src/symmetry/PointCloudFilter.h"
 
-#include <geometry/Geometry.h>
+#include <ellipsoid-version/Geometry.h>
 
 #include <ctime>
 

@@ -158,6 +158,12 @@ Tracking::Tracking(System *pSys, ORBVocabulary* pVoc, FrameDrawer *pFrameDrawer,
     mbUseRos = fSettings["use_ros"];
     mDatasetPathRoot = fSettings["DatasetPathRoot"].string();
     mMinimux_Points_To_Judge_Good = fSettings["Minimux_Points_To_Judge_Good"];
+
+    // 设置地面为默认值
+    SetGroundPlaneMannually(
+        Eigen::Vector4d(0,0,1,0));
+    
+    
 }
 
 void Tracking::SetLocalMapper(LocalMapping *pLocalMapper)

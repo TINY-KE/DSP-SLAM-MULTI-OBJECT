@@ -27,9 +27,9 @@
 #include <mutex>
 
 // ellipsoid version
-#include "geometry/Ellipsoid.h"
-#include "geometry/Geometry.h"
-#include "geometry/Plane.h"
+#include "ellipsoid-version/Ellipsoid.h"
+#include "ellipsoid-version/Geometry.h"
+#include "ellipsoid-version/Plane.h"
 // #include <opencv2/opencv.hpp>
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>	

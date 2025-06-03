@@ -1,13 +1,13 @@
 #pragma once
 
-#include "geometry/Ellipsoid.h"
+#include "ellipsoid-version/Ellipsoid.h"
 #include "Thirdparty/g2o/g2o/core/base_multi_edge.h"
 #include "Thirdparty/g2o/g2o/types/types_six_dof_expmap.h"
 #include <Eigen/Core>
 #include <Eigen/Geometry>
 #include <Eigen/Dense>
 
-#include <geometry/BasicEllipsoidEdges.h>
+#include <ellipsoid-version/BasicEllipsoidEdges.h>
 
 namespace g2o
 {

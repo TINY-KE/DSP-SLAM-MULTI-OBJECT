@@ -142,6 +142,7 @@ System::System(const string &strVocFile, const string &strSettingsFile, const st
     mpLocalMapper = new LocalMapping(this, mpMap, mpObjectDrawer, mSensor==MONOCULAR);
     mptLocalMapping = new thread(&ORB_SLAM2::LocalMapping::Run,mpLocalMapper);
 
+
     //Initialize the Loop Closing thread and launch
     // Only enable loop closing for KITTI
     if (mSensor == STEREO)
@@ -154,17 +155,21 @@ System::System(const string &strVocFile, const string &strSettingsFile, const st
         mpLoopCloser = nullptr;
     }
 
+
     //Initialize the Viewer thread and launch
     mpViewer = new Viewer(this, mpFrameDrawer, mpMapDrawer, mpMapPublisher, mpObjectDrawer, mpTracker,strSettingsFile);
     mptViewer = new thread(&Viewer::Run, mpViewer);
     mpTracker->SetViewer(mpViewer);
 
+
     //Set pointers between threads
     mpTracker->SetLocalMapper(mpLocalMapper);
     mpTracker->SetLoopClosing(mpLoopCloser);
 
+
     mpLocalMapper->SetTracker(mpTracker);
     mpLocalMapper->SetLoopCloser(mpLoopCloser);
+
 
     if (mpLoopCloser)
     {

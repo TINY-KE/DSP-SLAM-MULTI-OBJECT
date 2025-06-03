@@ -42,57 +42,23 @@ using namespace std;
  * @param[out] vTimestamps               时间戳
  */
 
-// bool CreateDirIfNotExist(const std::string file_path)
-// {
-//   if (!boost::filesystem::exists(file_path)) {
-//     if (!boost::filesystem::create_directories(file_path)) {
-//     //   ROS_ERROR("Failed to create directory: %s", file_path.c_str());
-//       std::cerr << "Failed to create directory: " << file_path << std::endl;
-//       return false;
-//     }
-//   }
-//   return true;
-// }
 
 void LoadImages(const string &strAssociationFilename, vector<string> &vstrImageFilenamesRGB,
-                vector<string> &vstrImageFilenamesD, vector<double> &vTimestamps);
+                vector<string> &vstrImageFilenamesD, vector<double> &vTimestamps, bool order_rgb_depth = 1);
 
 int main(int argc, char **argv)
 {
-    ros::init(argc, argv, "ASLAM_RGBD");
+    ros::init(argc, argv, "RGBD");
     ros::start();
     ros::NodeHandle nh;
 
+    //(1)从ros param和yaml中获取参数
     if(argc != 6)
     {
         cerr << endl << "Usage: ./dsp_slam_rgbd path_to_vocabulary path_to_settings path_to_sequence path_to_association path_to_saved_trajectory" << endl;
         return 1;
     }
-
-    vector<string> vstrImageFilenamesRGB;
-    vector<string> vstrImageFilenamesD;
-    vector<double> vTimestamps;
     string strAssociationFilename = string(argv[4]);
-
-    cv::FileStorage fSettings(string(argv[2]), cv::FileStorage::READ);
-
-    LoadImages(strAssociationFilename, vstrImageFilenamesRGB, vstrImageFilenamesD, vTimestamps);
-
-    int nImages = vstrImageFilenamesRGB.size();
-
-    if(vstrImageFilenamesRGB.empty()){
-        cerr << endl << "No images found in provided path." << endl;
-        return 1;
-    }
-    else if(vstrImageFilenamesD.size()!=vstrImageFilenamesRGB.size()){
-        cerr << endl << "Different number of images for rgb and depth." << endl;
-        return 1;
-    }
-
-    auto msensor = ORB_SLAM2::System::RGBD;
-
-    // Create SLAM system. It initializes all system threads and gets ready to process frames.
-    ORB_SLAM2::System SLAM(argv[1], argv[2], argv[3], msensor);
 
     string strSettingsFile = argv[2];
 
@@ -106,8 +72,38 @@ int main(int argc, char **argv)
     std::cout << "- settings file: " << strSettingsFile << std::endl;
     std::cout << "- dataset_path: " << dataset_path << std::endl;
 
-    // 读取图片
-    // SLAM.SetImageNames(vstrImageFilenamesRGB);
+    auto msensor = ORB_SLAM2::System::RGBD;
+
+    cv::FileStorage fSettings(string(argv[2]), cv::FileStorage::READ);
+
+    //(2)启动SLAM系统
+    ORB_SLAM2::System SLAM(argv[1], argv[2], argv[3], msensor);
+    
+    std::cout<< "System Init 6-1" << std::endl;
+
+    //(3)获取图片：从本地读取
+    vector<string> vstrImageFilenamesRGB;
+    vector<string> vstrImageFilenamesD;
+    vector<double> vTimestamps;
+
+    std::cout<< "System Init 6-2: "<<strAssociationFilename << std::endl;
+
+    LoadImages(strAssociationFilename, vstrImageFilenamesRGB, vstrImageFilenamesD, vTimestamps, false);
+
+    std::cout<< "System Init 6" << std::endl;
+
+    int nImages = vstrImageFilenamesRGB.size();
+
+    if(vstrImageFilenamesRGB.empty()){
+        cerr << endl << "No images found in provided path." << endl;
+        return 1;
+    }
+    else if(vstrImageFilenamesD.size()!=vstrImageFilenamesRGB.size()){
+        cerr << endl << "Different number of images for rgb and depth." << endl;
+        return 1;
+    }
+
+    std::cout<< "System Init 7" << std::endl;
 
     // 每一帧的track耗时
     vector<float> vTimesTrack;
@@ -132,6 +128,10 @@ int main(int argc, char **argv)
         imRGB = cv::imread(string(argv[3])+"/"+vstrImageFilenamesRGB[ni], CV_LOAD_IMAGE_UNCHANGED);
         imD = cv::imread(string(argv[3])+"/"+vstrImageFilenamesD[ni], CV_LOAD_IMAGE_UNCHANGED);
 
+        // cv::imshow ("RGB", imRGB);
+        // cv::imshow ("D", imD);
+        // cv::waitKey(5000);
+
         std::chrono::steady_clock::time_point t2_read = std::chrono::steady_clock::now();
         double t_read = std::chrono::duration_cast<std::chrono::duration<double> >(t2_read - t1_read).count();
 
@@ -150,14 +150,14 @@ int main(int argc, char **argv)
         std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now();
 
         // cout << "imRGB.type() = " << imRGB.type() << endl;
-
         // cout << "imD.type() = " << imD.type() << endl;
 
         assert(imRGB.type()==16);
         assert(imD.type()==2);
 
         SLAM.TrackRGBD(imRGB, imD, tframe);
-   
+
+
         std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();
 
         double ttrack = std::chrono::duration_cast<std::chrono::duration<double> >(t2 - t1).count();
@@ -220,12 +220,17 @@ int main(int argc, char **argv)
 
 //从关联文件中提取这些需要加载的图像的路径和时间戳
 void LoadImages(const string &strAssociationFilename, vector<string> &vstrImageFilenamesRGB,
-                vector<string> &vstrImageFilenamesD, vector<double> &vTimestamps)
+                vector<string> &vstrImageFilenamesD, vector<double> &vTimestamps, bool order_rgb_depth)
 {
+    std::cout<< "System Init 6-3: "<<strAssociationFilename << std::endl;
+
     //输入文件流
     ifstream fAssociation;
     //打开关联文件
     fAssociation.open(strAssociationFilename.c_str());
+
+    std::cout<< "System Init 6-4 "<< std::endl;
+
     //一直读取,知道文件结束
     while(!fAssociation.eof())
     {
@@ -237,18 +242,34 @@ void LoadImages(const string &strAssociationFilename, vector<string> &vstrImageF
         {
             //字符串流
             stringstream ss;
-            ss << s;
-            //字符串格式:  时间戳 rgb图像路径 时间戳 深度图像路径
-            double t;
-            string sRGB, sD;
-            ss >> t;
-            vTimestamps.push_back(t);
-            ss >> sRGB;
-            vstrImageFilenamesRGB.push_back(sRGB);
-            ss >> t;
-            ss >> sD;
-            vstrImageFilenamesD.push_back(sD);
-
+            if (order_rgb_depth)
+            {
+                ss << s;
+                //字符串格式:  时间戳 rgb图像路径 时间戳 深度图像路径
+                double t;
+                string sRGB, sD;
+                ss >> t;
+                vTimestamps.push_back(t);
+                ss >> sRGB;
+                vstrImageFilenamesRGB.push_back(sRGB);
+                ss >> t;
+                ss >> sD;
+                vstrImageFilenamesD.push_back(sD);
+            }
+            else
+            {
+                //字符串格式:  时间戳 深度图像路径 时间戳 rgb图像路径
+                ss << s;
+                double t;
+                string sD, sRGB;
+                ss >> t;
+                vTimestamps.push_back(t);
+                ss >> sD;
+                vstrImageFilenamesD.push_back(sD);
+                ss >> t;
+                ss >> sRGB;
+                vstrImageFilenamesRGB.push_back(sRGB);
+            }
         }
     }
 }

@@ -1,9 +1,9 @@
 #ifndef ELLIPSOIDSLAM_SYMMETRYSOLVER_H
 #define ELLIPSOIDSLAM_SYMMETRYSOLVER_H
 
-#include <geometry/Geometry.h>
-#include <geometry/Ellipsoid.h>
-#include <geometry/Plane.h>
+#include <ellipsoid-version/Geometry.h>
+#include <ellipsoid-version/Ellipsoid.h>
+#include <ellipsoid-version/Plane.h>
 
 #include <Eigen/Core>
 

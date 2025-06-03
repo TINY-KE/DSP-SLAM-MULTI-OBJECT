@@ -1,4 +1,4 @@
-#include "geometry/Ellipsoid.h"
+#include "ellipsoid-version/Ellipsoid.h"
 #include "SymmetrySolver.h"
 #include "PointCloudFilter.h"
 #include "utils/matrix_utils.h"

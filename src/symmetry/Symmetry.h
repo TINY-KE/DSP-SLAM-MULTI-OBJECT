@@ -1,8 +1,8 @@
 #ifndef ELLIPSOIDSLAM_SYMMETRY_H
 #define ELLIPSOIDSLAM_SYMMETRY_H
 
-#include <geometry/Geometry.h>
-#include <geometry/Ellipsoid.h>
+#include <ellipsoid-version/Geometry.h>
+#include <ellipsoid-version/Ellipsoid.h>
 
 #include <Eigen/Core>
 using namespace Eigen;

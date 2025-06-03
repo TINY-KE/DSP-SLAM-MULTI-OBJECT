@@ -33,7 +33,7 @@
 #include <opencv2/opencv.hpp>
 
 // ellipsoid-version
-#include "geometry/Ellipsoid.h"
+#include "ellipsoid-version/Ellipsoid.h"
 
 namespace ORB_SLAM2
 {

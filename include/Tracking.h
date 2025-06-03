@@ -42,6 +42,11 @@
 
 #include <mutex>
 
+namespace g2o
+{   
+    class plane;
+}
+
 namespace ORB_SLAM2
 {
 
@@ -245,14 +250,17 @@ private:
     string mDatasetPathRoot;
     int mMinimux_Points_To_Judge_Good;
 
-// zhjd: 地面
+// ellipsoid-version
 private:
     bool miGroundPlaneState = false;
-    // g2o::plane mGroundPlane;
+    g2o::plane mGroundPlane;
+    // 设置地面的真值
+    void SetGroundPlaneMannually(const Eigen::Vector4d &param);
 
     // 设置相机的真实位姿,但只用于第一帧
     void SetRealPose();
 
+    
     
 };
 

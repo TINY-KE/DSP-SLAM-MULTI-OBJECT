@@ -56,9 +56,12 @@ Viewer.ViewpointX: 0
 Viewer.ViewpointY: -10   # originally -10
 Viewer.ViewpointZ: -0.1
 Viewer.ViewpointF: 2000
+
+#--------------------------------------------------------------------------------------------
+# EDSP
+#--------------------------------------------------------------------------------------------
 Viewer.UsePangolin: 1
 
-# dsp
 YoloClasses: [56, 57, 2, 75, 60, 59, 62, 63, 73]
 DecoderPaths: ["weights/deepsdf/chairs_64",
                "weights/deepsdf/sofas_64",

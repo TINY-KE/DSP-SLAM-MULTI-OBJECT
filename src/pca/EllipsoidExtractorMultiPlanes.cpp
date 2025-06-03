@@ -6,9 +6,9 @@
 #include <pcl/common/centroid.h>
 
 #include "include/utils/dataprocess_utils.h"
-#include "include/geometry/ConstrainPlane.h"
+#include "include/ellipsoid-version/ConstrainPlane.h"
 
-#include "include/geometry/PriorInfer.h"
+#include "include/ellipsoid-version/PriorInfer.h"
 
 namespace ORB_SLAM2
 {

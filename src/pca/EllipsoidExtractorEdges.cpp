@@ -1,5 +1,5 @@
 #include "EllipsoidExtractorEdges.h"
-#include "geometry/Plane.h"
+#include "ellipsoid-version/Plane.h"
 
 // ***************** DEBUG 可视化 ***************
 #include "Map.h"

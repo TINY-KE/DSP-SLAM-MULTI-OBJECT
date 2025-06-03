@@ -416,13 +416,13 @@ namespace ORB_SLAM2 {
 
 
     // [改进]
-    // void Tracking::SetGroundPlaneMannually(const Eigen::Vector4d &param)
-    // {
-    //     std::cout << "[GroundPlane] Set groundplane mannually: " << param.transpose() << std::endl;
-    //     miGroundPlaneState = true;
-    //     mGroundPlane.param = param;
-    //     mGroundPlane.color = Vector3d(0,1,0);
-    // }
+    void Tracking::SetGroundPlaneMannually(const Eigen::Vector4d &param)
+    {
+        std::cout << "[GroundPlane] Set groundplane mannually: " << param.transpose() << std::endl;
+        miGroundPlaneState = true;
+        mGroundPlane.param = param;
+        mGroundPlane.color = Vector3d(0,1,0);
+    }
 
 
     void Tracking::SetRealPose(){

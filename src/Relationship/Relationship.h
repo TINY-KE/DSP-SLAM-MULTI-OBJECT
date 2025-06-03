@@ -7,8 +7,8 @@
 #include <iostream>
 #include <vector>
 
-#include <geometry/Ellipsoid.h>
-#include <geometry/Plane.h>
+#include <ellipsoid-version/Ellipsoid.h>
+#include <ellipsoid-version/Plane.h>
 
 #include <Eigen/Core>
 

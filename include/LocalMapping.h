@@ -30,6 +30,7 @@
 #include <mutex>
 
 // LJ修改
+#define PYBIND11_NO_ASSERT_GIL_HELD_INCREF_DECREF
 #include <pybind11/embed.h>
 #include <pybind11/eigen.h>
 namespace py = pybind11;

@@ -64,7 +64,7 @@ int main(int argc, char **argv)
     ros::init(argc, argv, "RGBD");
     ros::start();
     string yamlfile, sensor; bool semanticOnline, rosBagFlag;
-    //(1)从ros param中获取参数
+    //(1)从ros param和yaml中获取参数
     if(argc != 5)
     {
         cerr << endl << "Usage: ./qsp_slam_rgbd path_to_vocabulary path_to_settings path_to_save_color_image path_to_saved_trajectory" << endl;
@@ -77,15 +77,15 @@ int main(int argc, char **argv)
 
     cv::FileStorage fSettings(string(argv[2]), cv::FileStorage::READ);
 
-
     auto msensor = ORB_SLAM2::System::RGBD;
 
+    string strSettingsFile = argv[2];
+   
+    //(2)启动SLAM系统
     ORB_SLAM2::System SLAM(argv[1], argv[2], argv[3], msensor);
 
-    string strSettingsFile = argv[2];
 
-
-    //(3)接受ros topic
+    //(3)获取图片：接受ros topic
     ImageGrabber igb(&SLAM);
     ros::NodeHandle nh;
     message_filters::Subscriber<sensor_msgs::Image> rgb_sub(nh, "/rgb/image_raw", 1);
@@ -96,10 +96,10 @@ int main(int argc, char **argv)
 
     ros::spin();
 
-    // Stop all threads
+    // （4）Stop all threads
     SLAM.Shutdown();
 
-    // (4)Save camera trajectory
+    // (5) Save camera trajectory
     SLAM.SaveKeyFrameTrajectoryTUM("/home/robotlab/ws_3d_vp/src/QSP-SLAM-my/eval/temp/");
     int SaveLocalObjects = fSettings["saveobjects"];
     if (SaveLocalObjects){

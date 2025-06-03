@@ -144,6 +144,9 @@ add_library(${PROJECT_NAME} SHARED
         src/ObjectDrawer.cc
         src/ObjectRenderer.cc
         src/MapPublisher.cc
+
+        # ellipsoid-version
+        src/ellipsoid-version/Plane.cpp
         )
 target_link_libraries(${PROJECT_NAME}
         ${catkin_LIBRARIES}  #for ros
@@ -166,9 +169,9 @@ target_link_libraries(${PROJECT_NAME}
 # target_link_libraries(dsp_slam_mono ${PROJECT_NAME})
 
 
-# set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR})
-# add_executable(dsp_slam_rgbd dsp_slam_rgbd.cc)
-# target_link_libraries(dsp_slam_rgbd ${PROJECT_NAME})
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR})
+add_executable(dsp_slam_rgbd dsp_slam_rgbd.cc)
+target_link_libraries(dsp_slam_rgbd ${PROJECT_NAME})
 
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR})
