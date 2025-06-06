@@ -103,6 +103,8 @@ int main(int argc, char **argv)
         return 1;
     }
 
+    SLAM.SetImageNames(vstrImageFilenamesRGB);
+
     std::cout<< "System Init 7" << std::endl;
 
     // 每一帧的track耗时
@@ -166,17 +168,17 @@ int main(int argc, char **argv)
 
         vTimesTrack[ni]=ttrack;
 
-        // Wait to load the next frame
-        double T = 0.0;
-        if(ni<nImages-1)
-            T = vTimestamps[ni+1]-tframe;
-        else if(ni>0)
-            T = tframe-vTimestamps[ni-1];
+        // // Wait to load the next frame
+        // double T = 0.0;
+        // if(ni<nImages-1)
+        //     T = vTimestamps[ni+1]-tframe;
+        // else if(ni>0)
+        //     T = tframe-vTimestamps[ni-1];
 
-        if(ttrack<T)
-        {
-            std::this_thread::sleep_for(std::chrono::microseconds(static_cast<size_t>((T- ttrack)*1e6)));
-        }
+        // if(ttrack<T)
+        // {
+        //     std::this_thread::sleep_for(std::chrono::microseconds(static_cast<size_t>((T- ttrack)*1e6)));
+        // }
 
     }
 

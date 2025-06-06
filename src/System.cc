@@ -739,4 +739,15 @@ bool System::fileExists(const std::string &filename) {
     return (stat(filename.c_str(), &buffer) == 0);
 }
 
+
+// ellipsoid-version
+
+void System::SetImageNames(vector<string>& vstrImageFilenamesRGB)
+{
+    mvstrImageFilenamesRGB.resize(vstrImageFilenamesRGB.size());
+    mvstrImageFilenamesRGB = std::vector<string>(vstrImageFilenamesRGB.begin(), vstrImageFilenamesRGB.end());
+    mpTracker->SetImageNames(vstrImageFilenamesRGB);
+}
+
+
 } //namespace ORB_SLAM

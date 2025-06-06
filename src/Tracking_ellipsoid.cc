@@ -503,4 +503,10 @@ namespace ORB_SLAM2 {
     //     miGroundPlaneState = 2;
     // }
 
+    void Tracking::SetImageNames(vector<string>& vstrImageFilenamesRGB)
+    {
+        mvstrImageFilenamesRGB.resize(vstrImageFilenamesRGB.size());
+        mvstrImageFilenamesRGB = std::vector<string>(vstrImageFilenamesRGB.begin(), vstrImageFilenamesRGB.end());
+    }
+
 }

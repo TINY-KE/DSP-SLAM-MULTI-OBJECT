@@ -223,6 +223,13 @@ public:
     bool fileExists(const std::string &filename);
     int mbChair2counch = 0;  //控制，在localmapping物体建模时，是否将椅子转换为沙发
     int mbUseObjectConstruct = 1;  //控制是否使用物体建模
+
+// ellipsoid-version
+public:
+    // Add by Lj
+    vector<string> mvstrImageFilenamesRGB;
+    void SetImageNames(vector<string>& vstrImageFilenamesRGB);
+    
 };
 
 }// namespace ORB_SLAM

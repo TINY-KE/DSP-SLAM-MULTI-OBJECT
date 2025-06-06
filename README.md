@@ -44,13 +44,11 @@ pybind11::handle::dec_ref() is being called while the GIL is either not held or 
     + 生成平面
 + 多帧生成椭球
 
-
 + 为什么要用到json中的"slam_config_path"
-
-+ 修改为icl数据集的读取本地
-
-+ 相机第一帧的位姿 怎么设置？
-
++ 修改为icl数据集的读取本地？  答：实现根据association.txt读取图片
++ 相机第一帧的位姿 怎么设置？  答：修改了相机内参。
++ 单帧处理时间很长  答：main函数中加了delay，已删除
++ 为什么无法生成dsp物体i 答：
 
 
 

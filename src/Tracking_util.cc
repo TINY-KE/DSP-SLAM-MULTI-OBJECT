@@ -178,10 +178,10 @@ void Tracking::GetObjectDetectionsRGBD(KeyFrame *pKF)
         std::cout << "[zhjd-debug] 存储图片花费了 " << ttrack << std::endl;
         detections= mpSystem->pySequence.attr("get_frame_by_name")(pKF->mnFrameId, file_name);
     }
-    // else {
-    //     std::string frame_name = mvstrImageFilenamesRGB[pKF->mnFrameId];
-    //     detections= mpSystem->pySequence.attr("get_frame_by_name")(pKF->mnFrameId, frame_name);
-    // }
+    else {
+        std::string frame_name = mvstrImageFilenamesRGB[pKF->mnFrameId];
+        detections= mpSystem->pySequence.attr("get_frame_by_name")(pKF->mnFrameId, frame_name);
+    }
 
     int num_dets = detections.size();
     // No detections, return immediately

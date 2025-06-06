@@ -260,7 +260,11 @@ private:
     // 设置相机的真实位姿,但只用于第一帧
     void SetRealPose();
 
-    
+public:
+    // Add by Lj
+    vector<string> mvstrImageFilenamesRGB;
+    void SetImageNames(vector<string>& vstrImageFilenamesRGB);
+
     
 };
 
