@@ -544,16 +544,27 @@ void LocalMapping::Process_Multi_DetectedObjects_byPythonReconstruct()
         if (!det->isGood)
             continue;
 
-        MapObject *pMO = mvpAssociatedObjects[det_i];
-        if (!pMO)
+        MapObject *pMO = mvpAssociatedObjects[det_i];  
+        std::cout<< "[zhjd-debug] Process_Multi_DetectedObjects 检查是否存在关联物体: ";                   
+        if (!pMO){
+            std::cout<< "pMO 不存在" << std::endl;
             continue;
+        }
+        else
+            std::cout<< "pMO 存在" << std::endl;
 
         int numKFsPassedSinceInit = int(mpCurrentKeyFrame->mnId - pMO->mpRefKF->mnId);
 
 
-        
-        if (numKFsPassedSinceInit < 50)
-            pMO->ComputeCuboidPCA(numKFsPassedSinceInit < 15);   //更新物体的Sim3Two
+        //更新物体的Sim3Two
+        if (numKFsPassedSinceInit < 50){
+            if(mnComputeCuboidType==0)
+                pMO->ComputeCuboidPCA(numKFsPassedSinceInit < 15);   
+            else if(mnComputeCuboidType==1)
+                pMO->ComputeCuboidPCA_manhattan(numKFsPassedSinceInit < 15);   
+            else if(mnComputeCuboidType==2)
+                pMO->ComputeCuboidPCA_ellipsoid(numKFsPassedSinceInit < 15);   
+        }
         else  // when we have relative good object shape
             pMO->RemoveOutliersModel();
         // // only begin to reconstruct the object if it is observed for enough amoubt of time (15 KFs)
@@ -561,13 +572,16 @@ void LocalMapping::Process_Multi_DetectedObjects_byPythonReconstruct()
         // if(numKFsPassedSinceInit < 15)
         //     continue;
 
-        // 修改：原程序中只有在5的倍数帧才开始重建，为了debug，改成每帧都重建
-        if ((numKFsPassedSinceInit - 15) % 5 != 0)
+        // 一个物体被检测到五次，才进行一次重建，从而节约运算资源
+        if ((numKFsPassedSinceInit - 15) % mnNumKFsPassedSinceInit_thresh != 0) {
+            std::cout << "  Conitinue because (numKFsPassedSinceInit - 15) % 5 != 0" << std::endl;
             continue;
+        }
 
-//        int numKFsPassedSinceLastRecon = int(mpCurrentKeyFrame->mnId) - nLastReconKFID;
-//        if (numKFsPassedSinceLastRecon  < 8)
-//            continue;
+        // 如果自上次重建后经过的关键帧数量少于8个，则跳过重建，从而节约运算资源
+        int numKFsPassedSinceLastRecon = int(mpCurrentKeyFrame->mnId) - nLastReconKFID;
+        if (numKFsPassedSinceLastRecon  < mnNumKFsPassedSinceLastRecon_thresh)
+            continue;
         
         // 1. 统计物体 pMO 上有效（三维）地图点的数量，存储在变量 n_valid_points 中。
         std::vector<MapPoint*> points_on_object = pMO->GetMapPointsOnObject();
@@ -600,7 +614,7 @@ void LocalMapping::Process_Multi_DetectedObjects_byPythonReconstruct()
                 continue;
             n_rays++;
         }
-        // cout << "Object " << pMO->mnId << ": " << n_points << " points observed, " << "with " << n_valid_points << " valid points, and " << n_rays << " rays" << endl;
+        cout << "Object " << pMO->mnId << ": " << n_points << " points observed, " << "with " << n_valid_points << " valid points, and " << n_rays << " rays" << endl;
 
         // Surface points
         // if (n_valid_points >= 50 && n_rays > 20)
@@ -700,7 +714,7 @@ void LocalMapping::Process_Multi_DetectedObjects_byPythonReconstruct()
             int class_id = det->label;  //临时设置为60table，用于debug
             // class_id = 57; //counchs 沙发
             // class_id = 75; //vase 花瓶
-            class_id = 60;  //桌子
+            // class_id = 60;  //桌子
             // class_id = 56;  //椅子
             // class_id = 62;  //显示器
             // class_id = 63;  //笔记本 laptop

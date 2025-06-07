@@ -46,8 +46,9 @@ LocalMapping::LocalMapping(System *pSys, Map *pMap, ObjectDrawer* pObjectDrawer,
 
     // 控制是否使用物体建模.
     mbUseObjectConstruct = pSys->mbUseObjectConstruct;
-
-
+    mnComputeCuboidType = pSys->mnComputeCuboidType;
+    mnNumKFsPassedSinceLastRecon_thresh = pSys->mnNumKFsPassedSinceLastRecon_thresh;
+    mnNumKFsPassedSinceInit_thresh = pSys->mnNumKFsPassedSinceInit_thresh;
     // 多物体dsp模型导入
     auto& pyDecoders = pSys->mmPyDecoders;
     for (auto it = pyDecoders.begin(); it != pyDecoders.end(); ++it) {

@@ -1,5 +1,5 @@
 {
-  "data_type": "Freiburg",
+  "data_type": "AllObjectsOnGround",
   "detect_online": true,
   "path_label_2d": "/media/jingwen/Data/freiburg_cars/freiburg_static_car_vids/Cars/Car001/detections/labels",
   "Detector2D": {

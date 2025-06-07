@@ -104,6 +104,7 @@ chair2counch: 0
 
 # use_object
 useObjectConstruct: 1    
+ComputeCuboidType: 1
 # + 修改物体识别的物体种类
 # /home/robotlab/ws_3d_vp/src/QSP-SLAM-my/reconstruct/contents.py
 

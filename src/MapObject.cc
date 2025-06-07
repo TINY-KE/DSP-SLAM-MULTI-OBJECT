@@ -458,7 +458,12 @@ void MapObject::RemoveOutliersModel()
 //     }
 // }
 
-void MapObject::ComputeCuboidPCA(bool updatePose)
+void MapObject::ComputeCuboidPCA_ellipsoid(bool updatePose)
+{
+    // TODO:
+}
+
+void MapObject::ComputeCuboidPCA_manhattan(bool updatePose)
 {
     // 1: 移除异常点
     RemoveOutliersSimple();
@@ -612,7 +617,7 @@ void MapObject::ComputeCuboidPCA(bool updatePose)
 }
 
 
-void MapObject::ComputeCuboidPCA_origin(bool updatePose)
+void MapObject::ComputeCuboidPCA(bool updatePose)
 {
     // 1: 移除异常点
     RemoveOutliersSimple();

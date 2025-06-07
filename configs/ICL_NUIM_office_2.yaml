@@ -79,7 +79,7 @@ DecoderPaths: ["weights/deepsdf/chairs_64",
 # ros
 use_ros: 0   # 1：读取存贮在本地的ros.png   0：根据association.txt读取图片
 DatasetPathRoot: "/home/robotlab/dataset/ICL-NUIM/living_room_traj2n_frei_png"
-Minimux_Points_To_Judge_Good: 20  #视情况，看是否要减小到5
+Minimux_Points_To_Judge_Good: 5  #20  #视情况，看是否要减小到5
 
 # camera
 Camera.width: 640
@@ -99,7 +99,10 @@ savepoints: 0
 chair2counch: 0
 
 # use_object
-useObjectConstruct: 0 
+useObjectConstruct: 1
+ComputeCuboidType: 0
+NumKFsPassedSinceInit_thresh: 1  #一个物体被检测的次数，大于该值，才进行一次重建，从而节约运算资源
+NumKFsPassedSinceLastRecon_thresh: 4  #自上次重建后经过的最少关键帧数量，如果小于阈值，则跳过重建，从而节约运算资源
 # + 修改物体识别的物体种类
 # /home/robotlab/ws_3d_vp/src/QSP-SLAM-my/reconstruct/contents.py
 

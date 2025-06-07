@@ -58,7 +58,8 @@ public:
     void RemoveOutliersSimple();
     void RemoveOutliersModel();
     void ComputeCuboidPCA(bool updatePose);
-    void ComputeCuboidPCA_origin(bool updatePose);
+    void ComputeCuboidPCA_manhattan(bool updatePose);
+    void ComputeCuboidPCA_ellipsoid(bool updatePose);
     void EraseMapPoint(MapPoint *pMP);
 
     void SetRenderId(int id);

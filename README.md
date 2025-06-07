@@ -39,16 +39,17 @@ pybind11::handle::dec_ref() is being called while the GIL is either not held or 
 
 + 运行icl数据集
 
-+ 如何使用物体检测框
-    + 获取框
-    + 生成平面
-+ 多帧生成椭球
-
 + 为什么要用到json中的"slam_config_path"
 + 修改为icl数据集的读取本地？  答：实现根据association.txt读取图片
 + 相机第一帧的位姿 怎么设置？  答：修改了相机内参。
 + 单帧处理时间很长  答：main函数中加了delay，已删除
-+ 为什么无法生成dsp物体i 答：
++ 为什么无法生成dsp物体i 答：数据集中图片太少，降低对图片的帧数控制
++ 物体识别的成功率很低，很多物体识别不到  答：待解决
+
++ 如何使用物体检测框
+    + 获取框
+    + 生成平面
++ 多帧生成椭球
 
 
 
