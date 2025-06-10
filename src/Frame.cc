@@ -50,6 +50,8 @@ Frame::Frame(const Frame &frame)
      mvLevelSigma2(frame.mvLevelSigma2), mvInvLevelSigma2(frame.mvInvLevelSigma2)
 {
     color_img = frame.color_img.clone();
+    depth_img = frame.depth_img.clone();
+    gray_img = frame.gray_img.clone();
 
     for(int i=0;i<FRAME_GRID_COLS;i++)
         for(int j=0; j<FRAME_GRID_ROWS; j++)
@@ -124,6 +126,8 @@ Frame::Frame(const cv::Mat &imGray, const cv::Mat &imDepth, const cv::Mat &imRGB
      mTimeStamp(timeStamp), mK(K.clone()),mDistCoef(distCoef.clone()), mbf(bf), mThDepth(thDepth)
 {
     color_img = imRGB.clone();
+    depth_img = imDepth.clone();
+    gray_img = imGray.clone();
 
     // Frame ID
     mnId=nNextId++;
@@ -272,6 +276,12 @@ void Frame::UpdatePoseMatrices()
     mRwc = mRcw.t();
     mtcw = mTcw.rowRange(0,3).col(3);
     mOw = -mRcw.t()*mtcw;
+
+    // ellipsoid-version
+    cv::Mat Twc_mat;
+    cv::invert(mTcw, Twc_mat);
+    cam_pose_Twc = Converter::toSE3Quat(Twc_mat);
+    cam_pose_Tcw = Converter::toSE3Quat(mTcw);
 }
 
 bool Frame::isInFrustum(MapPoint *pMP, float viewingCosLimit)
@@ -688,6 +698,30 @@ cv::Mat Frame::UnprojectStereo(const int &i)
     }
     else
         return cv::Mat();
+}
+
+// ellipsoid-version
+bool Frame::SetObservations(KeyFrame* pKF){
+    // FIXME: 这里可能需要设置与KF相关的锁
+    // std::cout << "Debug: Frame::SetObservations" << std::endl;
+    std::vector<ObjectDetection*> obj_dets = pKF->GetObjectDetections();
+    int num_det = obj_dets.size();
+    std::cout << "num_det = " << num_det << std::endl;
+
+    mmObservations = Eigen::MatrixXd(num_det, 8);
+
+    for (int i = 0; i < num_det; i++) {
+        auto pDet = obj_dets[i];
+        Eigen::VectorXd mdet(8);
+        auto bbox = pDet->bbox;
+        auto label = pDet->label;
+        auto prob = pDet->prob;
+        int instanceID = 1;
+        mdet << i, bbox(0), bbox(1), bbox(2), bbox(3), label, prob, instanceID;
+        mmObservations.row(i) = mdet;
+    }   
+
+    return true;
 }
 
 } //namespace ORB_SLAM

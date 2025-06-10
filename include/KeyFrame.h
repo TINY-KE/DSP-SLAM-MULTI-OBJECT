@@ -49,7 +49,7 @@ class Map;
 class MapPoint;
 class Frame;
 class KeyFrameDatabase;
-
+class ObjectDetection;
 class KeyFrame
 {
 public:
@@ -258,6 +258,8 @@ protected:
 
 public:
     cv::Mat color_img;   // rgb img 用于可视化和物体检测
+    cv::Mat depth_img;      // depth img for processing
+    cv::Mat gray_img;       // gray! for texture
 
 };
 

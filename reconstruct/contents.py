@@ -27,7 +27,7 @@ object_classes = list(object_class_table.keys())
 
 # object_classes_on_ground = ["benches", "chairs", "potted_plants", "beds", "dining_tables", "refrigerator"]
 object_classes_on_ground = ["cars","benches", "chairs", "counchs","beds", "dining_tables", "refrigerator"]
-# object_classes_on_ground = [c for c in object_classes]
+object_classes_on_ground = [c for c in object_classes]
 # object_classes_on_ground = ["cars", "chairs", "counchs","beds", "dining_tables", "refrigerator"]
 # object_classes_on_ground = [c for c in object_classes if c != "beds"]
 # object_classes_on_ground = [c for c in object_classes if c == "laptop"]

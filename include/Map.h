@@ -119,6 +119,7 @@ public:
     // plane
     void addPlane(plane* pPlane, int visual_group = 0);
     std::vector<plane*> GetAllPlanes();
+    std::set<plane*> mspPlanes;
     void clearPlanes();
 
     

@@ -98,4 +98,28 @@ void ObjectDetection::SetPoseMeasurementSE3(const Eigen::Matrix4f &T) {
     Sim3Tco.topLeftCorner<3, 3>() = scale * Rco;
     Sim3Tco.topRightCorner<3, 1>() = tco;
 }
+
+// ellipsoid-version
+
+// FIXME: 有待进一步完善，如删除点云
+void ObjectDetection::setPcdPtr(pcl::PointCloud<PointType>::Ptr& pcd_ptr_)
+{
+    // 这里有待考虑是否单独设置锁更合理
+    if (pcd_ptr_ == NULL){
+        pcd_ptr==nullptr;
+        // isGood = true;
+        isValidPcd = false;
+        return;
+    }
+    std::unique_lock<std::mutex> lock(mMutexFeatures);
+    if (pcd_ptr==nullptr) {
+        pcd_ptr = pcl::PointCloud<PointType>::Ptr(new pcl::PointCloud<PointType>);
+    }
+    *pcd_ptr = *pcd_ptr_;
+    isValidPcd = true;
+    // std::cout << "Debug: ObjectDetection::setPcdPtr" << std::endl;
+    // std::cout << "Debug: ObjectDetection::setPcdPtr, size = " << pcd_ptr.size() << std::endl;
+}
+
+
 }

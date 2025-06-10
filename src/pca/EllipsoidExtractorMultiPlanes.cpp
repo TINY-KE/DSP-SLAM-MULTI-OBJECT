@@ -739,7 +739,8 @@ void GenerateConstrainPlanesToEllipsoid(g2o::ellipsoid& e_local_normalized, Vect
 // 1. 提取点云
 // 2. 将点云转换到重力坐标系( Z轴沿重力方向, 中心为物体中心点 )
 // 3. ...
-g2o::ellipsoid EllipsoidExtractor::EstimateLocalEllipsoidUsingMultiPlanes(cv::Mat& depth, Eigen::Vector4d& bbox, int label, double prob, Eigen::VectorXd &pose, camera_intrinsic& camera)
+g2o::ellipsoid EllipsoidExtractor::EstimateLocalEllipsoidUsingMultiPlanes(cv::Mat& depth, Eigen::Vector4d& bbox, int label, double prob, Eigen::VectorXd &pose,  \
+                                camera_intrinsic &camera, pcl::PointCloud<PointType>::Ptr& pcd_ptr)
 {
     g2o::ellipsoid e;
     miSystemState = 0;  // reset the state
@@ -756,6 +757,17 @@ g2o::ellipsoid EllipsoidExtractor::EstimateLocalEllipsoidUsingMultiPlanes(cv::Ma
     // 1. Get the object points after supporting plane filter and euclidean filter in the world coordinate
     // 注意: 该过程由于进行了与世界平面的操作, 所以位于世界坐标系下.
     pcl::PointCloud<PointType>::Ptr pCloudPCL = ExtractPointCloud(depth,bbox,pose,camera);
+
+    if (pCloudPCL == NULL) {
+        cout << "pCloudPCL == NULL" << endl;
+        pcd_ptr = NULL;
+        // return e;
+    }
+    else{
+        // 此处可能需要重新
+        *pcd_ptr = *pCloudPCL;
+    }
+
     clock_t time_1_ExtractPointCloud = clock();
     if(miSystemState > 0 )
         return e;
@@ -1044,7 +1056,8 @@ g2o::ellipsoid EllipsoidExtractor::EstimateLocalEllipsoidWithSupportingPlane(cv:
     
     SetSupportingPlane(pSupPlaneWorld, true);
 
-    g2o::ellipsoid e = EstimateLocalEllipsoidUsingMultiPlanes(depth, bbox, label, prob, pose, camera);
+    pcl::PointCloud<PointType>::Ptr pcd_ptr;
+    g2o::ellipsoid e = EstimateLocalEllipsoidUsingMultiPlanes(depth, bbox, label, prob, pose, camera, pcd_ptr);
 
     // 取消地平面
     // mpPlane = originGroundPlane;

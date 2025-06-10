@@ -33,7 +33,10 @@
 #include <opencv2/opencv.hpp>
 
 // ellipsoid-version
+#include <pcl/point_cloud.h>
+#include <pcl/point_types.h>
 #include "ellipsoid-version/Ellipsoid.h"
+
 
 namespace ORB_SLAM2
 {
@@ -213,6 +216,8 @@ private:
 
 public:
     cv::Mat color_img;   // rgb img 用于可视化和物体检测
+    cv::Mat depth_img;      // depth img for processing
+    cv::Mat gray_img;       // gray! for texture
 
     //地面
     cv::Mat mGroundtruthPose_mat;           // camera groundtruth
@@ -221,7 +226,11 @@ public:
 // ellipsoid-version
 public:
     std::vector<g2o::ellipsoid*> mpLocalObjects; // local 3d ellipsoid
+    Eigen::MatrixXd mmObservations;     // id x1 y1 x2 y2 label rate instanceID
+    bool SetObservations(KeyFrame* pKF);  // 更新mmObservations
 
+    g2o::SE3Quat cam_pose_Tcw;	     // optimized pose  world to cam
+    g2o::SE3Quat cam_pose_Twc;	     // optimized pose  cam to world
 };
 
 }// namespace ORB_SLAM

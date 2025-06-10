@@ -151,12 +151,16 @@ pcl::PointCloud<PointType>::Ptr EllipsoidExtractor::ExtractPointCloud(cv::Mat& d
     clock_t time_2_getPointsDownsampleTransToWorld = clock();
 
     PointCloud* pPoints_planeFiltered;
-    if(!mbOpenMHPlanesFilter)
+    if(!mbOpenMHPlanesFilter){
+        std::cout << "使用支撑平面进行滤波" << std::endl;
         pPoints_planeFiltered = ApplySupportingPlaneFilter(pPoints_global);
+    }
     else 
     {
+        std::cout << "使用曼哈顿平面进行滤波," ;
         std::vector<g2o::plane*> vMHPlanes = mvpMHPlanes;
         vMHPlanes.push_back(mpPlane);
+        std::cout << "vMHPlanes.size() = " << vMHPlanes.size() << std::endl;
         pPoints_planeFiltered = ApplyMHPlanesFilter(pPoints_global, vMHPlanes);
     }
     clock_t time_3_SupportingPlaneFilter = clock();
@@ -193,6 +197,7 @@ pcl::PointCloud<PointType>::Ptr EllipsoidExtractor::ExtractPointCloud(cv::Mat& d
         return NULL;
     }
 
+    // 计算中点
     Vector3d center;
     bool bCenter = GetCenter(depth, bbox, pose, camera, center);
     if(!bCenter) {
@@ -203,6 +208,7 @@ pcl::PointCloud<PointType>::Ptr EllipsoidExtractor::ExtractPointCloud(cv::Mat& d
     }
     clock_t time_5_GetCenter = clock();
 
+    // 使用快速欧几里德聚类进行滤波
     mDebugCenter = center;
     PointCloud* pPointsEuFiltered = ApplyEuclideanFilter(pPoints_sampled, center);
     // delete pPoints_sampled; pPoints_sampled = NULL;

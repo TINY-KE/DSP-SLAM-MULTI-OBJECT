@@ -741,7 +741,7 @@ void LocalMapping::Process_Multi_DetectedObjects_byPythonReconstruct()
 
             auto pyMapObject = optimizer_ptr->attr("reconstruct_object")
                     (SE3Tcw * pMO->Sim3Two, surface_points_cam, rays, depth_obs, pMO->vShapeCode);
-            cout << "reconstruct_object 1" << std::endl;
+            cout << "reconstruct_object 1, class id = "<<  class_id << std::endl;
 
             // If not initialized, duplicate optimization to resolve orientation ambiguity
             if (!pMO->reconstructed)
@@ -755,8 +755,8 @@ void LocalMapping::Process_Multi_DetectedObjects_byPythonReconstruct()
                 if (pyMapObject.attr("loss").cast<float>() > pyMapObjectFlipped.attr("loss").cast<float>())
                     pyMapObject = pyMapObjectFlipped;
             }
-            cout << "reconstruct_object 2" << std::endl;
-
+            cout << "reconstruct_object 2, class id = "<<  class_id << std::endl;
+            
             auto Sim3Tco = pyMapObject.attr("t_cam_obj").cast<Eigen::Matrix4f>();
 
             det->SetPoseMeasurementSim3(Sim3Tco);

@@ -42,6 +42,12 @@
 
 #include <mutex>
 
+// ellipsoid-version
+#include "utils/dataprocess_utils.h"
+#include <src/pca/EllipsoidExtractor.h>
+
+typedef pcl::PointXYZ PointType;
+
 namespace g2o
 {   
     class plane;
@@ -264,8 +270,25 @@ public:
     // Add by Lj
     vector<string> mvstrImageFilenamesRGB;
     void SetImageNames(vector<string>& vstrImageFilenamesRGB);
+    int mCols, mRows;
+    // 深度点云生成椭球体的筛选条件1：离边界的距离
+    int mBorderPixels = 10;
+    int mMeasurementLengthLimitPixels = 0;
+    // 深度点云生成椭球体的筛选条件5：物体识别的概率
+    double mProbThresh = 0;
 
+
+    // 用于生成椭球体模型
+    EllipsoidExtractor* mpEllipsoidExtractor;  //椭球体提取器
+    void UpdateObjectEllipsoidObservation(ORB_SLAM2::Frame *pFrame, KeyFrame* pKF, bool withAssociation);
+    void UpdateDepthEllipsoidEstimation(ORB_SLAM2::Frame* pFrame, KeyFrame* pKF, bool withAssociation);
+    void TaskRelationship(ORB_SLAM2::Frame* pFrame);
+    void RefineObjectsWithRelations(ORB_SLAM2::Frame *pFrame);
+    bool calibrateMeasurement(Eigen::Vector4d &measure , int rows, int cols, int config_boarder = 10, int config_size = 100); 
     
+    camera_intrinsic mCamera; // 相机内参
+    
+
 };
 
 } //namespace ORB_SLAM

@@ -159,11 +159,19 @@ Tracking::Tracking(System *pSys, ORBVocabulary* pVoc, FrameDrawer *pFrameDrawer,
     mDatasetPathRoot = fSettings["DatasetPathRoot"].string();
     mMinimux_Points_To_Judge_Good = fSettings["Minimux_Points_To_Judge_Good"];
 
-    // 设置地面为默认值
-    SetGroundPlaneMannually(
-        Eigen::Vector4d(0,0,1,0));
-    
-    
+    // 设置地面为默认值，包括tracker、map、EllipsoidExtractor
+    SetGroundPlaneMannually( Eigen::Vector4d(0,0,1,0));
+    mpMap->addPlane(&mGroundPlane);
+    mpEllipsoidExtractor->SetSupportingPlane(&mGroundPlane, false);
+
+    mRows = fSettings["Camera.height"];
+    mCols = fSettings["Camera.width"];
+
+    mCamera.cx = cx;
+    mCamera.cy = cy;
+    mCamera.fx = fx;
+    mCamera.fy = fy;
+    mCamera.scale = fSettings["DepthMapFactor"];
 }
 
 void Tracking::SetLocalMapper(LocalMapping *pLocalMapper)
@@ -250,9 +258,6 @@ cv::Mat Tracking::GrabImageRGBD(const cv::Mat &imRGB,const cv::Mat &imD, const d
     
     // [改进] [位姿真值] [groundtruth] 初始帧的位姿
     SetRealPose();
-
-    // 手动指定了平面
-    // ActivateGroundPlane(mGroundPlane);    //激活获取到的平面（可以来自自动平面估计，也可以来自手动设置）
 
     Track();
 
@@ -443,6 +448,9 @@ void Tracking::Track()
         else
             mState=LOST;
 
+        // ellipsoid-version: 清除当前帧中用于可视化的物体观测
+        mvImObjectMasks.clear();
+        mvImObjectBboxs.clear();
         // Update drawer
         mpFrameDrawer->Update(this);
 
@@ -490,6 +498,10 @@ void Tracking::Track()
                 CreateNewKeyFrame();
             }
 
+            // ellipsoid-version: 清除当前帧中用于可视化的物体观测
+            // Update drawer
+            mpFrameDrawer->Update(this);
+        
             // We allow points with high innovation (considererd outliers by the Huber Function)
             // pass to the new keyframe, so that bundle adjustment will finally decide
             // if they are outliers or not. We don't want next frame to estimate its position
@@ -1150,6 +1162,12 @@ void Tracking::CreateNewKeyFrame()
         GetObjectDetectionsRGBD(pKF);
         //DetectObjects(pKF);
         
+        // ellipsoid-version
+        // 对物体观测进行椭球体建模
+        bool withAssociation = false;
+        UpdateObjectEllipsoidObservation(&mCurrentFrame, pKF, withAssociation);
+
+
         // 物体的数据关联 todo：改为距离
         if (!mpMap->GetAllMapObjects().empty())
         {
@@ -1159,6 +1177,7 @@ void Tracking::CreateNewKeyFrame()
         
         std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();
 
+        
         double ttrack= std::chrono::duration_cast<std::chrono::duration<double> >(t2 - t1).count();
         cout << "Object detection and association takes " << ttrack << endl;
     }
@@ -1234,6 +1253,7 @@ void Tracking::CreateNewKeyFrame()
     mnLastKeyFrameId = mCurrentFrame.mnId;
     mpLastKeyFrame = pKF;
 }
+
 
 void Tracking::SearchLocalPoints()
 {

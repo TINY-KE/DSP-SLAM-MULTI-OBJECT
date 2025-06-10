@@ -21,6 +21,11 @@
 # include <mutex>
 # include <Eigen/Dense>
 
+// ellipsoid-version
+#include "utils/dataprocess_utils.h"
+#include <src/pca/EllipsoidExtractor.h>
+typedef pcl::PointXYZ PointType;
+
 namespace ORB_SLAM2
 {
 
@@ -58,10 +63,16 @@ public:
     std::mutex mMutexDetection;
 
 
+// ellipsoid-version
 public:
     Eigen::Vector4d bbox;   //物体检测框，用于椭球体prior
     int label;              //物体类别
     double prob;            //物体检测概率
+    bool isValidPcd;        //用于提取椭球体的点云，是否提取成功
+
+    // 用于生成椭球体的深度点云
+    pcl::PointCloud<PointType>::Ptr pcd_ptr;
+    void setPcdPtr(pcl::PointCloud<PointType>::Ptr& pcd_ptr_);  //往单帧观测中添加深度点云
 
 };
 }

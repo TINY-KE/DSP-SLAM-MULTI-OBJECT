@@ -20,8 +20,7 @@ IF(NOT CMAKE_BUILD_TYPE)
     SET(CMAKE_BUILD_TYPE Release)
 ENDIF()
 
-SET(CMAKE_BUILD_TYPE Debug)
-
+# SET(CMAKE_BUILD_TYPE Debug)
 
 MESSAGE("Build type: " ${CMAKE_BUILD_TYPE})
 
@@ -130,6 +129,7 @@ add_library(${PROJECT_NAME} SHARED
         src/KeyFrame_util.cc
         src/Map.cc
         src/Map_util.cc
+        src/Map_ellipsoid.cc
         src/MapDrawer.cc
         src/Optimizer.cc
         src/Optimizer_util.cc

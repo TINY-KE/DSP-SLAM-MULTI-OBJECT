@@ -44,7 +44,9 @@ KeyFrame::KeyFrame(Frame &F, Map *pMap, KeyFrameDatabase *pKFDB):
     mbToBeErased(false), mbBad(false), mHalfBaseline(F.mb/2), mpMap(pMap)
 {
     color_img = F.color_img.clone();
-
+    depth_img = F.depth_img.clone();
+    gray_img = F.gray_img.clone();
+    
     mnId=nNextId++;
 
     mGrid.resize(mnGridCols);

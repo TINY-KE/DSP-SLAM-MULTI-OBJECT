@@ -23,10 +23,13 @@
 #include <pcl/point_types.h>		  
 
 typedef pcl::PointXYZ PointType;
+
 typedef pcl::Normal NormalType;
 
 namespace ORB_SLAM2
 {
+
+class Map;
 
 struct PCAResult
 {
@@ -46,7 +49,7 @@ enum ExtractionMethod
 };
 
 std::vector<g2o::ConstrainPlane*> GenerateConstrainPlanesOfBbox(Vector4d& bbox, Matrix3d& calib, int rows, int cols);
-void VisualizeConstrainPlanes(g2o::ellipsoid& e_local, g2o::SE3Quat& Twc, Map* pMap);
+void VisualizeConstrainPlanes(g2o::ellipsoid& e_local, g2o::SE3Quat& Twc, ORB_SLAM2::Map* pMap);
 
 class EllipsoidExtractor
 {
@@ -66,7 +69,7 @@ public:
     g2o::ellipsoid EstimateLocalEllipsoid(cv::Mat& depth, Eigen::Vector4d& bbox, int label, double prob, Eigen::VectorXd &pose, camera_intrinsic& camera);   
 
     // API2: [new] estimate using multi-planes
-    g2o::ellipsoid EstimateLocalEllipsoidUsingMultiPlanes(cv::Mat& depth, Eigen::Vector4d& bbox, int label, double prob, Eigen::VectorXd &pose, camera_intrinsic& camera);   
+    g2o::ellipsoid EstimateLocalEllipsoidUsingMultiPlanes(cv::Mat& depth, Eigen::Vector4d& bbox, int label, double prob, Eigen::VectorXd &pose, camera_intrinsic& camera, pcl::PointCloud<PointType>::Ptr& pcd_ptr);   
     // API2.1: given a supporting plane(local coordinate)
     g2o::ellipsoid EstimateLocalEllipsoidWithSupportingPlane(cv::Mat& depth, Eigen::Vector4d& bbox, int label, double prob, Eigen::VectorXd &pose, camera_intrinsic& camera, g2o::plane* pSupPlane);
     // API3: PointModel Version

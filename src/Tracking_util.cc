@@ -236,9 +236,10 @@ void Tracking::GetObjectDetectionsRGBD(KeyFrame *pKF)
 
     }
 
-    // 将det结果保存到矩阵mmObservations中
     pKF->nObj = pKF->mvpDetectedObjects.size();
     pKF->mvpMapObjects = vector<MapObject *>(pKF->nObj, static_cast<MapObject *>(NULL));
+    // 将det结果保存到关键帧对应的普通帧的mmObservations中. 是否要这样做呢？
+    mCurrentFrame.SetObservations(pKF);
 }
 
 
@@ -312,7 +313,6 @@ void Tracking::GetObjectDetectionsMono(KeyFrame *pKF)
         pKF->mvpDetectedObjects.push_back(det);
     }
 
-    // 将det结果保存到矩阵mmObservations中
     pKF->nObj = pKF->mvpDetectedObjects.size();
     pKF->mvpMapObjects = vector<MapObject *>(pKF->nObj, static_cast<MapObject *>(NULL));
 
