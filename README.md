@@ -47,11 +47,24 @@ pybind11::handle::dec_ref() is being called while the GIL is either not held or 
 + 物体识别的成功率很低，很多物体识别不到  答：是不是因为关键帧太少了，应该每一帧都检测
 
 + 获取物体检测框   答：已实现
++ 获取点云     答：已实现
++ 多帧生成椭球   答：已实现
 
-+ 获取点云  
++ 可视化物体的深度点云
+    + ExtractPointCloud提取点云
+    + 以上函数中，VisualizePointCloud可视化点云
+    + 通过mpMap->AddPointCloudLis，添加到mmPointCloudLists中
+    + 降低Viewer的频率
+    + 利用drawPointCloudLists，绘制mmPointCloudLists
 
-+ 多帧生成椭球
-    + 多帧联合优化
++ 实现可以物体检测每一帧
+    + 
+
++ 椭球体的融合
+    + 
+
++ 可视化当前帧中的椭球体  答：在pangolin中实现
++ 多帧联合优化
 
 + 添加回来 VisualizeRelations和
 

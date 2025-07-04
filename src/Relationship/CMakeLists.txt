@@ -7,5 +7,5 @@ Relationship.cpp
 )
 
 # target_link_libraries(Relationship
-#         EllipsoidSLAM
+#         ORB_SLAM2
 #         )

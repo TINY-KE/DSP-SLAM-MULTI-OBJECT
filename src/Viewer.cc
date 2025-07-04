@@ -46,6 +46,7 @@ Viewer::Viewer(System* pSystem, FrameDrawer *pFrameDrawer, MapDrawer *pMapDrawer
     }
 
     mViewpointX = fSettings["Viewer.ViewpointX"];
+    
     mViewpointY = fSettings["Viewer.ViewpointY"];
     mViewpointZ = fSettings["Viewer.ViewpointZ"];
     mViewpointF = fSettings["Viewer.ViewpointF"];
@@ -80,6 +81,15 @@ void Viewer::Run()
     pangolin::Var<bool> menuShowGraph("menu.Show Graph",true,true);
     pangolin::Var<bool> menuLocalizationMode("menu.Localization Mode",false,true);
     pangolin::Var<bool> menuReset("menu.Reset",false,false);
+
+    // ellipsoid-version
+    pangolin::Var<bool> menuShowEllipsoids("menu.Show Ellipsoids Visual", true, true);
+    pangolin::Var<double> SliderEllipsoidProbThresh("menu.Ellipsoid Prob", 0.3, 0.0, 1.0);
+    pangolin::Var<bool> menuShowSdfObjects("menu.Show SDF Objects",true,true);
+    // 深度点云
+    pangolin::Var<float> SliderPointCloudListSize("menu.Pointcloud Size", 1.0, 0.5, 5.0);
+    pangolin::Var<bool> menuShowDepthPoints("menu.Show Depth Points",true,true);
+
 
     // Define Camera Render Object (for view / scene browsing)
     pangolin::OpenGlRenderState s_cam(
@@ -153,9 +163,21 @@ void Viewer::Run()
             if(menuShowPoints)
                 mpMapDrawer->DrawMapPoints();
 
+            
+            if(menuShowEllipsoids){
+                double ellipsoidProbThresh = SliderEllipsoidProbThresh;
+                mpMapDrawer->drawEllipsoidsVisual(ellipsoidProbThresh);
+            }
             mpObjectDrawer->ProcessNewObjects();
-            mpObjectDrawer->DrawObjects(bFollow, Tec);
+            if(menuShowSdfObjects){
+                mpObjectDrawer->DrawObjects(bFollow, Tec);
+            }
 
+            if(menuShowDepthPoints)
+            {
+                float pointcloudSize = SliderPointCloudListSize;
+                mpMapDrawer->drawPointCloudLists(pointcloudSize);
+            }
             pangolin::FinishFrame();
         }
 

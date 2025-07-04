@@ -284,7 +284,7 @@ public:
     void UpdateDepthEllipsoidEstimation(ORB_SLAM2::Frame* pFrame, KeyFrame* pKF, bool withAssociation);
     void TaskRelationship(ORB_SLAM2::Frame* pFrame);
     void RefineObjectsWithRelations(ORB_SLAM2::Frame *pFrame);
-    bool calibrateMeasurement(Eigen::Vector4d &measure , int rows, int cols, int config_boarder = 10, int config_size = 100); 
+    // bool calibrateMeasurement(Eigen::Vector4d &measure , int rows, int cols, int config_boarder = 10, int config_size = 100); 
     
     camera_intrinsic mCamera; // 相机内参
     

@@ -11,9 +11,9 @@
 #include "src/pca/EllipsoidExtractorEdges.h"
 
 #include "src/config/Config.h"
-#include "include/core/Plane.h"
-#include "include/core/ConstrainPlane.h"
-#include "include/core/PriorInfer.h"
+#include "include/ellipsoid-version/Plane.h"
+#include "include/ellipsoid-version/ConstrainPlane.h"
+#include "include/ellipsoid-version/PriorInfer.h"
 
 #include "include/utils/dataprocess_utils.h"
 
@@ -23,7 +23,7 @@
 using namespace g2o;
 using namespace Eigen;
 
-namespace EllipsoidSLAM
+namespace ORB_SLAM2
 {
 
     Pri::Pri(double a_, double b_, double c_)
@@ -507,4 +507,4 @@ namespace EllipsoidSLAM
             return Pri(1,1);
     }
 
-} // namespace EllipsoidSLAM
+} // namespace ORB_SLAM2

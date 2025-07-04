@@ -1,9 +1,9 @@
-#include "core/DataAssociation.h"
+#include "include/ellipsoid-version/DataAssociation.h"
 
 #include <iostream>
 #include <map>
 
-namespace EllipsoidSLAM
+namespace ORB_SLAM2
 {
 
     DataAssociationSolver::DataAssociationSolver(Map* pMap)
@@ -13,7 +13,7 @@ namespace EllipsoidSLAM
         miInstanceNum = 0;
     }
 
-    std::vector<int> DataAssociationSolver::Solve(EllipsoidSLAM::Frame* pFrame, bool mb3D)
+    std::vector<int> DataAssociationSolver::Solve(ORB_SLAM2::Frame* pFrame, bool mb3D)
     {
         Eigen::MatrixXd &obsMat = pFrame->mmObservations;
         g2o::SE3Quat campose_wc = pFrame->cam_pose_Twc;

@@ -1,4 +1,4 @@
-#include "include/core/BasicEllipsoidEdges.h"
+#include "include/ellipsoid-version/BasicEllipsoidEdges.h"
 #include "cmath"
 
 namespace g2o

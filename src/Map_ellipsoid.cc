@@ -20,37 +20,10 @@
 
 #include "Map.h"
 
-#include<mutex>
+#include <mutex>
 
 namespace ORB_SLAM2
 {
-
-// ellipsoid-version
-
-bool Map::AddPointCloudList(const string& name, std::vector<pcl::PointCloud<pcl::PointXYZRGB>>& vCloudPCL, g2o::SE3Quat& Twc, int type)
-{
-    if(type == REPLACE_POINT_CLOUD){
-        DeletePointCloudList(name, 0);
-    }
-    srand(time(0));
-    for( auto& cloud : vCloudPCL )
-    {
-        ORB_SLAM2::PointCloud cloudQuadri = pclToQuadricPointCloud(cloud);
-        ORB_SLAM2::PointCloud* pCloudGlobal = new EllipsoidSLAM::PointCloud(cloudQuadri);
-        transformPointCloudSelf(pCloudGlobal, &Twc);
-        
-        int r = rand()%155;
-        int g = rand()%155;
-        int b = rand()%155;
-        SetPointCloudProperty(pCloudGlobal, r, g, b, 4);
-        bool result = AddPointCloudList(name, pCloudGlobal, ADD_POINT_CLOUD);
-        if(!result) {
-            delete pCloudGlobal;
-            pCloudGlobal = NULL;
-        }
-    }
-    return true;
-}
 
 bool Map::AddPointCloudList(const string& name, PointCloud* pCloud, int type){
     unique_lock<mutex> lock(mMutexMap);
@@ -97,6 +70,8 @@ bool Map::AddPointCloudList(const string& name, PointCloud* pCloud, int type){
 
 // 删除点云
 bool Map::DeletePointCloudList(const string& name, int type){
+    std::cout << "[debug] Map address: " << this << std::endl;  // 检查this是否合法
+    
     unique_lock<mutex> lock(mMutexMap);
 
     if( type == 0 ) // complete matching: the name must be the same
@@ -152,13 +127,19 @@ bool Map::ClearPointCloudLists(){
     return true;
 }
 
+std::map<string, PointCloud *> Map::GetPointCloudList() {
+    unique_lock<mutex> lock(mMutexMap);
+    return mmPointCloudLists;
+}
 
 /**
  * Plane
  */
 
 void Map::addPlane(plane *pPlane, int visual_group) {
+    // std::cout<< "[Map::addPlane] Add plane with visual group 1"<< std::endl;
     unique_lock<mutex> lock(mMutexMap);
+    // std::cout<< "[Map::addPlane] Add plane with visual group 2"<< std::endl;
     pPlane->miVisualGroup = visual_group;
     mspPlanes.insert(pPlane);
 }
@@ -192,5 +173,6 @@ void Map::ClearEllipsoidsVisual() {
     // cout << "!!!! Map::ClearEllipsoidsVisual !!!!" << endl;
     mspEllipsoidsVisual.clear();
 }
+
 
 } //namespace ORB_SLAM

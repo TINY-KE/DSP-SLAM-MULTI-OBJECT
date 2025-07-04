@@ -1,10 +1,10 @@
-#include "include/core/SupportingPlane.h"
-#include "include/core/Frame.h"
+#include "include/ellipsoid-version/SupportingPlane.h"
+#include "include/ellipsoid-version/Frame.h"
 
 #include <Eigen/Core>
 using namespace Eigen;
 
-namespace EllipsoidSLAM
+namespace ORB_SLAM2
 {
 int SupportingPlane::total_sup_plane=0;
 
@@ -105,4 +105,4 @@ bool SupportingPlane::empty()
     return (vRelation.size()==0);
 }
 
-} // namespace EllipsoidSLAM
+} // namespace ORB_SLAM2

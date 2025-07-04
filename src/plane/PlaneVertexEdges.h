@@ -2,7 +2,7 @@
 #ifndef PLANEVERTEXEDGES_H
 #define PLANEVERTEXEDGES_H
 
-#include "include/core/Plane.h"
+#include "include/ellipsoid-version/Plane.h"
 #include "Thirdparty/g2o/g2o/core/base_vertex.h"
 #include "Thirdparty/g2o/g2o/core/block_solver.h"
 #include "Thirdparty/g2o/g2o/core/optimization_algorithm_levenberg.h"

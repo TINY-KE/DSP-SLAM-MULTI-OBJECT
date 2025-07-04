@@ -31,9 +31,9 @@ LIST(APPEND CMAKE_MODULE_PATH ${PROJECT_SOURCE_DIR}/cmake_modules)
 
 set(OpenCV_DIR "/home/robotlab/thirdparty/for_dspslam/opencv/build")
 set(Pangolin_DIR "/home/robotlab/thirdparty/for_dspslam/Pangolin/build")
-set(PYTHON_LIBRARIES  "/home/robotlab/anaconda3/envs/dsp-slam/lib/libpython3.7m.so")
-set(PYTHON_INCLUDE_DIRS  "/home/robotlab/anaconda3/envs/dsp-slam/include/python3.7m")
-set(PYTHON_EXECUTABLE  "/home/robotlab/anaconda3/envs/dsp-slam/bin/python3.7")
+set(PYTHON_LIBRARIES  "/home/robotlab/anaconda3/envs/dsp-slam-lj/lib/libpython3.7m.so")
+set(PYTHON_INCLUDE_DIRS  "/home/robotlab/anaconda3/envs/dsp-slam-lj/include/python3.7m")
+set(PYTHON_EXECUTABLE  "/home/robotlab/anaconda3/envs/dsp-slam-lj/bin/python3.7")
 set(PCL_DIR  /home/robotlab/thirdparty_install/pcl-1.13/share/pcl-1.13)
 
 find_package(OpenCV 3.2 REQUIRED)
@@ -57,12 +57,12 @@ add_compile_options(
 
 include_directories(/usr/include/vtk-7.1)
 
-# # seach
-# find_package(OpenGL REQUIRED)
-# find_package(GLUT REQUIRED)
-# # include    
-# include_directories(${OPENGL_INCLUDE_DIRS})
-# include_directories(${GLUT_INCLUDE_DIRS})
+# seach
+find_package(OpenGL REQUIRED)
+find_package(GLUT REQUIRED)
+# include    
+include_directories(${OPENGL_INCLUDE_DIRS})
+include_directories(${GLUT_INCLUDE_DIRS})
 
 
 ##for ros
@@ -85,6 +85,7 @@ include_directories(
         ${EIGEN3_INCLUDE_DIR}
         ${Pangolin_INCLUDE_DIRS}
         ${PCL_INCLUDE_DIRS} 
+        # /home/robotlab/anaconda3/envs/dsp-slam-lj/include/python3.7m
 )
 
 # You need to set to your own Python paths
@@ -147,6 +148,15 @@ add_library(${PROJECT_NAME} SHARED
 
         # ellipsoid-version
         src/ellipsoid-version/Plane.cpp
+        src/ellipsoid-version/Ellipsoid.cpp
+        src/ellipsoid-version/Geometry.cpp
+        # src/core/DataAssociation.cpp
+        src/ellipsoid-version/BasicEllipsoidEdges.cpp
+        # src/ellipsoid-version/NonparamDA.cpp
+        # src/ellipsoid-version/SupportingPlane.cpp
+        src/ellipsoid-version/ConstrainPlane.cpp
+        # src/core/SemanticLabel.cpp
+        # src/ellipsoid-version/PriorInfer.cpp
         )
 target_link_libraries(${PROJECT_NAME}
         ${catkin_LIBRARIES}  #for ros
@@ -154,10 +164,18 @@ target_link_libraries(${PROJECT_NAME}
         ${OpenCV_LIBS}
         ${EIGEN3_LIBS}
         ${Pangolin_LIBRARIES}
+        ${OPENGL_LIBRARIES} ${GLUT_LIBRARIES}
         ${PROJECT_SOURCE_DIR}/Thirdparty/DBoW2/lib/libDBoW2.so
         ${PROJECT_SOURCE_DIR}/Thirdparty/g2o/lib/libg2o.so
         /usr/lib/x86_64-linux-gnu/libtiff.so.5
         ${PCL_LIBRARY_DIRS}
+        EllipsoidExtractor
+        PlaneExtractor
+        # dense_builder
+        Polygon
+        Relationship
+        Config
+
         )
 
 # set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR})

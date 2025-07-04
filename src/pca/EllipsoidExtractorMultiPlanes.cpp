@@ -736,7 +736,7 @@ void GenerateConstrainPlanesToEllipsoid(g2o::ellipsoid& e_local_normalized, Vect
 }
 
 // 步骤
-// 1. 提取点云
+// 1. 提取点云，存入pcd_ptr中
 // 2. 将点云转换到重力坐标系( Z轴沿重力方向, 中心为物体中心点 )
 // 3. ...
 g2o::ellipsoid EllipsoidExtractor::EstimateLocalEllipsoidUsingMultiPlanes(cv::Mat& depth, Eigen::Vector4d& bbox, int label, double prob, Eigen::VectorXd &pose,  \
@@ -756,7 +756,10 @@ g2o::ellipsoid EllipsoidExtractor::EstimateLocalEllipsoidUsingMultiPlanes(cv::Ma
     clock_t time_start = clock();
     // 1. Get the object points after supporting plane filter and euclidean filter in the world coordinate
     // 注意: 该过程由于进行了与世界平面的操作, 所以位于世界坐标系下.
+    std::cout<< "[debug] EllipsoidExtractor::EstimateLocalEllipsoidUsingMultiPlanes 1"<< std::endl;
     pcl::PointCloud<PointType>::Ptr pCloudPCL = ExtractPointCloud(depth,bbox,pose,camera);
+
+    // std::cout<< " [debug] EllipsoidExtractor::EstimateLocalEllipsoidUsingMultiPlanes 2"<< std::endl;
 
     if (pCloudPCL == NULL) {
         cout << "pCloudPCL == NULL" << endl;
@@ -768,9 +771,12 @@ g2o::ellipsoid EllipsoidExtractor::EstimateLocalEllipsoidUsingMultiPlanes(cv::Ma
         *pcd_ptr = *pCloudPCL;
     }
 
+    // std::cout<< " [debug] EllipsoidExtractor::EstimateLocalEllipsoidUsingMultiPlanes 3"<< std::endl;
     clock_t time_1_ExtractPointCloud = clock();
     if(miSystemState > 0 )
         return e;
+
+    // std::cout<< " [debug] EllipsoidExtractor::EstimateLocalEllipsoidUsingMultiPlanes 4"<< std::endl;
 
     // 搭建世界系描述下的物体重力坐标系
     // gravity 系: 位于物体中心, Z轴与重力方向对齐.
@@ -780,11 +786,14 @@ g2o::ellipsoid EllipsoidExtractor::EstimateLocalEllipsoidUsingMultiPlanes(cv::Ma
     Eigen::Vector4d centroid; pcl::compute3DCentroid(*pCloudPCL, centroid);
     g2o::SE3Quat Twg = GenerateGravityCoordinate(centroid.head(3), sup_plane.head(3));
 
+    // std::cout<< " [debug] EllipsoidExtractor::EstimateLocalEllipsoidUsingMultiPlanes 5"<< std::endl;
+
     // 获得该系下的点云.
     g2o::SE3Quat SE3Tgw = Twg.inverse();
     Eigen::Matrix4d transform_gw = SE3Tgw.to_homogeneous_matrix();
     pcl::PointCloud<PointType>::Ptr pCloudPCLGravity(new pcl::PointCloud<PointType>);
     pcl::transformPointCloud (*pCloudPCL, *pCloudPCLGravity, transform_gw);
+    // std::cout<< " [debug] EllipsoidExtractor::EstimateLocalEllipsoidUsingMultiPlanes 6"<< std::endl;
 
     // 可视化: 重力系下的物体
     // ORB_SLAM2::PointCloud* pObjectCloudGravity = pclXYZToQuadricPointCloudPtr(pCloudPCLGravity); // normalized coordinate
@@ -797,6 +806,8 @@ g2o::ellipsoid EllipsoidExtractor::EstimateLocalEllipsoidUsingMultiPlanes(cv::Ma
 
     // 通过yaw角度将 Gravity - > normalized 
     g2o::SE3Quat Tgn = GenerateTransformNormalToGravity(yaw); 
+
+    // std::cout<< " [debug] EllipsoidExtractor::EstimateLocalEllipsoidUsingMultiPlanes 7"<< std::endl;
 
     Eigen::Matrix4d transform_ng = Tgn.inverse().to_homogeneous_matrix();
     pcl::PointCloud<PointType>::Ptr pCloudPCLNormalized(new pcl::PointCloud<PointType>);
@@ -817,11 +828,12 @@ g2o::ellipsoid EllipsoidExtractor::EstimateLocalEllipsoidUsingMultiPlanes(cv::Ma
     g2o::ellipsoid e_local_normalized = e_zero_normalized.transform_from(Tcn);
     
     // -------------- 到此已获得相机坐标系下的椭球体!
+    // std::cout<< " [debug] EllipsoidExtractor::EstimateLocalEllipsoidUsingMultiPlanes 8"<< std::endl;
 
     // 接下来添加 ConstrainPlanes.
     Matrix3d calib = CameraToCalibMatrix(camera);
     GenerateConstrainPlanesToEllipsoid(e_local_normalized, bbox, depth, campose_wc, calib);
-    VisualizeConstrainPlanes(e_local_normalized, campose_wc, mpMap); // 中点定在全局坐标系
+    // VisualizeConstrainPlanes(e_local_normalized, campose_wc, mpMap); // 中点定在全局坐标系
 
     // 评估本次提取的概率 : 投影回来的矩形与 bbox 的 IoU 作为规律.
     double prob_3d = CalculateProbability(e_local_normalized, bbox, calib);
@@ -834,7 +846,8 @@ g2o::ellipsoid EllipsoidExtractor::EstimateLocalEllipsoidUsingMultiPlanes(cv::Ma
     e_local_normalized.bPointModel = false;
     mResult = true;
     clock_t time_2_fullProcess = clock();
-
+    // std::cout<< " [debug] EllipsoidExtractor::EstimateLocalEllipsoidUsingMultiPlanes 9"<< ", prob_3d:"<<prob_3d<< " prob:"<<e_local_normalized.prob << " label:"<<label << std::endl;
+    
     // output the main running time
     cout << " -- System Time [EllipsoidExtractor.cpp] :" << endl ;
     cout << " ---- time_ExtractPointCloud: " <<(double)(time_1_ExtractPointCloud - time_start) / CLOCKS_PER_SEC << "s" << endl;

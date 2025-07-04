@@ -27,7 +27,7 @@
 #include "Converter.h"
 #include "ObjectDrawer.h"
 #include <pangolin/pangolin.h>
-
+#include <GL/glu.h>
 #include<mutex>
 
 namespace ORB_SLAM2
@@ -65,6 +65,22 @@ private:
     cv::Mat mCameraPose;
 
     std::mutex mMutexCamera;
+
+// ellipsoid-version
+public:
+    bool drawEllipsoidsVisual(double prob_thresh);
+    void drawAllEllipsoidsInVector(std::vector<ellipsoid*>& ellipsoids, int color_mode = 0);
+    void drawEllipsoidInVector(ellipsoid* e, int color_mode = 0); // 0: Red, 1: Green, 2:Blue
+    void SE3ToOpenGLCameraMatrix(g2o::SE3Quat &matIn, pangolin::OpenGlMatrix &M); // inverse matIn
+    void drawAxisNormal();
+    void drawPointCloudLists(float pointSize);
+
+    // 绘制平面
+    Eigen::Matrix3d calibRotMatAccordingToAxis(Matrix3d& rotMat, const Vector3d& normal);
+    void drawLine(const Vector3d& start, const Vector3d& end, const Vector3d& color, double width, double alpha = 1.0);
+    bool drawPlanes(int visual_group=0);
+    void drawPlaneWithEquation(plane* p);
+
 };
 
 } //namespace ORB_SLAM

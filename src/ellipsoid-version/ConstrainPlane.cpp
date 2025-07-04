@@ -1,5 +1,5 @@
-#include "include/core/ConstrainPlane.h"
-#include "include/core/Plane.h"
+#include "include/ellipsoid-version/ConstrainPlane.h"
+#include "include/ellipsoid-version/Plane.h"
 
 #include <Eigen/Core>
 using namespace Eigen;

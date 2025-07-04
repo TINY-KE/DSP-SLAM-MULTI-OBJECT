@@ -28,6 +28,10 @@
 #include <iomanip>
 #include <opencv2/core/eigen.hpp>
 #include <time.h>
+#include "src/config/Config.h"
+
+// ellipsoid-version
+ORB_SLAM2::Map* expMap;
 
 bool has_suffix(const std::string &str, const std::string &suffix) {
     std::size_t index = str.find(suffix, str.size() - suffix.size());
@@ -65,6 +69,9 @@ System::System(const string &strVocFile, const string &strSettingsFile, const st
        exit(-1);
     }
 
+    // ellipsoid-version
+    Config::Init();
+    Config::SetParameterFile(strSettingsFile);
 
     //Load ORB Vocabulary
     cout << endl << "Loading ORB Vocabulary. This could take a while..." << endl;
@@ -181,6 +188,9 @@ System::System(const string &strVocFile, const string &strSettingsFile, const st
     }
     // Release GIL
     PyEval_ReleaseThread(PyThreadState_Get());
+
+    // ellipsoid-version
+    expMap = mpMap;
 }
 
 cv::Mat System::TrackStereo(const cv::Mat &imLeft, const cv::Mat &imRight, const double &timestamp)

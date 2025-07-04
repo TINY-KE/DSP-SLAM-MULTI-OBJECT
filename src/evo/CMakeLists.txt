@@ -4,6 +4,6 @@ add_library(evo SHARED
 )
 
 target_link_libraries(evo
-        EllipsoidSLAM
+        ORB_SLAM2
         func
 )

@@ -2,11 +2,11 @@
 // 在代码结构上，实际是 Optimizer的扩展；函数的声明发生在Optimizer.h文件中.
 // 2020-6-3 by LZW
 
-#include "include/core/NonparamDA.h"
-#include "include/core/Optimizer.h"
-#include "include/core/Ellipsoid.h"
-#include "include/core/SupportingPlane.h"
-#include "include/core/ConstrainPlane.h"
+#include "include/ellipsoid-version/NonparamDA.h"
+#include "include/ellipsoid-version/Optimizer.h"
+#include "include/ellipsoid-version/Ellipsoid.h"
+#include "include/ellipsoid-version/SupportingPlane.h"
+#include "include/ellipsoid-version/ConstrainPlane.h"
 
 #include "src/config/Config.h"
 #include "src/pca/EllipsoidExtractorEdges.h"        // DEBUG : 为了计算平面-物体的 cross.
@@ -17,7 +17,7 @@ static int g_instance_total_id = 0;       // 宏观记录物体的instance该到
 
 const double sqrt_2pi_inv = 1 / std::sqrt( 2 * M_PI );
 
-namespace EllipsoidSLAM
+namespace ORB_SLAM2
 {
 
 class OneDAResult
@@ -1408,4 +1408,4 @@ void Optimizer::LoadRelations(Relations& rls, SupportingPlanes& spls)
 }
 
 
-} // namespace: EllipsoidSLAM
+} // namespace: ORB_SLAM2

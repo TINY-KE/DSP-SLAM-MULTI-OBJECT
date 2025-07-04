@@ -43,7 +43,8 @@ EllipsoidExtractor::EllipsoidExtractor()
 
     mDebugCenterCloud = NULL;
 
-    mbOpenVisualization = false;
+    mbOpenVisualizeDepthPoints = Config::ReadValue<double>("Ellipsoid.VisualzeDepthPoints", 1); 
+    
     miExtractCount = 0;
 
     mbOpenSymmetry = false;
@@ -51,6 +52,26 @@ EllipsoidExtractor::EllipsoidExtractor()
     SetExtractionMethod(ATLAS_EXTRACTION);
 
     mbOpenMHPlanesFilter = false;
+}
+
+EllipsoidExtractor::EllipsoidExtractor(Map* pMap)
+{
+    mResult = false;
+    mbSetPlane = false;
+
+    mDebugCenterCloud = NULL;
+
+    mbOpenVisualizeDepthPoints = Config::ReadValue<double>("Ellipsoid.VisualzeDepthPoints", 1); 
+    
+    miExtractCount = 0;
+
+    mbOpenSymmetry = false;
+
+    SetExtractionMethod(ATLAS_EXTRACTION);
+
+    mbOpenMHPlanesFilter = false;
+
+    mpMap = pMap;
 }
 
 void EllipsoidExtractor::LoadSymmetryPrior()
@@ -94,6 +115,7 @@ pcl::PointCloud<PointType>::Ptr EllipsoidExtractor::ExtractPointCloud(cv::Mat& d
     assert( mbSetPlane && "Please set the supporting plane first.");
 
     double depth_range = Config::ReadValue<double>("EllipsoidExtractor_DEPTH_RANGE", 6); 
+    std::cout<< "[debug]EllipsoidExtractor::ExtractPointCloud: depth_range = " << depth_range << std::endl;
     g2o::SE3Quat campose_wc; campose_wc.fromVector(pose.head(7));
 
     PointCloud* pPoints_local = new PointCloud(getPointCloudInRect(depth, bbox, camera, depth_range));
@@ -105,6 +127,7 @@ pcl::PointCloud<PointType>::Ptr EllipsoidExtractor::ExtractPointCloud(cv::Mat& d
     // 产生两组可视化点云 world, world_downsample
     PointCloud* pPoints_world = transformPointCloud(pPoints_local, &campose_wc);
     // PointCloud* pPoints_world_downsample = transformPointCloud(pPoints_local_downsample, &campose_wc);
+    std::cout<<"[debug]EllipsoidExtractor::ExtractPointCloud 1: 可视化物体的深度点云[过滤前]"<<std::endl;
     VisualizePointCloud("Points_world", pPoints_world, Vector3d(0,0.5,0), 2);
     // VisualizePointCloud("Points_world_downsample", pPoints_world_downsample, Vector3d(0,0.8,0), 2);
 
@@ -143,6 +166,7 @@ pcl::PointCloud<PointType>::Ptr EllipsoidExtractor::ExtractPointCloud(cv::Mat& d
     // delete pPoints_local_downsample; pPoints_local_downsample = NULL;
 
     // 新添加的可视化: 滤波后
+    std::cout<<"[debug]EllipsoidExtractor::ExtractPointCloud 2: 可视化物体的深度点云[过滤后]"<<std::endl;
     PointCloud* pCloudFilteredWorld = transformPointCloud(pCloudFiltered, &campose_wc);
     VisualizePointCloud("CloudFiltered", pCloudFilteredWorld, Vector3d(0,1.0,0), 2);
     delete pCloudFiltered; pCloudFiltered = NULL;
@@ -164,6 +188,8 @@ pcl::PointCloud<PointType>::Ptr EllipsoidExtractor::ExtractPointCloud(cv::Mat& d
         pPoints_planeFiltered = ApplyMHPlanesFilter(pPoints_global, vMHPlanes);
     }
     clock_t time_3_SupportingPlaneFilter = clock();
+    std::cout<<"[debug]EllipsoidExtractor::ExtractPointCloud 3: 可视化物体所处的水平面"<<std::endl;
+
 
     VisualizePointCloud("planeFiltered", pPoints_planeFiltered, Vector3d(1.0,0,0), 2);
     clock_t time_4_VisualizePointCloud = clock();
@@ -210,12 +236,13 @@ pcl::PointCloud<PointType>::Ptr EllipsoidExtractor::ExtractPointCloud(cv::Mat& d
 
     // 使用快速欧几里德聚类进行滤波
     mDebugCenter = center;
-    PointCloud* pPointsEuFiltered = ApplyEuclideanFilter(pPoints_sampled, center);
+    PointCloud* pPointsEuFiltered = ApplyEuclideanFilter(pPoints_sampled, center);   //获取miEuclideanFilterState（欧几里得过滤的结果）
     // delete pPoints_sampled; pPoints_sampled = NULL;
 
     if( miEuclideanFilterState > 0 )
     {
         miSystemState = 2;  // fail to filter
+        std::cout<<"fail to filter"<<std::endl;
         return NULL;
     }
     clock_t time_6_ApplyEuclideanFilter = clock();
@@ -224,6 +251,8 @@ pcl::PointCloud<PointType>::Ptr EllipsoidExtractor::ExtractPointCloud(cv::Mat& d
     pcl::PointCloud<PointType>::Ptr clear_cloud_ptr = QuadricPointCloudToPclXYZ(*pPointsEuFiltered);
 
     mpPoints = pPointsEuFiltered;
+
+    std::cout<<"[debug]EllipsoidExtractor::ExtractPointCloud 4: 可视化欧几里得聚类后的结果"<<std::endl;
     VisualizePointCloud("EuclideanFiltered", mpPoints, Vector3d(0.4,0,1.0), 2);;
     clock_t time_7_VisualizePointCloud = clock();
 
@@ -235,7 +264,7 @@ pcl::PointCloud<PointType>::Ptr EllipsoidExtractor::ExtractPointCloud(cv::Mat& d
     // cout << "time_5_GetCenter: " <<(double)(time_5_GetCenter - time_4_VisualizePointCloud) / CLOCKS_PER_SEC << "s" << endl;
     // cout << "time_6_ApplyEuclideanFilter: " <<(double)(time_6_ApplyEuclideanFilter - time_5_GetCenter) / CLOCKS_PER_SEC << "s" << endl;
     // cout << "time_7_VisualizePointCloud: " <<(double)(time_7_VisualizePointCloud - time_6_ApplyEuclideanFilter) / CLOCKS_PER_SEC << "s" << endl;
-    cout << "time_1_1_outliers_filter: " << (double)(time_1_1_outliers_filter_end - time_1_1_outliers_filter_start) / CLOCKS_PER_SEC << "s" << endl;
+    cout << "[debug]EllipsoidExtractor::ExtractPointCloud End, Time: " << (double)(time_1_1_outliers_filter_end - time_1_1_outliers_filter_start) / CLOCKS_PER_SEC << "s" << endl;
     return clear_cloud_ptr;
 }
 
@@ -362,206 +391,208 @@ g2o::ellipsoid EllipsoidExtractor::ConstructEllipsoid(PCAResult &data)
 }
 
 g2o::ellipsoid EllipsoidExtractor::EstimateLocalEllipsoid(cv::Mat& depth, Eigen::Vector4d& bbox, int label, double prob, Eigen::VectorXd &pose, camera_intrinsic& camera){
-    miExtractCount ++;  // the total extraction times for naming point clouds.
+    // miExtractCount ++;  // the total extraction times for naming point clouds.
 
-    g2o::ellipsoid e;
-    miSystemState = 0;  // reset the state
-    mSymmetryOutputData.result = false; // reset
-    mResult = false;
+    // g2o::ellipsoid e;
+    // miSystemState = 0;  // reset the state
+    // mSymmetryOutputData.result = false; // reset
+    // mResult = false;
 
-    clock_t time_start = clock();
-    // 1. Get the object points after supporting plane filter and euclidean filter in the world coordinate
-    pcl::PointCloud<PointType>::Ptr pCloudPCL = ExtractPointCloud(depth,bbox,pose,camera);
-    if(miSystemState > 0 )
-        return e;
-    clock_t time_1_ExtractPointCloud = clock();
+    // clock_t time_start = clock();
+    // // 1. Get the object points after supporting plane filter and euclidean filter in the world coordinate
+    // pcl::PointCloud<PointType>::Ptr pCloudPCL = ExtractPointCloud(depth,bbox,pose,camera);
+    // if(miSystemState > 0 )
+    //     return e;
+    // clock_t time_1_ExtractPointCloud = clock();
 
-    // process the principle components analysis to get the rotation matrix, scale, and center point of the point cloud
-    PCAResult data = ProcessPCA(pCloudPCL);
+    // // process the principle components analysis to get the rotation matrix, scale, and center point of the point cloud
+    // PCAResult data = ProcessPCA(pCloudPCL);
     
-    // adjust the rotation matrix to be right-handed 
-    AdjustChirality(data);    
-    // adjust the x,y,z order
-    AlignZAxisToGravity(data);
-    // align z axis with the normal of the supporting plane
-    ApplyGravityPrior(data);
+    // // adjust the rotation matrix to be right-handed 
+    // AdjustChirality(data);    
+    // // adjust the x,y,z order
+    // AlignZAxisToGravity(data);
+    // // align z axis with the normal of the supporting plane
+    // ApplyGravityPrior(data);
 
-    Vector3d center = data.center;  // center point of the object points from PCA.
-    ORB_SLAM2::PointCloud* pObjectClearCloud = pclXYZToQuadricPointCloudPtr(pCloudPCL);
-    // ORB_SLAM2::PointCloud* pObjectCloud = pObjectClearCloud;    // world coordinate
+    // Vector3d center = data.center;  // center point of the object points from PCA.
+    // ORB_SLAM2::PointCloud* pObjectClearCloud = pclXYZToQuadricPointCloudPtr(pCloudPCL);
+    // // ORB_SLAM2::PointCloud* pObjectCloud = pObjectClearCloud;    // world coordinate
 
-    // downsample to estimate symmetry.
-    double grid_size_for_symmetry = Config::ReadValue<double>("EllipsoidExtraction.Symmetry.GridSize");
-    ORB_SLAM2::PointCloud* pObjectCloud = new ORB_SLAM2::PointCloud;
-    DownSamplePointCloudOnly(*pObjectClearCloud, *pObjectCloud, grid_size_for_symmetry);
-    VisualizePointCloud("Points For Sym", pObjectCloud, Vector3d(0.5,0.5,0.0), 6);
+    // // downsample to estimate symmetry.
+    // double grid_size_for_symmetry = Config::ReadValue<double>("EllipsoidExtraction.Symmetry.GridSize");
+    // ORB_SLAM2::PointCloud* pObjectCloud = new ORB_SLAM2::PointCloud;
+    // DownSamplePointCloudOnly(*pObjectClearCloud, *pObjectCloud, grid_size_for_symmetry);
+    // VisualizePointCloud("Points For Sym", pObjectCloud, Vector3d(0.5,0.5,0.0), 6);
 
-    // construct a normalized rotation matrix using the normal of the supporting plane and the normal of the symmetry plane.
-    Vector3d rot_vec_z;
-    if( mbSetPlane )
-        rot_vec_z = mpPlane->param.head(3).normalized();
-    else
-        rot_vec_z = Vector3d(0,0,1);
-    Vector3d rot_vec_x = data.rotMat.col(0).normalized();   // or use the origin PCA result.
-    Vector3d rot_vec_y = rot_vec_z.cross(rot_vec_x);
+    // // construct a normalized rotation matrix using the normal of the supporting plane and the normal of the symmetry plane.
+    // Vector3d rot_vec_z;
+    // if( mbSetPlane )
+    //     rot_vec_z = mpPlane->param.head(3).normalized();
+    // else
+    //     rot_vec_z = Vector3d(0,0,1);
+    // Vector3d rot_vec_x = data.rotMat.col(0).normalized();   // or use the origin PCA result.
+    // Vector3d rot_vec_y = rot_vec_z.cross(rot_vec_x);
 
-    Matrix3d rotMat_wo;    // object in world
-    rotMat_wo.col(0) = rot_vec_x;
-    rotMat_wo.col(1) = rot_vec_y;
-    rotMat_wo.col(2) = rot_vec_z;
+    // Matrix3d rotMat_wo;    // object in world
+    // rotMat_wo.col(0) = rot_vec_x;
+    // rotMat_wo.col(1) = rot_vec_y;
+    // rotMat_wo.col(2) = rot_vec_z;
 
-    // transform to the normalized coordinate
-    g2o::SE3Quat* pSE3Two = new g2o::SE3Quat;
-    Eigen::Quaterniond quat_wo(rotMat_wo);
-    pSE3Two->setRotation(quat_wo);
-    pSE3Two->setTranslation(center);    // it is the center of the old object points; it's better to use the center of the new complete points
-    g2o::SE3Quat SE3Tow(pSE3Two->inverse());
-    ORB_SLAM2::PointCloud* pObjectCloudNormalized = transformPointCloud(pObjectCloud, &SE3Tow); // normalized coordinate
-    // VisualizePointCloud("normalizedPoints", pObjectCloudNormalized, Vector3d(0,0.4,0), 2);
+    // // transform to the normalized coordinate
+    // g2o::SE3Quat* pSE3Two = new g2o::SE3Quat;
+    // Eigen::Quaterniond quat_wo(rotMat_wo);
+    // pSE3Two->setRotation(quat_wo);
+    // pSE3Two->setTranslation(center);    // it is the center of the old object points; it's better to use the center of the new complete points
+    // g2o::SE3Quat SE3Tow(pSE3Two->inverse());
+    // ORB_SLAM2::PointCloud* pObjectCloudNormalized = transformPointCloud(pObjectCloud, &SE3Tow); // normalized coordinate
+    // // VisualizePointCloud("normalizedPoints", pObjectCloudNormalized, Vector3d(0,0.4,0), 2);
 
-    clock_t time_2_partPCA = clock();
+    // clock_t time_2_partPCA = clock();
 
-    // begin symmetry plane estimation.
-    SymmetryOutputData dataSymOutput;
-    dataSymOutput.result = false;
-    bool runSymmetry = false;
-    if( mbOpenSymmetry )
-    {
-        // 1. Check symmetry type
-        bool hasSymmetry = (mmLabelSymmetry.find(label) != mmLabelSymmetry.end());
-        int symmetryType = -1;
-        if(hasSymmetry)
-        {
-            symmetryType = mmLabelSymmetry[label];
-            if(symmetryType > 0) runSymmetry = true;    // have valid symmetry type
-        }
-        if(runSymmetry)
-        {
-            // 3. initialize the symmetry solver
-            Symmetry ext;
+    // // begin symmetry plane estimation.
+    // SymmetryOutputData dataSymOutput;
+    // dataSymOutput.result = false;
+    // bool runSymmetry = false;
+    // if( mbOpenSymmetry )
+    // {
+    //     // 1. Check symmetry type
+    //     bool hasSymmetry = (mmLabelSymmetry.find(label) != mmLabelSymmetry.end());
+    //     int symmetryType = -1;
+    //     if(hasSymmetry)
+    //     {
+    //         symmetryType = mmLabelSymmetry[label];
+    //         if(symmetryType > 0) runSymmetry = true;    // have valid symmetry type
+    //     }
+    //     if(runSymmetry)
+    //     {
+    //         // 3. initialize the symmetry solver
+    //         Symmetry ext;
 
-            // Get a depth map whose values store the straight distances between the 3d points and camera center
-            cv::Mat projDepth = ext.getProjDepthMat(depth, camera);
-            g2o::SE3Quat campose_wc;    campose_wc.fromVector(pose.tail(7));
-            g2o::SE3Quat campose_oc = SE3Tow * campose_wc;
-            Eigen::VectorXd poseNormalized = campose_oc.toVector();
+    //         // Get a depth map whose values store the straight distances between the 3d points and camera center
+    //         cv::Mat projDepth = ext.getProjDepthMat(depth, camera);
+    //         g2o::SE3Quat campose_wc;    campose_wc.fromVector(pose.tail(7));
+    //         g2o::SE3Quat campose_oc = SE3Tow * campose_wc;
+    //         Eigen::VectorXd poseNormalized = campose_oc.toVector();
 
-            SymmetrySolverData result = ext.estimateSymmetry(bbox, pObjectCloudNormalized, poseNormalized, projDepth, camera, symmetryType);
+    //         SymmetrySolverData result = ext.estimateSymmetry(bbox, pObjectCloudNormalized, poseNormalized, projDepth, camera, symmetryType);
 
-            // store the output 
-            dataSymOutput.pCloud = pObjectCloudNormalized;
-            dataSymOutput.prob = result.prob;
-            dataSymOutput.result = result.result;
-            dataSymOutput.center = center;
-            dataSymOutput.symmetryType = symmetryType;
+    //         // store the output 
+    //         dataSymOutput.pCloud = pObjectCloudNormalized;
+    //         dataSymOutput.prob = result.prob;
+    //         dataSymOutput.result = result.result;
+    //         dataSymOutput.center = center;
+    //         dataSymOutput.symmetryType = symmetryType;
 
-            // store the sym plane
-            g2o::plane symPlaneWorld(*result.pPlane);
-            symPlaneWorld.transform(*pSE3Two);
-            dataSymOutput.planeVec = symPlaneWorld.param;   // store the symmetry plane in the world coordinate
+    //         // store the sym plane
+    //         g2o::plane symPlaneWorld(*result.pPlane);
+    //         symPlaneWorld.transform(*pSE3Two);
+    //         dataSymOutput.planeVec = symPlaneWorld.param;   // store the symmetry plane in the world coordinate
             
-            if(symmetryType == 2)   // another symmetry plane for dual reflection
-            {
-                g2o::plane symPlaneWorld2(*result.pPlane2);
-                symPlaneWorld2.transform(*pSE3Two);
-                dataSymOutput.planeVec2 = symPlaneWorld2.param;
-            }
+    //         if(symmetryType == 2)   // another symmetry plane for dual reflection
+    //         {
+    //             g2o::plane symPlaneWorld2(*result.pPlane2);
+    //             symPlaneWorld2.transform(*pSE3Two);
+    //             dataSymOutput.planeVec2 = symPlaneWorld2.param;
+    //         }
 
-            // complete the pointcloud using the symmetry plane if the estimation is successful
-            if(dataSymOutput.result)
-            {
-                PointCloud* pSymCloudNormalized = SymmetrySolver::GetSymmetryPointCloud(pObjectCloudNormalized, *result.pPlane);    // the plane in result is in normalized coordinate.
+    //         // complete the pointcloud using the symmetry plane if the estimation is successful
+    //         if(dataSymOutput.result)
+    //         {
+    //             PointCloud* pSymCloudNormalized = SymmetrySolver::GetSymmetryPointCloud(pObjectCloudNormalized, *result.pPlane);    // the plane in result is in normalized coordinate.
 
-                if( symmetryType == 2)
-                {
-                    PointCloud* pSymCloudNormalized2_1 = SymmetrySolver::GetSymmetryPointCloud(pObjectCloudNormalized, *result.pPlane2);
-                    PointCloud* pSymCloudNormalized2_2 = SymmetrySolver::GetSymmetryPointCloud(pSymCloudNormalized, *result.pPlane2);
-                    CombinePointCloud(pSymCloudNormalized, pSymCloudNormalized2_1);
-                    CombinePointCloud(pSymCloudNormalized, pSymCloudNormalized2_2);
-                }
+    //             if( symmetryType == 2)
+    //             {
+    //                 PointCloud* pSymCloudNormalized2_1 = SymmetrySolver::GetSymmetryPointCloud(pObjectCloudNormalized, *result.pPlane2);
+    //                 PointCloud* pSymCloudNormalized2_2 = SymmetrySolver::GetSymmetryPointCloud(pSymCloudNormalized, *result.pPlane2);
+    //                 CombinePointCloud(pSymCloudNormalized, pSymCloudNormalized2_1);
+    //                 CombinePointCloud(pSymCloudNormalized, pSymCloudNormalized2_2);
+    //             }
 
-                // add the mirrored points to the object points
-                int sym_num = pSymCloudNormalized->size();
-                for( int i=0;i<sym_num;i++ )
-                    pObjectCloudNormalized->push_back((*pSymCloudNormalized)[i]);
+    //             // add the mirrored points to the object points
+    //             int sym_num = pSymCloudNormalized->size();
+    //             for( int i=0;i<sym_num;i++ )
+    //                 pObjectCloudNormalized->push_back((*pSymCloudNormalized)[i]);
 
-                // here, mirrwoed points have changed the center and rotation of the object points,
-                // so we need a new transformation to move back the object points to the normalized coordinate
+    //             // here, mirrwoed points have changed the center and rotation of the object points,
+    //             // so we need a new transformation to move back the object points to the normalized coordinate
 
-                // get the new center of the objects with mirrored points
-                Vector3d centerCombined = GetPointcloudCenter(pObjectCloudNormalized);
+    //             // get the new center of the objects with mirrored points
+    //             Vector3d centerCombined = GetPointcloudCenter(pObjectCloudNormalized);
 
-                // to world coordinate
-                Vector3d centerCombinedWorld = TransformPoint(centerCombined, pSE3Two->to_homogeneous_matrix());
-                dataSymOutput.center = centerCombinedWorld;
+    //             // to world coordinate
+    //             Vector3d centerCombinedWorld = TransformPoint(centerCombined, pSE3Two->to_homogeneous_matrix());
+    //             dataSymOutput.center = centerCombinedWorld;
 
-                g2o::SE3Quat Tom;   // mirror objects in normalized coordinate
-                Tom.setTranslation(centerCombined);
-                Matrix3d rotMat_om;    // object in world
-                rotMat_om.col(0) = result.pPlane->param.head(3); // x: the normal of symmetry plane 1
-                rotMat_om.col(0) = rotMat_om.col(0)/(rotMat_om.col(0).norm());  // normalize
-                rotMat_om.col(2) = Vector3d(0,0,1);   // z: the normal of the groundplane, which is Z(0,0,1)
-                rotMat_om.col(1) = rotMat_om.col(2).cross(rotMat_om.col(0));    // y:  z cross x
+    //             g2o::SE3Quat Tom;   // mirror objects in normalized coordinate
+    //             Tom.setTranslation(centerCombined);
+    //             Matrix3d rotMat_om;    // object in world
+    //             rotMat_om.col(0) = result.pPlane->param.head(3); // x: the normal of symmetry plane 1
+    //             rotMat_om.col(0) = rotMat_om.col(0)/(rotMat_om.col(0).norm());  // normalize
+    //             rotMat_om.col(2) = Vector3d(0,0,1);   // z: the normal of the groundplane, which is Z(0,0,1)
+    //             rotMat_om.col(1) = rotMat_om.col(2).cross(rotMat_om.col(0));    // y:  z cross x
 
-                Eigen::Quaterniond quat_om(rotMat_om);
-                Tom.setRotation(quat_om);
+    //             Eigen::Quaterniond quat_om(rotMat_om);
+    //             Tom.setRotation(quat_om);
 
-                // transform points
-                g2o::SE3Quat Tmo = Tom.inverse();
-                transformPointCloudSelf(pObjectCloudNormalized, &Tmo);  // po->pm
+    //             // transform points
+    //             g2o::SE3Quat Tmo = Tom.inverse();
+    //             transformPointCloudSelf(pObjectCloudNormalized, &Tmo);  // po->pm
 
-                // change T
-                g2o::SE3Quat* pSE3Twm = new g2o::SE3Quat();
-                (*pSE3Twm) = (*pSE3Two) * Tom;
-                pSE3Two = pSE3Twm;
+    //             // change T
+    //             g2o::SE3Quat* pSE3Twm = new g2o::SE3Quat();
+    //             (*pSE3Twm) = (*pSE3Two) * Tom;
+    //             pSE3Two = pSE3Twm;
 
-            }
-            mSymmetryOutputData = dataSymOutput; 
+    //         }
+    //         mSymmetryOutputData = dataSymOutput; 
 
-            // VisualizePointCloud("WithSymNormalized", pObjectCloudNormalized, Vector3d(0,0,0.4), 2);
+    //         // VisualizePointCloud("WithSymNormalized", pObjectCloudNormalized, Vector3d(0,0,0.4), 2);
 
-            // transform to the world
-            ORB_SLAM2::PointCloud* pObjectCloudWithSymWorld = ORB_SLAM2::transformPointCloud(pObjectCloudNormalized, pSE3Two);
-            VisualizePointCloud("Mirrored Points", pObjectCloudWithSymWorld, Vector3d(0,1.0,0.2), 8);
+    //         // transform to the world
+    //         ORB_SLAM2::PointCloud* pObjectCloudWithSymWorld = ORB_SLAM2::transformPointCloud(pObjectCloudNormalized, pSE3Two);
+    //         VisualizePointCloud("Mirrored Points", pObjectCloudWithSymWorld, Vector3d(0,1.0,0.2), 8);
 
-        }   // end of symmetry type
-    }   // end of the symmetry.
-    clock_t time_3_symmetryEstimation = clock();
+    //     }   // end of symmetry type
+    // }   // end of the symmetry.
+    // clock_t time_3_symmetryEstimation = clock();
 
-    // Estimate an ellipsoid from the complete object points
-    // calculate the covariance along three main axes
-    g2o::ellipsoid e_zero_normalized = GetEllipsoidFromNomalizedPointCloud(pObjectCloudNormalized);
+    // // Estimate an ellipsoid from the complete object points
+    // // calculate the covariance along three main axes
+    // g2o::ellipsoid e_zero_normalized = GetEllipsoidFromNomalizedPointCloud(pObjectCloudNormalized);
 
-    // transform back to the world coordinate
-    g2o::ellipsoid e_global_normalized = e_zero_normalized.transform_from(*pSE3Two);
+    // // transform back to the world coordinate
+    // g2o::ellipsoid e_global_normalized = e_zero_normalized.transform_from(*pSE3Two);
 
-    // transform to the local coordinate.
-    g2o::SE3Quat campose_wc; campose_wc.fromVector(pose);
-    g2o::ellipsoid e_local_normalized = e_global_normalized.transform_from(campose_wc.inverse());
-    clock_t time_5_zeroPCA = clock();
+    // // transform to the local coordinate.
+    // g2o::SE3Quat campose_wc; campose_wc.fromVector(pose);
+    // g2o::ellipsoid e_local_normalized = e_global_normalized.transform_from(campose_wc.inverse());
+    // clock_t time_5_zeroPCA = clock();
 
-    // output the main running time
-    // cout << "****** System Time [EllipsoidExtractor.cpp] ******" << endl ;
-    // cout << "time_ExtractPointCloud: " <<(double)(time_1_ExtractPointCloud - time_start) / CLOCKS_PER_SEC << "s" << endl;
-    // // cout << "time_partPCA: " <<(double)(time_2_partPCA - time_1_ExtractPointCloud) / CLOCKS_PER_SEC << "s" << endl;      // too small
-    // cout << "time_symmetryEstimation: " <<(double)(time_3_symmetryEstimation - time_2_partPCA) / CLOCKS_PER_SEC << "s" << endl;
-    // // cout << "time_zeroPCA: " <<(double)(time_5_zeroPCA - time_3_symmetryEstimation) / CLOCKS_PER_SEC << "s" << endl << endl;     // too small
-    // cout << "total_ellipsoidExtraction: " <<(double)(time_5_zeroPCA - time_start) / CLOCKS_PER_SEC << "s" << endl;
+    // // output the main running time
+    // // cout << "****** System Time [EllipsoidExtractor.cpp] ******" << endl ;
+    // // cout << "time_ExtractPointCloud: " <<(double)(time_1_ExtractPointCloud - time_start) / CLOCKS_PER_SEC << "s" << endl;
+    // // // cout << "time_partPCA: " <<(double)(time_2_partPCA - time_1_ExtractPointCloud) / CLOCKS_PER_SEC << "s" << endl;      // too small
+    // // cout << "time_symmetryEstimation: " <<(double)(time_3_symmetryEstimation - time_2_partPCA) / CLOCKS_PER_SEC << "s" << endl;
+    // // // cout << "time_zeroPCA: " <<(double)(time_5_zeroPCA - time_3_symmetryEstimation) / CLOCKS_PER_SEC << "s" << endl << endl;     // too small
+    // // cout << "total_ellipsoidExtraction: " <<(double)(time_5_zeroPCA - time_start) / CLOCKS_PER_SEC << "s" << endl;
 
-    g2o::ellipsoid e_local = e_local_normalized;
+    // g2o::ellipsoid e_local = e_local_normalized;
 
-    // calculate the probability of the single-frame ellipsoid estimation
-    double prob_symmetry;
-    if(runSymmetry)
-        prob_symmetry = dataSymOutput.prob; // when the symmetry is opened
-    else
-        prob_symmetry = 1.0;   // when the symmetry is closed, set it to a constant
+    // // calculate the probability of the single-frame ellipsoid estimation
+    // double prob_symmetry;
+    // if(runSymmetry)
+    //     prob_symmetry = dataSymOutput.prob; // when the symmetry is opened
+    // else
+    //     prob_symmetry = 1.0;   // when the symmetry is closed, set it to a constant
     
-    e_local.prob = prob_symmetry * prob;    // measurement_prob * symmetry_prob
-    e_local.miLabel = label;
+    // e_local.prob = prob_symmetry * prob;    // measurement_prob * symmetry_prob
+    // e_local.miLabel = label;
 
-    mResult = true;
-    return e_local;
+    // mResult = true;
+    // return e_local;
+
+    return g2o::ellipsoid(); // return an empty ellipsoid if the function is not implemented.
 }
 
 PCAResult EllipsoidExtractor::ProcessPCANormalized(ORB_SLAM2::PointCloud* pObject)
@@ -741,10 +772,11 @@ ORB_SLAM2::PointCloud* EllipsoidExtractor::ApplyEuclideanFilter(ORB_SLAM2::Point
     clock_t time_1_start = clock();
 
     // load config parameters
-    int CONFIG_MinClusterSize = Config::Get<int>( "EllipsoidExtraction.Euclidean.MinClusterSize"); 
-    double CONFIG_ClusterTolerance = Config::Get<double>( "EllipsoidExtraction.Euclidean.ClusterTolerance"); 
-    double CONFIG_CENTER_DIS = Config::Get<double>( "EllipsoidExtraction.Euclidean.CenterDis"); 
+    int CONFIG_MinClusterSize = Config::ReadValue<int>( "EllipsoidExtraction.MinClusterSize"); 
+    double CONFIG_ClusterTolerance = Config::ReadValue<double>( "EllipsoidExtraction.ClusterTolerance"); 
+    double CONFIG_CENTER_DIS = Config::ReadValue<double>( "EllipsoidExtraction.CenterDis"); 
 
+    std::cout<< "[debug] EllipsoidExtractor::ApplyEuclideanFilter: "<< CONFIG_MinClusterSize <<", "<< CONFIG_ClusterTolerance <<", "<< CONFIG_CENTER_DIS <<", "<<std::endl;
     assert( CONFIG_MinClusterSize>0&&CONFIG_ClusterTolerance>0&&CONFIG_CENTER_DIS>0 && "Forge to set param. " );
 
     pcl::PointCloud<pcl::PointXYZ>::Ptr pCloudPCL = QuadricPointCloudToPclXYZ(*pCloud);
@@ -845,10 +877,17 @@ double EllipsoidExtractor::getDistanceFromPointToCloud(Vector3d& point, pcl::Poi
 }
 
 void EllipsoidExtractor::SetSupportingPlane(g2o::plane* pPlane, bool local){
+    std::cout<<"[debug] tracking.cc: SetGroundPlaneMannually 2-1:"<<pPlane->param.transpose() <<std::endl;
+    
+    pPlane;
+    std::cout<<"[debug] tracking.cc: SetGroundPlaneMannually 2-2"<<std::endl;
+    
     mpPlane = pPlane;
+    std::cout<<"[debug] tracking.cc: SetGroundPlaneMannually 2-3"<<std::endl;
     mbSetPlane = true;
 
     mbLocalSupportingPlane = local;
+    std::cout<<"[debug] tracking.cc: SetGroundPlaneMannually 2-4"<<std::endl;
 }
 
 void EllipsoidExtractor::AdjustChirality(PCAResult &data){
@@ -884,21 +923,26 @@ Eigen::Matrix3d EllipsoidExtractor::calibRotMatAccordingToGroundPlane(Matrix3d& 
 
 void EllipsoidExtractor::OpenVisualization(Map* pMap)
 {
-    mbOpenVisualization = true;
+    mbOpenVisualizeDepthPoints = true;
     mpMap = pMap;
 }
 
 void EllipsoidExtractor::ClearPointCloudList()
 {
-    if( mbOpenVisualization )
+    std::cout << "[debug] Map address 2: " << mpMap << std::endl;  // 检查this是否合法
+
+    if( mbOpenVisualizeDepthPoints )
     {
         mpMap->DeletePointCloudList("EllipsoidExtractor", 1);  // partial martching   
     }
 }
 
 void EllipsoidExtractor::VisualizePointCloud(const string& name, ORB_SLAM2::PointCloud* pCloud, const Vector3d &color, int point_size){
-    if( mbOpenVisualization ) 
+    
+    // std::cout<<"[debug] EllipsoidExtractor::VisualizePointCloud 1: "<<name<<", color: "<<color.transpose()<<", point_size: "<<point_size<<std::endl;
+    if( mbOpenVisualizeDepthPoints ) 
     {
+
         // if the color is not set, use random color
         uchar r,g,b;
         if( color[0] < -0.01 || color[1] < -0.01 || color[2] < -0.01)
@@ -915,22 +959,26 @@ void EllipsoidExtractor::VisualizePointCloud(const string& name, ORB_SLAM2::Poin
             b = 255 * color[2];
         }
         
+        // std::cout<<"[debug] EllipsoidExtractor::VisualizePointCloud 2"<<std::endl;
         SetPointCloudProperty(pCloud, r,g,b,point_size);
 
+        // std::cout<<"[debug] EllipsoidExtractor::VisualizePointCloud 3"<<std::endl;
         string full_name = string("EllipsoidExtractor.") + name;
 
         mpMap->AddPointCloudList(full_name, pCloud, 1);
+        // std::cout<<"[debug] EllipsoidExtractor::VisualizePointCloud 4"<<std::endl;
+
     }
 
 }
 
-void EllipsoidExtractor::VisualizeEllipsoid(const string& name, g2o::ellipsoid* pObj)
-{
-    if( mbOpenVisualization ) 
-    {
-        mpMap->addEllipsoidVisual(pObj);
-    }    
-}
+// void EllipsoidExtractor::VisualizeEllipsoid(const string& name, g2o::ellipsoid* pObj)
+// {
+//     if( mbOpenVisualization ) 
+//     {
+//         mpMap->addEllipsoidVisual(pObj);
+//     }    
+// }
 
 void EllipsoidExtractor::OpenSymmetry()
 {
@@ -956,4 +1004,4 @@ void EllipsoidExtractor::SetExtractionMethod(int method)
     miMethod = method;
 }
 
-}   // namespace: EllipsoidSLAM
+}   // namespace: ORB_SLAM2

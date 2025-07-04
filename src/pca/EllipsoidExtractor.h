@@ -58,6 +58,8 @@ public:
     EIGEN_MAKE_ALIGNED_OPERATOR_NEW
 
     EllipsoidExtractor();   
+    EllipsoidExtractor(Map* pMap);
+
 
     // open symmetry plane estimation to finish point cloud completion
     void OpenSymmetry();
@@ -113,7 +115,7 @@ private:
     Eigen::Matrix3d calibRotMatAccordingToGroundPlane( Matrix3d& rotMat, const Vector3d& normal);
 
     void VisualizePointCloud(const string& name, ORB_SLAM2::PointCloud* pCloud, const Vector3d &color = Vector3d(-1,-1,-1), int point_size = 2);
-    void VisualizeEllipsoid(const string& name, g2o::ellipsoid* pObj);
+    // void VisualizeEllipsoid(const string& name, g2o::ellipsoid* pObj);
 
     PCAResult ProcessPCANormalized(ORB_SLAM2::PointCloud* pObject);
 
@@ -155,7 +157,7 @@ private:
 
     SymmetryOutputData mSymmetryOutputData;
 
-    bool mbOpenVisualization;
+    int mbOpenVisualizeDepthPoints = true;
     Map* mpMap;
     int miExtractCount;
 

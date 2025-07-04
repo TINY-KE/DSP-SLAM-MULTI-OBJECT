@@ -108,13 +108,10 @@ protected:
 
 // ellipsoid-version
 public:
-    bool AddPointCloudList(const string& name, PointCloud* pCloud, int type = 0);   // type 0: replace when exist,  type 1: add when exist
+    bool AddPointCloudList(const string& name, PointCloud* pCloud, int type = REPLACE_POINT_CLOUD);   // type 0: replace when exist,  type 1: add when exist
     bool DeletePointCloudList(const string& name, int type = 0);    // type 0: complete matching, 1: partial matching
     bool ClearPointCloudLists();
     std::map<string, PointCloud*> mmPointCloudLists; // name-> pClouds
-
-    // 针对新的接口
-    bool AddPointCloudList(const string& name, std::vector<pcl::PointCloud<pcl::PointXYZRGB>>& vCloudPCL, g2o::SE3Quat& Twc, int type = REPLACE_POINT_CLOUD);
 
     // plane
     void addPlane(plane* pPlane, int visual_group = 0);
@@ -133,6 +130,7 @@ public:
     void addEllipsoidVisual(ellipsoid* pObj);
     std::vector<ellipsoid*> GetAllEllipsoidsVisual();
     void ClearEllipsoidsVisual();
+    std::map<string, PointCloud *>  GetPointCloudList();  //用户提取椭球体的深度点云，用于可视化debug
 
 
 };

@@ -71,6 +71,6 @@ protected:
 };
 
 
-} // EllipsoidSLAM
+} // ORB_SLAM2
 
 #endif // PLANEEXTRACTOR_H

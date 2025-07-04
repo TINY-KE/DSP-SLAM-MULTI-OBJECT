@@ -159,10 +159,18 @@ Tracking::Tracking(System *pSys, ORBVocabulary* pVoc, FrameDrawer *pFrameDrawer,
     mDatasetPathRoot = fSettings["DatasetPathRoot"].string();
     mMinimux_Points_To_Judge_Good = fSettings["Minimux_Points_To_Judge_Good"];
 
+    
     // 设置地面为默认值，包括tracker、map、EllipsoidExtractor
     SetGroundPlaneMannually( Eigen::Vector4d(0,0,1,0));
+    std::cout<<"[debug] tracking.cc: SetGroundPlaneMannually: "<<mGroundPlane.param.transpose()<<std::endl;
+    std::cout << "[debug] Map address -1: " << mpMap << std::endl;  // 检查this是否合法
     mpMap->addPlane(&mGroundPlane);
+    std::cout<<"[debug] tracking.cc: SetGroundPlaneMannually 2: "<<mGroundPlane.param.transpose()<<std::endl;
+
+    // 椭球体提取器初始化
+    mpEllipsoidExtractor = new EllipsoidExtractor(mpMap);
     mpEllipsoidExtractor->SetSupportingPlane(&mGroundPlane, false);
+    std::cout<<"[debug] tracking.cc: SetGroundPlaneMannually 3: "<<mGroundPlane.param.transpose()<<std::endl;
 
     mRows = fSettings["Camera.height"];
     mCols = fSettings["Camera.width"];
@@ -172,6 +180,8 @@ Tracking::Tracking(System *pSys, ORBVocabulary* pVoc, FrameDrawer *pFrameDrawer,
     mCamera.fx = fx;
     mCamera.fy = fy;
     mCamera.scale = fSettings["DepthMapFactor"];
+
+    
 }
 
 void Tracking::SetLocalMapper(LocalMapping *pLocalMapper)
@@ -342,6 +352,7 @@ void Tracking::Track()
                 {
                     bOK = TrackReferenceKeyFrame();
                 }
+                
                 else
                 {
                     bOK = TrackWithMotionModel();
@@ -1162,8 +1173,8 @@ void Tracking::CreateNewKeyFrame()
         GetObjectDetectionsRGBD(pKF);
         //DetectObjects(pKF);
         
-        // ellipsoid-version
-        // 对物体观测进行椭球体建模
+        // // ellipsoid-version
+        // // 针对关键帧，根据物体检测的结果，提取椭球体
         bool withAssociation = false;
         UpdateObjectEllipsoidObservation(&mCurrentFrame, pKF, withAssociation);
 

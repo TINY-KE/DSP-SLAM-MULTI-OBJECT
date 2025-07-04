@@ -63,7 +63,8 @@ Viewer.ViewpointF: 2000
 #--------------------------------------------------------------------------------------------
 # EDSP
 #--------------------------------------------------------------------------------------------
-Viewer.UsePangolin: 0
+Viewer.UsePangolin: 1
+Ellipsoid.VisualzeDepthPoints: 1
 
 YoloClasses: [56, 57, 2, 75, 60, 59, 62, 63, 73]
 DecoderPaths: ["weights/deepsdf/chairs_64",
@@ -106,11 +107,31 @@ NumKFsPassedSinceLastRecon_thresh: 4  #自上次重建后经过的最少关键�
 # + 修改物体识别的物体种类
 # /home/robotlab/ws_3d_vp/src/QSP-SLAM-my/reconstruct/contents.py
 
+
+# ------------------------------------
+#  单帧椭球体估计： Single-frame ellipsoid estimation
+# ------------------------------------
+# Pointcloud segmentation parameters
+EllipsoidExtraction.ClusterTolerance: 0.1
+EllipsoidExtraction.MinClusterSize: 5
+EllipsoidExtraction.CenterDis: 0.5
+
+EllipsoidExtractor.Rotation.NormalVoter.KSearchNum: 35
+EllipsoidExtractor.MinNeighborsInRadius: 40
+EllipsoidExtractor.StatisticalOutlierRemoval.MeanK: 50
+EllipsoidExtractor.SupportingPlaneFilter.DisThresh: 0.03
+
+EllipsoidExtractor_DEPTH_RANGE: 7
+
+# Bounding box filter
+Measurement.Border.Pixels: 10
+Measurement.LengthLimit.Pixels: 0
+Measurement.Probability.Thresh: 0
+
+
+
 # 地面
 ConstraintType: 1 #3 rostf; 2 imu; 1 yaml
-
-
-
 
 
 # #  相机俯视20度   对应gazebo相机移动参数3.5 1 20.0  1

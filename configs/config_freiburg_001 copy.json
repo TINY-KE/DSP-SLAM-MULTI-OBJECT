@@ -9,7 +9,7 @@
   "slam_config_path": "configs/freiburg_001.yaml",
   "min_bb_area": 1600,
   "min_mask_area": 1000,
-  "downsample_ratio": 4.0,
+  "downsample_ratio": 1.0,
   "DeepSDF_DIR": "weights/deepsdf/cars_64",
   "voxels_dim": 64,
   "optimizer": {

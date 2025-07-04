@@ -2,10 +2,10 @@
 *	This file is dependent on github open-source. All rights are perserved by original authors.
 * 	Web: https://github.com/abreheret/polygon-intersection
 */
-// Update: Add the API for EllipsoidSLAM.
+// Update: Add the API for ORB_SLAM2.
 
-#ifndef __EllipsoidSLAM_POLYGON_HPP__
-#define __EllipsoidSLAM_POLYGON_HPP__
+#ifndef __ORB_SLAM2_POLYGON_HPP__
+#define __ORB_SLAM2_POLYGON_HPP__
 
 #include <cxcore.h>
 
