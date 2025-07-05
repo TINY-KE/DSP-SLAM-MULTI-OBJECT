@@ -58,7 +58,9 @@ pybind11::handle::dec_ref() is being called while the GIL is either not held or 
     + 利用drawPointCloudLists，绘制mmPointCloudLists
 
 + 实现可以物体检测每一帧
-    + 
+    + 和李建用的是同一个conda环境，问题在哪？
+    + 将李建的python移植过来
+    + 是不是我的cpp中过滤掉了呢？
 
 + 椭球体的融合
     + 
