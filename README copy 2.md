@@ -41,7 +41,7 @@ rosrun sim_env circle  3 1.3 30.0  0.5   #旋转半径  相机高度  俯仰角 
     "image": {
     "mRow": 540,
     "mCol": 960,
-    "mEdge": 15
+    "mEdge": 1
   }
 + 在LocalMapping_util.cc根据物体label选择不同的pyOptimizer，进行选择不同的deepsdf参数，从而生成不同的物体模型
 + 实现了多物体dsp模型导入，其中桌子模型是默认模型，一定要保留。  

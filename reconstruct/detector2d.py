@@ -25,17 +25,28 @@ from mmdet.models import build_detector
 from mmdet.core import get_classes
 from mmdet.apis import inference_detector, show_result_pyplot
 
-from contents import object_class_table
+from reconstruct.contents import object_class_table
 
-import matplotlib.pyplot as plt
-import matplotlib.image as mpimg
+
+coco_classes = ["person","bicycle","car","motorcycle","airplane","bus","train",
+"truck","boat","traffic light","fire hydrant","stop sign","parking meter","bench","bird",
+"cat","dog","horse","sheep","cow","elephant","bear","zebra","giraffe","backpack","umbrella",
+"handbag","tie","suitcase","frisbee","skis","snowboard","sports ball","kite","baseball bat",
+"baseball glove","skateboard","surfboard","tennis racket","bottle","wine glass","cup","fork",
+"knife","spoon","bowl","banana","apple","sandwich","orange","broccoli","carrot","hot dog",
+"pizza","donut","cake","chair","couch","potted plant","bed","dining table","toilet","monitor",
+"laptop","mouse","remote","keyboard","cell phone","microwave","oven","toaster","sink",
+"refrigerator","book","clock","vase","scissors","teddy bear","hair drier","toothbrush"]
+
+def GetLabelText(id):
+    return coco_classes[id]
+
 
 def get_detector2d(configs):
     return Detector2D(configs)
 
 class Detector2D(object):
     def __init__(self, configs):
-        print("     get online 2D detectors -2")
         device = torch.device("cuda" if torch.cuda.is_available() else "cpu")
         config = configs.Detector2D.config_path
         checkpoint = configs.Detector2D.weight_path
@@ -61,30 +72,17 @@ class Detector2D(object):
         self.model.eval()
         self.min_bb_area = configs.min_bb_area
         self.predictions = None
-        print("     get online 2D detectors -3")
         self.mRow = configs.image.mRow
-        print("     get online 2D detectors -4")
         self.mCol = configs.image.mCol
-        print("     get online 2D detectors -5")
         self.mEdge = configs.image.mEdge
-        print("     get online 2D detectors -6")
 
-
-    def make_prediction(self, image, object_classes=["cars"]):
-        # print(f"make_prediction: object_classes = {object_classes}")
+    def make_prediction(self, image, object_classes=coco_classes):
+        
         # assert object_class == "chairs" or object_class == "cars"
-        for object_class in object_classes:
-            assert object_class in object_class_table, f"{object_class} is not valid class to detect"
+        # for object_class in object_classes:
+        #     assert object_class in object_class_table, f"{object_class} is not valid class to detect"
 
-        # print(f"      make_prediction: mmdet api Start")
-        # 显示图片
-        # plt.imshow(image)
-        # plt.axis('off')  # 关闭坐标轴
-        # plt.gcf().canvas.set_window_title('mmdet Detector Image Input')
-        # plt.pause(0.001)  # 不暂停程序
-        # plt.show()
         self.predictions = inference_detector(self.model, image)
-        # print(f"      make_prediction: mmdet api success")
 
         # print(f"type(self.predictions) = {self.predictions}")
 
@@ -104,21 +102,19 @@ class Detector2D(object):
 
         n_det = 0
 
-        print(f"        [zhjd-debug] 有效的物体类别包括： {object_classes}")
+        print(f"object_classes = {object_classes}")
         
         any_detect = False
-        # print(f"detect ")
+        print(f"detect :", end='')
         for object_class in object_classes:
             for object_id in object_class_table[object_class]:
                 o = object_id
-                n_det_bbox = len(self.predictions[0][o])  # 该类别的边界框数量
-                n_det_mask = len(self.predictions[1][o])  # 该类别的掩膜数量
+                n_det_bbox = len(self.predictions[0][o])
+                n_det_mask = len(self.predictions[1][o])
 
-                # 如果当前类别有检测结果（即 n_det_bbox > 0）
                 if n_det_bbox:
                     any_detect = True
-                    print(f"        识别到 = {n_det_bbox} {object_class} {object_id}, ", end='\n')
-                    # print("\n")
+                    print(f"{n_det_bbox} {object_class}, ", end='')
 
                 assert n_det_bbox == n_det_mask,  f"len(bbox[{o}]) != len(mask[{o}])"
                 bboxes_o = self.predictions[0][o]
@@ -142,18 +138,26 @@ class Detector2D(object):
         else:
             masks = np.stack(masks, axis=0)
 
-        # print(f"make_prediction: n_det = {n_det}")
+        print(f"make_prediction: n_det = {n_det}")
 
         # img = show_result_pyplot(self.model, image, self.predictions, score_thr=0.2)
         # cv2.imshow("labeled img", img)
         # cv2.waitKey(2)
+
+        # self.visualize_result(image, "labeled_img.jpg")
 
         return self.get_valid_detections(bboxes, masks, labels, probs)
 
     def visualize_result(self, image, filename):
         self.model.show_result(image, self.predictions, out_file=filename)
 
+    # TODO: 这里的有效判断条件会影响实验
     def get_valid_detections(self, boxes, masks, labels, probs):
+        """
+        valid条件: 1) 边框内, 2) 检测框太小, 3) 检测评分太小
+        """
+        # show detect result
+
 
         # Remove those on the margin
         cond1 = (boxes[:, 0] >= self.mEdge) \
@@ -162,20 +166,37 @@ class Detector2D(object):
                 & (boxes[:, 3] < self.mRow - self.mEdge)
         
         boxes_area = (boxes[:, 2] - boxes[:, 0]) * (boxes[:, 3] - boxes[:, 1])
-        # Remove those with too small bounding boxes
 
+        # Remove those with too small bounding boxes
         cond2 = (boxes_area > self.min_bb_area)
+
+        for i in range(len(boxes)):
+            score = probs[i]
+            bbox = boxes[i,:4]
+            label = labels[i]
+
+            # scores = boxes[:, -1]
+            print(f"score/label/class/bbox = {format(score, '.6f')}/{label}/{GetLabelText(label)}/{bbox}")
+
+        
         scores = boxes[:, -1]
+
+
         cond3 = (scores >= 0.60)
+        print(f"scores = {scores}")
+        
 
         # valid_mask = (cond2 & cond3)
         valid_mask = (cond1 & cond2 & cond3)
+        # valid_mask = cond3
 
         valid_instances = {"pred_boxes": boxes[valid_mask, :4],
                            "pred_masks": masks[valid_mask, ...],
                            "pred_labels": labels[valid_mask],
                            "pred_probs": probs[valid_mask],
                            }
+        
+        print(f"vaild prediction: n_det = {len(valid_mask[valid_mask])}")
         
         return valid_instances
 

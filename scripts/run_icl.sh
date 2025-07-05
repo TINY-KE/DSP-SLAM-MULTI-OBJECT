@@ -10,7 +10,7 @@
 
 ./dsp_slam_rgbd  \
 Vocabulary/ORBvoc.bin  \
-configs/ICL_NUIM_office_2.yaml  \
+configs/ICL_NUIM_home_2.yaml  \
 /home/robotlab/dataset/ICL-NUIM/living_room_traj2n_frei_png \
 /home/robotlab/dataset/ICL-NUIM/living_room_traj2n_frei_png/associations.txt \
 map/self/GroundObjects
