@@ -50,17 +50,20 @@ pybind11::handle::dec_ref() is being called while the GIL is either not held or 
 + 获取点云     答：已实现
 + 多帧生成椭球   答：已实现
 
++ 实现可以物体检测每一帧
+    + 和李建用的是同一个conda环境，问题在哪？
+    + 将李建的python移植过来
+    + 是不是我的cpp中过滤掉了呢？ 似乎确实是的
+
 + 可视化物体的深度点云
     + ExtractPointCloud提取点云
     + 以上函数中，VisualizePointCloud可视化点云
     + 通过mpMap->AddPointCloudLis，添加到mmPointCloudLists中
     + 降低Viewer的频率
     + 利用drawPointCloudLists，绘制mmPointCloudLists
+    + 用很多点在原点，LJ程序中是不是也有很多point离相机特别近（错误定位）
+    + 关闭单帧点的可视化，先完成椭球体融合
 
-+ 实现可以物体检测每一帧
-    + 和李建用的是同一个conda环境，问题在哪？
-    + 将李建的python移植过来
-    + 是不是我的cpp中过滤掉了呢？
 
 + 椭球体的融合
     + 

@@ -88,7 +88,7 @@ void Viewer::Run()
     pangolin::Var<bool> menuShowSdfObjects("menu.Show SDF Objects",true,true);
     // 深度点云
     pangolin::Var<float> SliderPointCloudListSize("menu.Pointcloud Size", 1.0, 0.5, 5.0);
-    pangolin::Var<bool> menuShowDepthPoints("menu.Show Depth Points",true,true);
+    pangolin::Var<bool> menuShowDepthPoints("menu.Show Depth Points",false,false);
 
 
     // Define Camera Render Object (for view / scene browsing)

@@ -316,7 +316,11 @@ void MapDrawer::drawPointCloudLists(float pointSize)
             glPointSize( pointSize );
             // glPointSize( p.size );
             glBegin(GL_POINTS);
+
+            std::cout<<"[debug]MapDrawer::drawPointCloudLists: size:"<< pPoints->size() <<" p.x = " << p.x << ", p.y = " << p.y << ", p.z = " << p.z;
+            std::cout<<" --------------- color = " << p.r << ", " << p.g << ", " << p.b;
             glColor3d(p.r/255.0, p.g/255.0, p.b/255.0);
+            std::cout<<"------------end"<<std::endl;
             glVertex3d(p.x, p.y, p.z);
             glEnd();
 
