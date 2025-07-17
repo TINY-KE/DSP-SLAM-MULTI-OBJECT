@@ -74,6 +74,7 @@ public:
     void SE3ToOpenGLCameraMatrix(g2o::SE3Quat &matIn, pangolin::OpenGlMatrix &M); // inverse matIn
     void drawAxisNormal();
     void drawPointCloudLists(float pointSize);
+    void drawPointCloudWithOptions(const std::map<std::string,bool> &options, float pointcloudSize=1); // draw the point cloud lists with options opened
 
     // 绘制平面
     Eigen::Matrix3d calibRotMatAccordingToAxis(Matrix3d& rotMat, const Vector3d& normal);

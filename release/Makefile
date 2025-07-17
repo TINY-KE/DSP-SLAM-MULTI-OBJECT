@@ -1221,6 +1221,30 @@ src/KeyFrameDatabase.cc.s:
 	$(MAKE) $(MAKESILENT) -f CMakeFiles/EDSP-SLAM.dir/build.make CMakeFiles/EDSP-SLAM.dir/src/KeyFrameDatabase.cc.s
 .PHONY : src/KeyFrameDatabase.cc.s
 
+src/KeyFrame_ellipsoid.o: src/KeyFrame_ellipsoid.cc.o
+.PHONY : src/KeyFrame_ellipsoid.o
+
+# target to build an object file
+src/KeyFrame_ellipsoid.cc.o:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/EDSP-SLAM.dir/build.make CMakeFiles/EDSP-SLAM.dir/src/KeyFrame_ellipsoid.cc.o
+.PHONY : src/KeyFrame_ellipsoid.cc.o
+
+src/KeyFrame_ellipsoid.i: src/KeyFrame_ellipsoid.cc.i
+.PHONY : src/KeyFrame_ellipsoid.i
+
+# target to preprocess a source file
+src/KeyFrame_ellipsoid.cc.i:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/EDSP-SLAM.dir/build.make CMakeFiles/EDSP-SLAM.dir/src/KeyFrame_ellipsoid.cc.i
+.PHONY : src/KeyFrame_ellipsoid.cc.i
+
+src/KeyFrame_ellipsoid.s: src/KeyFrame_ellipsoid.cc.s
+.PHONY : src/KeyFrame_ellipsoid.s
+
+# target to generate assembly for a file
+src/KeyFrame_ellipsoid.cc.s:
+	$(MAKE) $(MAKESILENT) -f CMakeFiles/EDSP-SLAM.dir/build.make CMakeFiles/EDSP-SLAM.dir/src/KeyFrame_ellipsoid.cc.s
+.PHONY : src/KeyFrame_ellipsoid.cc.s
+
 src/KeyFrame_util.o: src/KeyFrame_util.cc.o
 .PHONY : src/KeyFrame_util.o
 
@@ -2164,6 +2188,9 @@ help:
 	@echo "... src/KeyFrameDatabase.o"
 	@echo "... src/KeyFrameDatabase.i"
 	@echo "... src/KeyFrameDatabase.s"
+	@echo "... src/KeyFrame_ellipsoid.o"
+	@echo "... src/KeyFrame_ellipsoid.i"
+	@echo "... src/KeyFrame_ellipsoid.s"
 	@echo "... src/KeyFrame_util.o"
 	@echo "... src/KeyFrame_util.i"
 	@echo "... src/KeyFrame_util.s"

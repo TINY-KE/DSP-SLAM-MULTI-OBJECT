@@ -1897,4 +1897,5 @@ CMakeFiles/EDSP-SLAM.dir/src/PnPsolver.cc.o: \
  /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/src/symmetry/SymmetrySolver.h \
  /home/robotlab/thirdparty_install/pcl-1.13/include/pcl-1.13/pcl/io/io.h \
  /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/include/MapObject.h \
- /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/include/Map.h
+ /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/include/Map.h \
+ /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/src/config/Config.h

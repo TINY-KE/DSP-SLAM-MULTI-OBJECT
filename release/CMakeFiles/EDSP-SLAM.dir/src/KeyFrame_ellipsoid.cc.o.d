@@ -1,10 +1,11 @@
-src/pca/CMakeFiles/EllipsoidExtractor.dir/EllipsoidExtractorEdges.cpp.o: \
- /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/src/pca/EllipsoidExtractorEdges.cpp \
+CMakeFiles/EDSP-SLAM.dir/src/KeyFrame_ellipsoid.cc.o: \
+ /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/src/KeyFrame_ellipsoid.cc \
  /usr/include/stdc-predef.h \
- /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/src/pca/EllipsoidExtractorEdges.h \
- /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/include/ellipsoid-version/Ellipsoid.h \
- /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/Thirdparty/g2o/g2o/core/base_multi_edge.h \
- /usr/include/c++/8/iostream \
+ /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/include/KeyFrame.h \
+ /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/include/MapPoint.h \
+ /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/include/KeyFrame.h \
+ /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/include/Frame.h \
+ /usr/include/c++/8/vector /usr/include/c++/8/bits/stl_algobase.h \
  /usr/include/x86_64-linux-gnu/c++/8/bits/c++config.h \
  /usr/include/x86_64-linux-gnu/c++/8/bits/os_defines.h \
  /usr/include/features.h /usr/include/x86_64-linux-gnu/sys/cdefs.h \
@@ -13,14 +14,47 @@ src/pca/CMakeFiles/EllipsoidExtractor.dir/EllipsoidExtractorEdges.cpp.o: \
  /usr/include/x86_64-linux-gnu/gnu/stubs.h \
  /usr/include/x86_64-linux-gnu/gnu/stubs-64.h \
  /usr/include/x86_64-linux-gnu/c++/8/bits/cpu_defines.h \
- /usr/include/c++/8/ostream /usr/include/c++/8/ios \
- /usr/include/c++/8/iosfwd /usr/include/c++/8/bits/stringfwd.h \
- /usr/include/c++/8/bits/memoryfwd.h /usr/include/c++/8/bits/postypes.h \
+ /usr/include/c++/8/bits/functexcept.h \
+ /usr/include/c++/8/bits/exception_defines.h \
+ /usr/include/c++/8/bits/cpp_type_traits.h \
+ /usr/include/c++/8/ext/type_traits.h \
+ /usr/include/c++/8/ext/numeric_traits.h \
+ /usr/include/c++/8/bits/stl_pair.h /usr/include/c++/8/bits/move.h \
+ /usr/include/c++/8/bits/concept_check.h /usr/include/c++/8/type_traits \
+ /usr/include/c++/8/bits/stl_iterator_base_types.h \
+ /usr/include/c++/8/bits/stl_iterator_base_funcs.h \
+ /usr/include/c++/8/debug/assertions.h \
+ /usr/include/c++/8/bits/stl_iterator.h \
+ /usr/include/c++/8/bits/ptr_traits.h /usr/include/c++/8/debug/debug.h \
+ /usr/include/c++/8/bits/predefined_ops.h \
+ /usr/include/c++/8/bits/allocator.h \
+ /usr/include/x86_64-linux-gnu/c++/8/bits/c++allocator.h \
+ /usr/include/c++/8/ext/new_allocator.h /usr/include/c++/8/new \
+ /usr/include/c++/8/exception /usr/include/c++/8/bits/exception.h \
+ /usr/include/c++/8/bits/exception_ptr.h \
+ /usr/include/c++/8/bits/cxxabi_init_exception.h \
+ /usr/lib/gcc/x86_64-linux-gnu/8/include/stddef.h \
+ /usr/include/c++/8/typeinfo /usr/include/c++/8/bits/hash_bytes.h \
+ /usr/include/c++/8/bits/nested_exception.h \
+ /usr/include/c++/8/bits/memoryfwd.h \
+ /usr/include/c++/8/bits/stl_construct.h \
+ /usr/include/c++/8/ext/alloc_traits.h \
+ /usr/include/c++/8/bits/alloc_traits.h \
+ /usr/include/c++/8/bits/stl_uninitialized.h /usr/include/c++/8/utility \
+ /usr/include/c++/8/bits/stl_relops.h /usr/include/c++/8/initializer_list \
+ /usr/include/c++/8/bits/stl_vector.h \
+ /usr/include/c++/8/bits/stl_bvector.h \
+ /usr/include/c++/8/bits/functional_hash.h \
+ /usr/include/c++/8/bits/range_access.h \
+ /usr/include/c++/8/bits/vector.tcc \
+ /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/Thirdparty/DBoW2/DBoW2/BowVector.h \
+ /usr/include/c++/8/iostream /usr/include/c++/8/ostream \
+ /usr/include/c++/8/ios /usr/include/c++/8/iosfwd \
+ /usr/include/c++/8/bits/stringfwd.h /usr/include/c++/8/bits/postypes.h \
  /usr/include/c++/8/cwchar /usr/include/wchar.h \
  /usr/include/x86_64-linux-gnu/bits/libc-header-start.h \
  /usr/include/x86_64-linux-gnu/bits/floatn.h \
  /usr/include/x86_64-linux-gnu/bits/floatn-common.h \
- /usr/lib/gcc/x86_64-linux-gnu/8/include/stddef.h \
  /usr/lib/gcc/x86_64-linux-gnu/8/include/stdarg.h \
  /usr/include/x86_64-linux-gnu/bits/wchar.h \
  /usr/include/x86_64-linux-gnu/bits/types/wint_t.h \
@@ -30,27 +64,8 @@ src/pca/CMakeFiles/EllipsoidExtractor.dir/EllipsoidExtractorEdges.cpp.o: \
  /usr/include/x86_64-linux-gnu/bits/types/FILE.h \
  /usr/include/x86_64-linux-gnu/bits/types/locale_t.h \
  /usr/include/x86_64-linux-gnu/bits/types/__locale_t.h \
- /usr/include/x86_64-linux-gnu/bits/wchar2.h /usr/include/c++/8/exception \
- /usr/include/c++/8/bits/exception.h \
- /usr/include/c++/8/bits/exception_ptr.h \
- /usr/include/c++/8/bits/exception_defines.h \
- /usr/include/c++/8/bits/cxxabi_init_exception.h \
- /usr/include/c++/8/typeinfo /usr/include/c++/8/bits/hash_bytes.h \
- /usr/include/c++/8/new /usr/include/c++/8/bits/nested_exception.h \
- /usr/include/c++/8/bits/move.h /usr/include/c++/8/bits/concept_check.h \
- /usr/include/c++/8/type_traits /usr/include/c++/8/bits/char_traits.h \
- /usr/include/c++/8/bits/stl_algobase.h \
- /usr/include/c++/8/bits/functexcept.h \
- /usr/include/c++/8/bits/cpp_type_traits.h \
- /usr/include/c++/8/ext/type_traits.h \
- /usr/include/c++/8/ext/numeric_traits.h \
- /usr/include/c++/8/bits/stl_pair.h \
- /usr/include/c++/8/bits/stl_iterator_base_types.h \
- /usr/include/c++/8/bits/stl_iterator_base_funcs.h \
- /usr/include/c++/8/debug/assertions.h \
- /usr/include/c++/8/bits/stl_iterator.h \
- /usr/include/c++/8/bits/ptr_traits.h /usr/include/c++/8/debug/debug.h \
- /usr/include/c++/8/bits/predefined_ops.h /usr/include/c++/8/cstdint \
+ /usr/include/x86_64-linux-gnu/bits/wchar2.h \
+ /usr/include/c++/8/bits/char_traits.h /usr/include/c++/8/cstdint \
  /usr/lib/gcc/x86_64-linux-gnu/8/include/stdint.h /usr/include/stdint.h \
  /usr/include/x86_64-linux-gnu/bits/types.h \
  /usr/include/x86_64-linux-gnu/bits/timesize.h \
@@ -89,20 +104,12 @@ src/pca/CMakeFiles/EllipsoidExtractor.dir/EllipsoidExtractorEdges.cpp.o: \
  /usr/include/x86_64-linux-gnu/bits/setjmp.h \
  /usr/include/x86_64-linux-gnu/c++/8/bits/atomic_word.h \
  /usr/include/c++/8/bits/locale_classes.h /usr/include/c++/8/string \
- /usr/include/c++/8/bits/allocator.h \
- /usr/include/x86_64-linux-gnu/c++/8/bits/c++allocator.h \
- /usr/include/c++/8/ext/new_allocator.h \
  /usr/include/c++/8/bits/ostream_insert.h \
  /usr/include/c++/8/bits/cxxabi_forced.h \
  /usr/include/c++/8/bits/stl_function.h \
  /usr/include/c++/8/backward/binders.h \
- /usr/include/c++/8/bits/range_access.h \
- /usr/include/c++/8/initializer_list \
- /usr/include/c++/8/bits/basic_string.h \
- /usr/include/c++/8/ext/alloc_traits.h \
- /usr/include/c++/8/bits/alloc_traits.h /usr/include/c++/8/string_view \
- /usr/include/c++/8/limits /usr/include/c++/8/bits/functional_hash.h \
- /usr/include/c++/8/bits/string_view.tcc \
+ /usr/include/c++/8/bits/basic_string.h /usr/include/c++/8/string_view \
+ /usr/include/c++/8/limits /usr/include/c++/8/bits/string_view.tcc \
  /usr/include/c++/8/ext/string_conversions.h /usr/include/c++/8/cstdlib \
  /usr/include/stdlib.h /usr/include/x86_64-linux-gnu/bits/waitflags.h \
  /usr/include/x86_64-linux-gnu/bits/waitstatus.h \
@@ -145,23 +152,50 @@ src/pca/CMakeFiles/EllipsoidExtractor.dir/EllipsoidExtractorEdges.cpp.o: \
  /usr/include/c++/8/bits/locale_facets.tcc \
  /usr/include/c++/8/bits/basic_ios.tcc \
  /usr/include/c++/8/bits/ostream.tcc /usr/include/c++/8/istream \
- /usr/include/c++/8/bits/istream.tcc /usr/include/c++/8/iomanip \
- /usr/include/c++/8/locale /usr/include/c++/8/bits/locale_facets_nonio.h \
- /usr/include/c++/8/ctime \
- /usr/include/x86_64-linux-gnu/c++/8/bits/time_members.h \
- /usr/include/x86_64-linux-gnu/c++/8/bits/messages_members.h \
- /usr/include/libintl.h /usr/include/c++/8/bits/codecvt.h \
- /usr/include/c++/8/bits/locale_facets_nonio.tcc \
- /usr/include/c++/8/bits/locale_conv.h \
- /usr/include/c++/8/bits/unique_ptr.h /usr/include/c++/8/utility \
- /usr/include/c++/8/bits/stl_relops.h /usr/include/c++/8/tuple \
+ /usr/include/c++/8/bits/istream.tcc /usr/include/c++/8/map \
+ /usr/include/c++/8/bits/stl_tree.h \
+ /usr/include/c++/8/ext/aligned_buffer.h \
+ /usr/include/c++/8/bits/node_handle.h /usr/include/c++/8/optional \
+ /usr/include/c++/8/bits/enable_special_members.h \
+ /usr/include/c++/8/bits/stl_map.h /usr/include/c++/8/tuple \
  /usr/include/c++/8/array /usr/include/c++/8/bits/uses_allocator.h \
- /usr/include/c++/8/bits/invoke.h /usr/include/c++/8/bits/quoted_string.h \
- /usr/include/c++/8/sstream /usr/include/c++/8/bits/sstream.tcc \
- /usr/include/eigen3/Eigen/StdVector /usr/include/eigen3/Eigen/Core \
- /usr/include/eigen3/Eigen/src/Core/util/DisableStupidWarnings.h \
- /usr/include/eigen3/Eigen/src/Core/util/Macros.h \
- /usr/include/c++/8/complex /usr/include/c++/8/cmath /usr/include/math.h \
+ /usr/include/c++/8/bits/invoke.h /usr/include/c++/8/bits/stl_multimap.h \
+ /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/Thirdparty/DBoW2/DBoW2/FeatureVector.h \
+ /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/Thirdparty/DBoW2/DBoW2/BowVector.h \
+ /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/include/ORBVocabulary.h \
+ /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/Thirdparty/DBoW2/DBoW2/FORB.h \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/core/include/opencv2/core/core.hpp \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/core/include/opencv2/core.hpp \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/core/include/opencv2/core/cvdef.h \
+ /usr/lib/gcc/x86_64-linux-gnu/8/include/limits.h \
+ /usr/lib/gcc/x86_64-linux-gnu/8/include/syslimits.h \
+ /usr/include/limits.h /usr/include/x86_64-linux-gnu/bits/posix1_lim.h \
+ /usr/include/x86_64-linux-gnu/bits/local_lim.h \
+ /usr/include/linux/limits.h \
+ /usr/include/x86_64-linux-gnu/bits/posix2_lim.h \
+ /usr/include/x86_64-linux-gnu/bits/xopen_lim.h \
+ /usr/include/x86_64-linux-gnu/bits/uio_lim.h \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/core/include/opencv2/core/hal/interface.h \
+ /usr/include/c++/8/cstddef \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/core/include/opencv2/core/cv_cpu_dispatch.h \
+ /usr/lib/gcc/x86_64-linux-gnu/8/include/emmintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/8/include/xmmintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/8/include/mmintrin.h \
+ /usr/lib/gcc/x86_64-linux-gnu/8/include/mm_malloc.h \
+ /usr/include/c++/8/stdlib.h \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/core/include/opencv2/core/version.hpp \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/core/include/opencv2/core/base.hpp \
+ /home/robotlab/thirdparty/for_dspslam/opencv/build/opencv2/opencv_modules.hpp \
+ /usr/include/c++/8/climits /usr/include/c++/8/algorithm \
+ /usr/include/c++/8/bits/stl_algo.h \
+ /usr/include/c++/8/bits/algorithmfwd.h \
+ /usr/include/c++/8/bits/stl_heap.h /usr/include/c++/8/bits/stl_tempbuf.h \
+ /usr/include/c++/8/bits/uniform_int_dist.h \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/core/include/opencv2/core/cvstd.hpp \
+ /usr/include/c++/8/cstring /usr/include/string.h /usr/include/strings.h \
+ /usr/include/x86_64-linux-gnu/bits/strings_fortified.h \
+ /usr/include/x86_64-linux-gnu/bits/string_fortified.h \
+ /usr/include/c++/8/cmath /usr/include/math.h \
  /usr/include/x86_64-linux-gnu/bits/math-vector.h \
  /usr/include/x86_64-linux-gnu/bits/libm-simd-decl-stubs.h \
  /usr/include/x86_64-linux-gnu/bits/flt-eval-method.h \
@@ -185,12 +219,152 @@ src/pca/CMakeFiles/EllipsoidExtractor.dir/EllipsoidExtractorEdges.cpp.o: \
  /usr/include/c++/8/tr1/poly_hermite.tcc \
  /usr/include/c++/8/tr1/poly_laguerre.tcc \
  /usr/include/c++/8/tr1/riemann_zeta.tcc \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/core/include/opencv2/core/ptr.inl.hpp \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/core/include/opencv2/core/neon_utils.hpp \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/core/include/opencv2/core/vsx_utils.hpp \
+ /usr/include/assert.h \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/core/include/opencv2/core/traits.hpp \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/core/include/opencv2/core/matx.hpp \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/core/include/opencv2/core/saturate.hpp \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/core/include/opencv2/core/fast_math.hpp \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/core/include/opencv2/core/types.hpp \
+ /usr/include/c++/8/cfloat \
+ /usr/lib/gcc/x86_64-linux-gnu/8/include/float.h \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/core/include/opencv2/core/mat.hpp \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/core/include/opencv2/core/bufferpool.hpp \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/core/include/opencv2/core/mat.inl.hpp \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/core/include/opencv2/core/persistence.hpp \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/core/include/opencv2/core/operations.hpp \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/core/include/opencv2/core/cvstd.inl.hpp \
+ /usr/include/c++/8/complex /usr/include/c++/8/sstream \
+ /usr/include/c++/8/bits/sstream.tcc \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/core/include/opencv2/core/utility.hpp \
+ /usr/include/c++/8/functional /usr/include/c++/8/bits/refwrap.h \
+ /usr/include/c++/8/bits/std_function.h /usr/include/c++/8/unordered_map \
+ /usr/include/c++/8/bits/hashtable.h \
+ /usr/include/c++/8/bits/hashtable_policy.h \
+ /usr/include/c++/8/bits/unordered_map.h \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/core/include/opencv2/core/core_c.h \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/core/include/opencv2/core/types_c.h \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/core/include/opencv2/core/optim.hpp \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/core/include/opencv2/core/ovx.hpp \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/core/include/opencv2/core/cvdef.h \
+ /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/Thirdparty/DBoW2/DBoW2/FClass.h \
+ /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/Thirdparty/DBoW2/DBoW2/TemplatedVocabulary.h \
+ /usr/include/c++/8/cassert /usr/include/c++/8/numeric \
+ /usr/include/c++/8/bits/stl_numeric.h /usr/include/c++/8/fstream \
+ /usr/include/c++/8/bits/codecvt.h \
+ /usr/include/x86_64-linux-gnu/c++/8/bits/basic_file.h \
+ /usr/include/x86_64-linux-gnu/c++/8/bits/c++io.h \
+ /usr/include/c++/8/bits/fstream.tcc \
+ /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/Thirdparty/DBoW2/DBoW2/FeatureVector.h \
+ /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/Thirdparty/DBoW2/DBoW2/ScoringObject.h \
+ /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/Thirdparty/DBoW2/DBoW2/../DUtils/Random.h \
+ /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/include/ORBextractor.h \
+ /usr/include/c++/8/list /usr/include/c++/8/bits/stl_list.h \
+ /usr/include/c++/8/bits/allocated_ptr.h /usr/include/c++/8/bits/list.tcc \
+ /home/robotlab/thirdparty/for_dspslam/opencv/include/opencv/cv.h \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/imgproc/include/opencv2/imgproc/imgproc_c.h \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/imgproc/include/opencv2/imgproc/types_c.h \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/photo/include/opencv2/photo/photo_c.h \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/video/include/opencv2/video/tracking_c.h \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/objdetect/include/opencv2/objdetect/objdetect_c.h \
+ /usr/include/c++/8/deque /usr/include/c++/8/bits/stl_deque.h \
+ /usr/include/c++/8/bits/deque.tcc \
+ /home/robotlab/thirdparty/for_dspslam/opencv/include/opencv2/opencv.hpp \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/calib3d/include/opencv2/calib3d.hpp \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/features2d/include/opencv2/features2d.hpp \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/flann/include/opencv2/flann/miniflann.hpp \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/flann/include/opencv2/flann/defines.h \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/flann/include/opencv2/flann/config.h \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/core/include/opencv2/core/affine.hpp \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/calib3d/include/opencv2/calib3d/calib3d_c.h \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/flann/include/opencv2/flann.hpp \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/flann/include/opencv2/flann/flann_base.hpp \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/flann/include/opencv2/flann/general.h \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/flann/include/opencv2/flann/matrix.h \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/flann/include/opencv2/flann/params.h \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/flann/include/opencv2/flann/any.h \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/flann/include/opencv2/flann/defines.h \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/flann/include/opencv2/flann/saving.h \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/flann/include/opencv2/flann/nn_index.h \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/flann/include/opencv2/flann/result_set.h \
+ /usr/include/c++/8/set /usr/include/c++/8/bits/stl_set.h \
+ /usr/include/c++/8/bits/stl_multiset.h \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/flann/include/opencv2/flann/all_indices.h \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/flann/include/opencv2/flann/kdtree_index.h \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/flann/include/opencv2/flann/dynamic_bitset.h \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/flann/include/opencv2/flann/dist.h \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/flann/include/opencv2/flann/heap.h \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/flann/include/opencv2/flann/allocator.h \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/flann/include/opencv2/flann/random.h \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/flann/include/opencv2/flann/kdtree_single_index.h \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/flann/include/opencv2/flann/kmeans_index.h \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/flann/include/opencv2/flann/logger.h \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/flann/include/opencv2/flann/composite_index.h \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/flann/include/opencv2/flann/linear_index.h \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/flann/include/opencv2/flann/hierarchical_clustering_index.h \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/flann/include/opencv2/flann/lsh_index.h \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/flann/include/opencv2/flann/lsh_table.h \
+ /usr/include/c++/8/iomanip /usr/include/c++/8/locale \
+ /usr/include/c++/8/bits/locale_facets_nonio.h /usr/include/c++/8/ctime \
+ /usr/include/x86_64-linux-gnu/c++/8/bits/time_members.h \
+ /usr/include/x86_64-linux-gnu/c++/8/bits/messages_members.h \
+ /usr/include/libintl.h /usr/include/c++/8/bits/locale_facets_nonio.tcc \
+ /usr/include/c++/8/bits/locale_conv.h \
+ /usr/include/c++/8/bits/unique_ptr.h \
+ /usr/include/c++/8/bits/quoted_string.h /usr/include/c++/8/math.h \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/flann/include/opencv2/flann/autotuned_index.h \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/flann/include/opencv2/flann/ground_truth.h \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/flann/include/opencv2/flann/index_testing.h \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/flann/include/opencv2/flann/timer.h \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/flann/include/opencv2/flann/sampling.h \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/highgui/include/opencv2/highgui.hpp \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/imgcodecs/include/opencv2/imgcodecs.hpp \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/videoio/include/opencv2/videoio.hpp \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/highgui/include/opencv2/highgui/highgui_c.h \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/imgcodecs/include/opencv2/imgcodecs/imgcodecs_c.h \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/videoio/include/opencv2/videoio/videoio_c.h \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/imgproc/include/opencv2/imgproc.hpp \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/ml/include/opencv2/ml.hpp \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/ml/include/opencv2/ml/ml.inl.hpp \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/objdetect/include/opencv2/objdetect.hpp \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/objdetect/include/opencv2/objdetect/detection_based_tracker.hpp \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/photo/include/opencv2/photo.hpp \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/shape/include/opencv2/shape.hpp \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/shape/include/opencv2/shape/emdL1.hpp \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/shape/include/opencv2/shape/shape_transformer.hpp \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/shape/include/opencv2/shape/hist_cost.hpp \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/shape/include/opencv2/shape/shape_distance.hpp \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/stitching/include/opencv2/stitching.hpp \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/stitching/include/opencv2/stitching/warpers.hpp \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/stitching/include/opencv2/stitching/detail/warpers.hpp \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/core/include/opencv2/core/cuda.hpp \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/core/include/opencv2/core/cuda_types.hpp \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/core/include/opencv2/core/cuda.inl.hpp \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/stitching/include/opencv2/stitching/detail/warpers_inl.hpp \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/stitching/include/opencv2/stitching/detail/warpers.hpp \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/stitching/include/opencv2/stitching/detail/matchers.hpp \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/stitching/include/opencv2/stitching/detail/motion_estimators.hpp \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/stitching/include/opencv2/stitching/detail/matchers.hpp \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/stitching/include/opencv2/stitching/detail/util.hpp \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/stitching/include/opencv2/stitching/detail/util_inl.hpp \
+ /usr/include/c++/8/queue /usr/include/c++/8/bits/stl_queue.h \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/stitching/include/opencv2/stitching/detail/camera.hpp \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/stitching/include/opencv2/stitching/detail/exposure_compensate.hpp \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/stitching/include/opencv2/stitching/detail/seam_finders.hpp \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/stitching/include/opencv2/stitching/detail/blenders.hpp \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/stitching/include/opencv2/stitching/detail/camera.hpp \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/superres/include/opencv2/superres.hpp \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/superres/include/opencv2/superres/optical_flow.hpp \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/video/include/opencv2/video.hpp \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/video/include/opencv2/video/tracking.hpp \
+ /home/robotlab/thirdparty/for_dspslam/opencv/modules/video/include/opencv2/video/background_segm.hpp \
+ /home/robotlab/thirdparty_install/pcl-1.13/include/pcl-1.13/pcl/point_cloud.h \
+ /usr/include/eigen3/Eigen/StdVector /usr/include/eigen3/Eigen/Core \
+ /usr/include/eigen3/Eigen/src/Core/util/DisableStupidWarnings.h \
+ /usr/include/eigen3/Eigen/src/Core/util/Macros.h \
  /usr/include/eigen3/Eigen/src/Core/util/MKL_support.h \
- /usr/lib/gcc/x86_64-linux-gnu/8/include/mmintrin.h \
- /usr/lib/gcc/x86_64-linux-gnu/8/include/emmintrin.h \
- /usr/lib/gcc/x86_64-linux-gnu/8/include/xmmintrin.h \
- /usr/lib/gcc/x86_64-linux-gnu/8/include/mm_malloc.h \
- /usr/include/c++/8/stdlib.h \
  /usr/lib/gcc/x86_64-linux-gnu/8/include/pmmintrin.h \
  /usr/lib/gcc/x86_64-linux-gnu/8/include/tmmintrin.h \
  /usr/lib/gcc/x86_64-linux-gnu/8/include/smmintrin.h \
@@ -235,36 +409,6 @@ src/pca/CMakeFiles/EllipsoidExtractor.dir/EllipsoidExtractorEdges.cpp.o: \
  /usr/lib/gcc/x86_64-linux-gnu/8/include/vaesintrin.h \
  /usr/lib/gcc/x86_64-linux-gnu/8/include/vpclmulqdqintrin.h \
  /usr/lib/gcc/x86_64-linux-gnu/8/include/movdirintrin.h \
- /usr/include/c++/8/cstddef /usr/include/c++/8/cassert \
- /usr/include/assert.h /usr/include/c++/8/functional \
- /usr/include/c++/8/bits/refwrap.h /usr/include/c++/8/bits/std_function.h \
- /usr/include/c++/8/unordered_map /usr/include/c++/8/ext/aligned_buffer.h \
- /usr/include/c++/8/bits/hashtable.h \
- /usr/include/c++/8/bits/hashtable_policy.h \
- /usr/include/c++/8/bits/node_handle.h /usr/include/c++/8/optional \
- /usr/include/c++/8/bits/enable_special_members.h \
- /usr/include/c++/8/bits/unordered_map.h /usr/include/c++/8/vector \
- /usr/include/c++/8/bits/stl_construct.h \
- /usr/include/c++/8/bits/stl_uninitialized.h \
- /usr/include/c++/8/bits/stl_vector.h \
- /usr/include/c++/8/bits/stl_bvector.h /usr/include/c++/8/bits/vector.tcc \
- /usr/include/c++/8/bits/stl_algo.h \
- /usr/include/c++/8/bits/algorithmfwd.h \
- /usr/include/c++/8/bits/stl_heap.h /usr/include/c++/8/bits/stl_tempbuf.h \
- /usr/include/c++/8/bits/uniform_int_dist.h /usr/include/c++/8/cstring \
- /usr/include/string.h /usr/include/strings.h \
- /usr/include/x86_64-linux-gnu/bits/strings_fortified.h \
- /usr/include/x86_64-linux-gnu/bits/string_fortified.h \
- /usr/include/c++/8/climits \
- /usr/lib/gcc/x86_64-linux-gnu/8/include/limits.h \
- /usr/lib/gcc/x86_64-linux-gnu/8/include/syslimits.h \
- /usr/include/limits.h /usr/include/x86_64-linux-gnu/bits/posix1_lim.h \
- /usr/include/x86_64-linux-gnu/bits/local_lim.h \
- /usr/include/linux/limits.h \
- /usr/include/x86_64-linux-gnu/bits/posix2_lim.h \
- /usr/include/x86_64-linux-gnu/bits/xopen_lim.h \
- /usr/include/x86_64-linux-gnu/bits/uio_lim.h \
- /usr/include/c++/8/algorithm \
  /usr/include/eigen3/Eigen/src/Core/util/Constants.h \
  /usr/include/eigen3/Eigen/src/Core/util/Meta.h \
  /usr/include/eigen3/Eigen/src/Core/util/ForwardDeclarations.h \
@@ -380,57 +524,13 @@ src/pca/CMakeFiles/EllipsoidExtractor.dir/EllipsoidExtractorEdges.cpp.o: \
  /usr/include/eigen3/Eigen/src/Core/util/ReenableStupidWarnings.h \
  /usr/include/eigen3/Eigen/src/StlSupport/StdVector.h \
  /usr/include/eigen3/Eigen/src/StlSupport/details.h \
- /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/Thirdparty/g2o/g2o/core/base_edge.h \
- /usr/include/eigen3/Eigen/Core \
- /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/Thirdparty/g2o/g2o/core/optimizable_graph.h \
- /usr/include/c++/8/set /usr/include/c++/8/bits/stl_tree.h \
- /usr/include/c++/8/bits/stl_set.h /usr/include/c++/8/bits/stl_multiset.h \
- /usr/include/c++/8/list /usr/include/c++/8/bits/stl_list.h \
- /usr/include/c++/8/bits/allocated_ptr.h /usr/include/c++/8/bits/list.tcc \
- /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/Thirdparty/g2o/g2o/core/openmp_mutex.h \
- /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/Thirdparty/g2o/g2o/core/../../config.h \
- /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/Thirdparty/g2o/g2o/core/hyper_graph.h \
- /usr/include/c++/8/map /usr/include/c++/8/bits/stl_map.h \
- /usr/include/c++/8/bits/stl_multimap.h /usr/include/c++/8/bitset \
- /usr/include/c++/8/tr1/unordered_map /usr/include/c++/8/tr1/type_traits \
- /usr/include/c++/8/tr1/functional_hash.h \
- /usr/include/c++/8/tr1/hashtable.h \
- /usr/include/c++/8/tr1/hashtable_policy.h \
- /usr/include/c++/8/tr1/unordered_map.h \
- /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/Thirdparty/g2o/g2o/core/parameter.h \
- /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/Thirdparty/g2o/g2o/core/parameter_container.h \
- /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/Thirdparty/g2o/g2o/core/jacobian_workspace.h \
- /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/Thirdparty/g2o/g2o/core/../stuff/macros.h \
- /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/Thirdparty/g2o/g2o/core/robust_kernel.h \
- /usr/include/c++/8/tr1/memory /usr/include/c++/8/memory \
- /usr/include/c++/8/bits/stl_raw_storage_iter.h \
- /usr/include/c++/8/ext/concurrence.h \
- /usr/include/c++/8/bits/shared_ptr.h \
- /usr/include/c++/8/bits/shared_ptr_base.h \
- /usr/include/c++/8/bits/shared_ptr_atomic.h \
- /usr/include/c++/8/bits/atomic_base.h \
- /usr/include/c++/8/bits/atomic_lockfree_defines.h \
- /usr/include/c++/8/backward/auto_ptr.h \
- /usr/include/c++/8/tr1/shared_ptr.h \
- /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/Thirdparty/g2o/g2o/core/base_multi_edge.hpp \
- /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/Thirdparty/g2o/g2o/types/types_six_dof_expmap.h \
- /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/Thirdparty/g2o/g2o/types/../core/base_vertex.h \
- /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/Thirdparty/g2o/g2o/types/../core/optimizable_graph.h \
- /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/Thirdparty/g2o/g2o/types/../core/creators.h \
- /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/Thirdparty/g2o/g2o/types/../core/hyper_graph.h \
- /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/Thirdparty/g2o/g2o/types/../core/../stuff/macros.h \
- /usr/include/eigen3/Eigen/Dense /usr/include/eigen3/Eigen/LU \
- /usr/include/eigen3/Eigen/src/misc/Kernel.h \
- /usr/include/eigen3/Eigen/src/misc/Image.h \
- /usr/include/eigen3/Eigen/src/LU/FullPivLU.h \
- /usr/include/eigen3/Eigen/src/LU/PartialPivLU.h \
- /usr/include/eigen3/Eigen/src/LU/Determinant.h \
- /usr/include/eigen3/Eigen/src/LU/InverseImpl.h \
- /usr/include/eigen3/Eigen/Cholesky /usr/include/eigen3/Eigen/Jacobi \
+ /usr/include/eigen3/Eigen/Geometry /usr/include/eigen3/Eigen/SVD \
+ /usr/include/eigen3/Eigen/QR /usr/include/eigen3/Eigen/Cholesky \
+ /usr/include/eigen3/Eigen/Jacobi \
  /usr/include/eigen3/Eigen/src/Jacobi/Jacobi.h \
  /usr/include/eigen3/Eigen/src/Cholesky/LLT.h \
  /usr/include/eigen3/Eigen/src/Cholesky/LDLT.h \
- /usr/include/eigen3/Eigen/QR /usr/include/eigen3/Eigen/Householder \
+ /usr/include/eigen3/Eigen/Householder \
  /usr/include/eigen3/Eigen/src/Householder/Householder.h \
  /usr/include/eigen3/Eigen/src/Householder/HouseholderSequence.h \
  /usr/include/eigen3/Eigen/src/Householder/BlockHouseholder.h \
@@ -438,13 +538,17 @@ src/pca/CMakeFiles/EllipsoidExtractor.dir/EllipsoidExtractorEdges.cpp.o: \
  /usr/include/eigen3/Eigen/src/QR/FullPivHouseholderQR.h \
  /usr/include/eigen3/Eigen/src/QR/ColPivHouseholderQR.h \
  /usr/include/eigen3/Eigen/src/QR/CompleteOrthogonalDecomposition.h \
- /usr/include/eigen3/Eigen/SVD \
  /usr/include/eigen3/Eigen/src/misc/RealSvd2x2.h \
  /usr/include/eigen3/Eigen/src/SVD/UpperBidiagonalization.h \
  /usr/include/eigen3/Eigen/src/SVD/SVDBase.h \
  /usr/include/eigen3/Eigen/src/SVD/JacobiSVD.h \
- /usr/include/eigen3/Eigen/src/SVD/BDCSVD.h \
- /usr/include/eigen3/Eigen/Geometry \
+ /usr/include/eigen3/Eigen/src/SVD/BDCSVD.h /usr/include/eigen3/Eigen/LU \
+ /usr/include/eigen3/Eigen/src/misc/Kernel.h \
+ /usr/include/eigen3/Eigen/src/misc/Image.h \
+ /usr/include/eigen3/Eigen/src/LU/FullPivLU.h \
+ /usr/include/eigen3/Eigen/src/LU/PartialPivLU.h \
+ /usr/include/eigen3/Eigen/src/LU/Determinant.h \
+ /usr/include/eigen3/Eigen/src/LU/InverseImpl.h \
  /usr/include/eigen3/Eigen/src/Geometry/OrthoMethods.h \
  /usr/include/eigen3/Eigen/src/Geometry/EulerAngles.h \
  /usr/include/eigen3/Eigen/src/Geometry/Homogeneous.h \
@@ -459,181 +563,6 @@ src/pca/CMakeFiles/EllipsoidExtractor.dir/EllipsoidExtractorEdges.cpp.o: \
  /usr/include/eigen3/Eigen/src/Geometry/ParametrizedLine.h \
  /usr/include/eigen3/Eigen/src/Geometry/AlignedBox.h \
  /usr/include/eigen3/Eigen/src/Geometry/Umeyama.h \
- /usr/include/eigen3/Eigen/Eigenvalues \
- /usr/include/eigen3/Eigen/src/Eigenvalues/Tridiagonalization.h \
- /usr/include/eigen3/Eigen/src/Eigenvalues/RealSchur.h \
- /usr/include/eigen3/Eigen/src/Eigenvalues/HessenbergDecomposition.h \
- /usr/include/eigen3/Eigen/src/Eigenvalues/EigenSolver.h \
- /usr/include/eigen3/Eigen/src/Eigenvalues/RealSchur.h \
- /usr/include/eigen3/Eigen/src/Eigenvalues/SelfAdjointEigenSolver.h \
- /usr/include/eigen3/Eigen/src/Eigenvalues/Tridiagonalization.h \
- /usr/include/eigen3/Eigen/src/Eigenvalues/GeneralizedSelfAdjointEigenSolver.h \
- /usr/include/eigen3/Eigen/src/Eigenvalues/HessenbergDecomposition.h \
- /usr/include/eigen3/Eigen/src/Eigenvalues/ComplexSchur.h \
- /usr/include/eigen3/Eigen/src/Eigenvalues/ComplexEigenSolver.h \
- /usr/include/eigen3/Eigen/src/Eigenvalues/ComplexSchur.h \
- /usr/include/eigen3/Eigen/src/Eigenvalues/RealQZ.h \
- /usr/include/eigen3/Eigen/src/Eigenvalues/GeneralizedEigenSolver.h \
- /usr/include/eigen3/Eigen/src/Eigenvalues/RealQZ.h \
- /usr/include/eigen3/Eigen/src/Eigenvalues/MatrixBaseEigenvalues.h \
- /usr/include/eigen3/Eigen/Cholesky /usr/include/c++/8/stack \
- /usr/include/c++/8/deque /usr/include/c++/8/bits/stl_deque.h \
- /usr/include/c++/8/bits/deque.tcc /usr/include/c++/8/bits/stl_stack.h \
- /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/Thirdparty/g2o/g2o/types/../core/base_vertex.hpp \
- /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/Thirdparty/g2o/g2o/types/../core/base_binary_edge.h \
- /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/Thirdparty/g2o/g2o/types/../core/base_edge.h \
- /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/Thirdparty/g2o/g2o/types/../core/robust_kernel.h \
- /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/Thirdparty/g2o/g2o/types/../core/../../config.h \
- /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/Thirdparty/g2o/g2o/types/../core/base_binary_edge.hpp \
- /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/Thirdparty/g2o/g2o/types/../core/base_unary_edge.h \
- /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/Thirdparty/g2o/g2o/types/../core/base_unary_edge.hpp \
- /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/Thirdparty/g2o/g2o/types/se3_ops.h \
- /usr/include/eigen3/Eigen/Geometry \
- /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/Thirdparty/g2o/g2o/types/se3_ops.hpp \
- /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/Thirdparty/g2o/g2o/types/se3quat.h \
- /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/Thirdparty/g2o/g2o/types/types_sba.h \
- /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/include/utils/matrix_utils.h \
- /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/include/ellipsoid-version/BasicEllipsoidEdges.h \
- /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/include/ellipsoid-version/Plane.h \
- /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/include/ellipsoid-version/Ellipsoid.h \
- /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/include/Map.h \
- /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/include/MapPoint.h \
- /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/include/KeyFrame.h \
- /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/Thirdparty/DBoW2/DBoW2/BowVector.h \
- /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/Thirdparty/DBoW2/DBoW2/FeatureVector.h \
- /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/Thirdparty/DBoW2/DBoW2/BowVector.h \
- /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/include/ORBVocabulary.h \
- /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/Thirdparty/DBoW2/DBoW2/FORB.h \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/core/include/opencv2/core/core.hpp \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/core/include/opencv2/core.hpp \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/core/include/opencv2/core/cvdef.h \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/core/include/opencv2/core/hal/interface.h \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/core/include/opencv2/core/cv_cpu_dispatch.h \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/core/include/opencv2/core/version.hpp \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/core/include/opencv2/core/base.hpp \
- /home/robotlab/thirdparty/for_dspslam/opencv/build/opencv2/opencv_modules.hpp \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/core/include/opencv2/core/cvstd.hpp \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/core/include/opencv2/core/ptr.inl.hpp \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/core/include/opencv2/core/neon_utils.hpp \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/core/include/opencv2/core/vsx_utils.hpp \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/core/include/opencv2/core/traits.hpp \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/core/include/opencv2/core/matx.hpp \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/core/include/opencv2/core/saturate.hpp \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/core/include/opencv2/core/fast_math.hpp \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/core/include/opencv2/core/types.hpp \
- /usr/include/c++/8/cfloat \
- /usr/lib/gcc/x86_64-linux-gnu/8/include/float.h \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/core/include/opencv2/core/mat.hpp \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/core/include/opencv2/core/bufferpool.hpp \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/core/include/opencv2/core/mat.inl.hpp \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/core/include/opencv2/core/persistence.hpp \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/core/include/opencv2/core/operations.hpp \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/core/include/opencv2/core/cvstd.inl.hpp \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/core/include/opencv2/core/utility.hpp \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/core/include/opencv2/core/core_c.h \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/core/include/opencv2/core/types_c.h \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/core/include/opencv2/core/optim.hpp \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/core/include/opencv2/core/ovx.hpp \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/core/include/opencv2/core/cvdef.h \
- /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/Thirdparty/DBoW2/DBoW2/FClass.h \
- /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/Thirdparty/DBoW2/DBoW2/TemplatedVocabulary.h \
- /usr/include/c++/8/numeric /usr/include/c++/8/bits/stl_numeric.h \
- /usr/include/c++/8/fstream \
- /usr/include/x86_64-linux-gnu/c++/8/bits/basic_file.h \
- /usr/include/x86_64-linux-gnu/c++/8/bits/c++io.h \
- /usr/include/c++/8/bits/fstream.tcc \
- /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/Thirdparty/DBoW2/DBoW2/FeatureVector.h \
- /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/Thirdparty/DBoW2/DBoW2/ScoringObject.h \
- /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/Thirdparty/DBoW2/DBoW2/../DUtils/Random.h \
- /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/include/ORBextractor.h \
- /home/robotlab/thirdparty/for_dspslam/opencv/include/opencv/cv.h \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/imgproc/include/opencv2/imgproc/imgproc_c.h \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/imgproc/include/opencv2/imgproc/types_c.h \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/photo/include/opencv2/photo/photo_c.h \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/video/include/opencv2/video/tracking_c.h \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/objdetect/include/opencv2/objdetect/objdetect_c.h \
- /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/include/Frame.h \
- /home/robotlab/thirdparty/for_dspslam/opencv/include/opencv2/opencv.hpp \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/calib3d/include/opencv2/calib3d.hpp \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/features2d/include/opencv2/features2d.hpp \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/flann/include/opencv2/flann/miniflann.hpp \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/flann/include/opencv2/flann/defines.h \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/flann/include/opencv2/flann/config.h \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/core/include/opencv2/core/affine.hpp \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/calib3d/include/opencv2/calib3d/calib3d_c.h \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/flann/include/opencv2/flann.hpp \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/flann/include/opencv2/flann/flann_base.hpp \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/flann/include/opencv2/flann/general.h \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/flann/include/opencv2/flann/matrix.h \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/flann/include/opencv2/flann/params.h \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/flann/include/opencv2/flann/any.h \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/flann/include/opencv2/flann/defines.h \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/flann/include/opencv2/flann/saving.h \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/flann/include/opencv2/flann/nn_index.h \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/flann/include/opencv2/flann/result_set.h \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/flann/include/opencv2/flann/all_indices.h \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/flann/include/opencv2/flann/kdtree_index.h \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/flann/include/opencv2/flann/dynamic_bitset.h \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/flann/include/opencv2/flann/dist.h \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/flann/include/opencv2/flann/heap.h \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/flann/include/opencv2/flann/allocator.h \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/flann/include/opencv2/flann/random.h \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/flann/include/opencv2/flann/kdtree_single_index.h \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/flann/include/opencv2/flann/kmeans_index.h \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/flann/include/opencv2/flann/logger.h \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/flann/include/opencv2/flann/composite_index.h \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/flann/include/opencv2/flann/linear_index.h \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/flann/include/opencv2/flann/hierarchical_clustering_index.h \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/flann/include/opencv2/flann/lsh_index.h \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/flann/include/opencv2/flann/lsh_table.h \
- /usr/include/c++/8/math.h \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/flann/include/opencv2/flann/autotuned_index.h \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/flann/include/opencv2/flann/ground_truth.h \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/flann/include/opencv2/flann/index_testing.h \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/flann/include/opencv2/flann/timer.h \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/flann/include/opencv2/flann/sampling.h \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/highgui/include/opencv2/highgui.hpp \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/imgcodecs/include/opencv2/imgcodecs.hpp \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/videoio/include/opencv2/videoio.hpp \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/highgui/include/opencv2/highgui/highgui_c.h \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/imgcodecs/include/opencv2/imgcodecs/imgcodecs_c.h \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/videoio/include/opencv2/videoio/videoio_c.h \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/imgproc/include/opencv2/imgproc.hpp \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/ml/include/opencv2/ml.hpp \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/ml/include/opencv2/ml/ml.inl.hpp \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/objdetect/include/opencv2/objdetect.hpp \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/objdetect/include/opencv2/objdetect/detection_based_tracker.hpp \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/photo/include/opencv2/photo.hpp \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/shape/include/opencv2/shape.hpp \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/shape/include/opencv2/shape/emdL1.hpp \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/shape/include/opencv2/shape/shape_transformer.hpp \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/shape/include/opencv2/shape/hist_cost.hpp \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/shape/include/opencv2/shape/shape_distance.hpp \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/stitching/include/opencv2/stitching.hpp \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/stitching/include/opencv2/stitching/warpers.hpp \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/stitching/include/opencv2/stitching/detail/warpers.hpp \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/core/include/opencv2/core/cuda.hpp \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/core/include/opencv2/core/cuda_types.hpp \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/core/include/opencv2/core/cuda.inl.hpp \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/stitching/include/opencv2/stitching/detail/warpers_inl.hpp \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/stitching/include/opencv2/stitching/detail/warpers.hpp \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/stitching/include/opencv2/stitching/detail/matchers.hpp \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/stitching/include/opencv2/stitching/detail/motion_estimators.hpp \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/stitching/include/opencv2/stitching/detail/matchers.hpp \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/stitching/include/opencv2/stitching/detail/util.hpp \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/stitching/include/opencv2/stitching/detail/util_inl.hpp \
- /usr/include/c++/8/queue /usr/include/c++/8/bits/stl_queue.h \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/stitching/include/opencv2/stitching/detail/camera.hpp \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/stitching/include/opencv2/stitching/detail/exposure_compensate.hpp \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/stitching/include/opencv2/stitching/detail/seam_finders.hpp \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/stitching/include/opencv2/stitching/detail/blenders.hpp \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/stitching/include/opencv2/stitching/detail/camera.hpp \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/superres/include/opencv2/superres.hpp \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/superres/include/opencv2/superres/optical_flow.hpp \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/video/include/opencv2/video.hpp \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/video/include/opencv2/video/tracking.hpp \
- /home/robotlab/thirdparty/for_dspslam/opencv/modules/video/include/opencv2/video/background_segm.hpp \
- /home/robotlab/thirdparty_install/pcl-1.13/include/pcl-1.13/pcl/point_cloud.h \
  /home/robotlab/thirdparty_install/pcl-1.13/include/pcl-1.13/pcl/PCLHeader.h \
  /home/robotlab/thirdparty_install/pcl-1.13/include/pcl-1.13/pcl/memory.h \
  /home/robotlab/thirdparty_install/pcl-1.13/include/pcl-1.13/pcl/type_traits.h \
@@ -824,6 +753,15 @@ src/pca/CMakeFiles/EllipsoidExtractor.dir/EllipsoidExtractorEdges.cpp.o: \
  /usr/include/boost/mpl/aux_/preprocessed/gcc/vector.hpp \
  /usr/include/boost/preprocessor/seq/enum.hpp \
  /usr/include/boost/preprocessor/seq/size.hpp \
+ /usr/include/eigen3/Eigen/Core /usr/include/c++/8/memory \
+ /usr/include/c++/8/bits/stl_raw_storage_iter.h \
+ /usr/include/c++/8/ext/concurrence.h \
+ /usr/include/c++/8/bits/shared_ptr.h \
+ /usr/include/c++/8/bits/shared_ptr_base.h \
+ /usr/include/c++/8/bits/shared_ptr_atomic.h \
+ /usr/include/c++/8/bits/atomic_base.h \
+ /usr/include/c++/8/bits/atomic_lockfree_defines.h \
+ /usr/include/c++/8/backward/auto_ptr.h \
  /home/robotlab/thirdparty_install/pcl-1.13/include/pcl-1.13/pcl/exceptions.h \
  /usr/include/boost/current_function.hpp \
  /home/robotlab/thirdparty_install/pcl-1.13/include/pcl-1.13/pcl/pcl_macros.h \
@@ -837,6 +775,7 @@ src/pca/CMakeFiles/EllipsoidExtractor.dir/EllipsoidExtractorEdges.cpp.o: \
  /home/robotlab/thirdparty_install/pcl-1.13/include/pcl-1.13/pcl/console/print.h \
  /home/robotlab/thirdparty_install/pcl-1.13/include/pcl-1.13/pcl/pcl_exports.h \
  /home/robotlab/thirdparty_install/pcl-1.13/include/pcl-1.13/pcl/point_types.h \
+ /usr/include/c++/8/bitset \
  /home/robotlab/thirdparty_install/pcl-1.13/include/pcl-1.13/pcl/impl/point_types.hpp \
  /home/robotlab/thirdparty_install/pcl-1.13/include/pcl-1.13/pcl/PCLPointField.h \
  /home/robotlab/thirdparty_install/pcl-1.13/include/pcl-1.13/pcl/register_point_struct.h \
@@ -904,14 +843,78 @@ src/pca/CMakeFiles/EllipsoidExtractor.dir/EllipsoidExtractorEdges.cpp.o: \
  /usr/include/boost/mpl/aux_/fold_impl.hpp \
  /usr/include/boost/mpl/aux_/preprocessed/gcc/fold_impl.hpp \
  /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/include/ellipsoid-version/Ellipsoid.h \
- /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/include/KeyFrameDatabase.h \
+ /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/Thirdparty/g2o/g2o/core/base_multi_edge.h \
+ /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/Thirdparty/g2o/g2o/core/base_edge.h \
+ /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/Thirdparty/g2o/g2o/core/optimizable_graph.h \
+ /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/Thirdparty/g2o/g2o/core/openmp_mutex.h \
+ /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/Thirdparty/g2o/g2o/core/../../config.h \
+ /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/Thirdparty/g2o/g2o/core/hyper_graph.h \
+ /usr/include/c++/8/tr1/unordered_map /usr/include/c++/8/tr1/type_traits \
+ /usr/include/c++/8/tr1/functional_hash.h \
+ /usr/include/c++/8/tr1/hashtable.h \
+ /usr/include/c++/8/tr1/hashtable_policy.h \
+ /usr/include/c++/8/tr1/unordered_map.h \
+ /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/Thirdparty/g2o/g2o/core/parameter.h \
+ /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/Thirdparty/g2o/g2o/core/parameter_container.h \
+ /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/Thirdparty/g2o/g2o/core/jacobian_workspace.h \
+ /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/Thirdparty/g2o/g2o/core/../stuff/macros.h \
+ /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/Thirdparty/g2o/g2o/core/robust_kernel.h \
+ /usr/include/c++/8/tr1/memory /usr/include/c++/8/tr1/shared_ptr.h \
+ /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/Thirdparty/g2o/g2o/core/base_multi_edge.hpp \
+ /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/Thirdparty/g2o/g2o/types/types_six_dof_expmap.h \
+ /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/Thirdparty/g2o/g2o/types/../core/base_vertex.h \
+ /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/Thirdparty/g2o/g2o/types/../core/optimizable_graph.h \
+ /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/Thirdparty/g2o/g2o/types/../core/creators.h \
+ /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/Thirdparty/g2o/g2o/types/../core/hyper_graph.h \
+ /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/Thirdparty/g2o/g2o/types/../core/../stuff/macros.h \
+ /usr/include/eigen3/Eigen/Dense /usr/include/eigen3/Eigen/Geometry \
+ /usr/include/eigen3/Eigen/Eigenvalues \
+ /usr/include/eigen3/Eigen/src/Eigenvalues/Tridiagonalization.h \
+ /usr/include/eigen3/Eigen/src/Eigenvalues/RealSchur.h \
+ /usr/include/eigen3/Eigen/src/Eigenvalues/HessenbergDecomposition.h \
+ /usr/include/eigen3/Eigen/src/Eigenvalues/EigenSolver.h \
+ /usr/include/eigen3/Eigen/src/Eigenvalues/RealSchur.h \
+ /usr/include/eigen3/Eigen/src/Eigenvalues/SelfAdjointEigenSolver.h \
+ /usr/include/eigen3/Eigen/src/Eigenvalues/Tridiagonalization.h \
+ /usr/include/eigen3/Eigen/src/Eigenvalues/GeneralizedSelfAdjointEigenSolver.h \
+ /usr/include/eigen3/Eigen/src/Eigenvalues/HessenbergDecomposition.h \
+ /usr/include/eigen3/Eigen/src/Eigenvalues/ComplexSchur.h \
+ /usr/include/eigen3/Eigen/src/Eigenvalues/ComplexEigenSolver.h \
+ /usr/include/eigen3/Eigen/src/Eigenvalues/ComplexSchur.h \
+ /usr/include/eigen3/Eigen/src/Eigenvalues/RealQZ.h \
+ /usr/include/eigen3/Eigen/src/Eigenvalues/GeneralizedEigenSolver.h \
+ /usr/include/eigen3/Eigen/src/Eigenvalues/RealQZ.h \
+ /usr/include/eigen3/Eigen/src/Eigenvalues/MatrixBaseEigenvalues.h \
+ /usr/include/eigen3/Eigen/Cholesky /usr/include/c++/8/stack \
+ /usr/include/c++/8/bits/stl_stack.h \
+ /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/Thirdparty/g2o/g2o/types/../core/base_vertex.hpp \
+ /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/Thirdparty/g2o/g2o/types/../core/base_binary_edge.h \
+ /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/Thirdparty/g2o/g2o/types/../core/base_edge.h \
+ /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/Thirdparty/g2o/g2o/types/../core/robust_kernel.h \
+ /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/Thirdparty/g2o/g2o/types/../core/../../config.h \
+ /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/Thirdparty/g2o/g2o/types/../core/base_binary_edge.hpp \
+ /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/Thirdparty/g2o/g2o/types/../core/base_unary_edge.h \
+ /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/Thirdparty/g2o/g2o/types/../core/base_unary_edge.hpp \
+ /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/Thirdparty/g2o/g2o/types/se3_ops.h \
+ /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/Thirdparty/g2o/g2o/types/se3_ops.hpp \
+ /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/Thirdparty/g2o/g2o/types/se3quat.h \
+ /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/Thirdparty/g2o/g2o/types/types_sba.h \
+ /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/include/utils/matrix_utils.h \
+ /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/include/Map.h \
  /usr/include/c++/8/mutex /usr/include/c++/8/chrono \
  /usr/include/c++/8/ratio /usr/include/c++/8/bits/parse_numbers.h \
  /usr/include/c++/8/bits/std_mutex.h \
+ /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/include/ellipsoid-version/Geometry.h \
+ /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/include/ellipsoid-version/Plane.h \
+ /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/include/ellipsoid-version/Ellipsoid.h \
+ /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/include/KeyFrameDatabase.h \
  /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/include/ObjectDetection.h \
  /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/include/utils/dataprocess_utils.h \
  /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/src/pca/EllipsoidExtractor.h \
+ /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/include/ellipsoid-version/Ellipsoid.h \
  /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/include/ellipsoid-version/Geometry.h \
+ /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/include/Map.h \
+ /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/include/ellipsoid-version/BasicEllipsoidEdges.h \
  /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/src/symmetry/PointCloudFilter.h \
  /home/robotlab/thirdparty_install/pcl-1.13/include/pcl-1.13/pcl/common/transforms.h \
  /home/robotlab/thirdparty_install/pcl-1.13/include/pcl-1.13/pcl/common/centroid.h \
@@ -1896,6 +1899,4 @@ src/pca/CMakeFiles/EllipsoidExtractor.dir/EllipsoidExtractorEdges.cpp.o: \
  /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/src/symmetry/SymmetrySolver.h \
  /home/robotlab/thirdparty_install/pcl-1.13/include/pcl-1.13/pcl/io/io.h \
  /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/include/MapObject.h \
- /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/include/Map.h \
- /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/src/config/Config.h \
- /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/include/ellipsoid-version/Geometry.h
+ /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/src/config/Config.h

@@ -1,6 +1,6 @@
 file(REMOVE_RECURSE
-  "../../../lib/libEllipsoidExtractor.pdb"
-  "../../../lib/libEllipsoidExtractor.so"
+  "../../../lib_release/libEllipsoidExtractor.pdb"
+  "../../../lib_release/libEllipsoidExtractor.so"
   "CMakeFiles/EllipsoidExtractor.dir/EllipsoidExtractor.cpp.o"
   "CMakeFiles/EllipsoidExtractor.dir/EllipsoidExtractor.cpp.o.d"
   "CMakeFiles/EllipsoidExtractor.dir/EllipsoidExtractorEdges.cpp.o"

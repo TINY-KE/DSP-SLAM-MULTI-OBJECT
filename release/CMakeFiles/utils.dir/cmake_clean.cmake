@@ -1,6 +1,6 @@
 file(REMOVE_RECURSE
-  "../lib/libutils.pdb"
-  "../lib/libutils.so"
+  "../lib_release/libutils.pdb"
+  "../lib_release/libutils.so"
   "CMakeFiles/utils.dir/src/utils/dataprocess_utils.cpp.o"
   "CMakeFiles/utils.dir/src/utils/dataprocess_utils.cpp.o.d"
   "CMakeFiles/utils.dir/src/utils/matrix_utils.cpp.o"

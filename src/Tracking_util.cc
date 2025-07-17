@@ -56,7 +56,7 @@ void Tracking::GetObjectDetectionsLiDAR(KeyFrame *pKF) {
     pKF->mvpMapObjects = vector<MapObject *>(pKF->nObj, static_cast<MapObject *>(NULL));
 }
 
-void Tracking::ObjectDataAssociation(KeyFrame *pKF)
+void Tracking::ObjectDataAssociation_onlyforStereo(KeyFrame *pKF)
 {
     vector<MapObject *> vpLocalMapObjects;
     // Loop over all the local frames to find matches
@@ -320,6 +320,8 @@ void Tracking::GetObjectDetectionsMono(KeyFrame *pKF)
 
 void Tracking::AssociateObjectsByProjection(ORB_SLAM2::KeyFrame *pKF)
 {
+    // 获取地图中的物体和点
+    auto mapObjects = mpMap->GetAllMapObjects();
     auto mvpMapPoints = pKF->GetMapPointMatches();
     // Try to match and triangulate key-points with last key-frame
     auto detectionsKF1 = pKF->mvpDetectedObjects;
@@ -327,77 +329,161 @@ void Tracking::AssociateObjectsByProjection(ORB_SLAM2::KeyFrame *pKF)
     {
         // cout << "Detection: " << d_i + 1 << endl;
         auto detKF1 = detectionsKF1[d_i];
-        map<int, int> observed_object_id;
-        int nOutliers = 0;
-        for (int k_i : detKF1->GetFeaturePoints()) {
-            auto pMP = mvpMapPoints[k_i];
-            if (!pMP)
-                continue;
-            if (pMP->isOutlier())
-            {
-                nOutliers++;
-                continue;
+
+        if(mb_associate_object_with_ellipsold){    
+            cout << "Tracking::AssociateObjectsByProjection" << endl;
+
+            // 当前观测的bbox框
+            auto bbox_det = detKF1->bbox;
+            cv::Rect r2_bbox(cv::Point(bbox_det[0], bbox_det[1]), cv::Point(bbox_det[2], bbox_det[3]));
+            auto label_bbox = detKF1->label;
+
+
+            // 与global椭球体的投影IoU评分
+            vector<double> iou_stats;
+            bool has_associate = false;
+
+            for (auto pMO: mapObjects){
+                // FIXME：这里暂时对于 e 为 NULL 的情况跳过处理
+                cv::Mat img_show = mCurrentFrame.color_img.clone();
+                auto e = pMO->GetEllipsold();
+
+                if (e==NULL){
+                    continue;
+                }
+
+                auto label_obj = pMO->label;
+                auto campose_cw = mCurrentFrame.cam_pose_Tcw;
+                auto ellipse = e->projectOntoImageEllipse(campose_cw, mCalib);
+                // e->drawEllipseOnImage(ellipse, img_show);
+                
+                // draw bbox of object
+                Vector4d rect = e->getBoundingBoxFromProjection(campose_cw, mCalib); 
+
+                // 与bbox求IoU
+                cv::Rect r1_proj(cv::Point(rect[0], rect[1]), cv::Point(rect[2], rect[3]));
+                cv::rectangle(img_show, r1_proj, cv::Scalar(0, 0, 255), 2);
+
+                // draw bbox of det
+                // cv::rectangle(img_show, cv::Point(x1, y1), cv::Point(x2, y2), cv::Scalar(255, 0, 0), 2);  // Scalar(255, 0, 0) is for blue color, 2 is the thickness
+                cv::rectangle(img_show, r2_bbox, cv::Scalar(255, 0, 0), 2);  // Scalar(255, 0, 0) is for blue color, 2 is the thickness
+
+                cv::Rect r_and = r1_proj | r2_bbox;
+                cv::Rect r_U = r1_proj & r2_bbox;
+                double iou = r_U.area()*1.0/r_and.area();
+
+                iou_stats.push_back(iou);
+
+                //TODO: 没关联上可能是因为椭球体的参数没有及时更新
+                if (mb_associate_debug)
+                {
+                    if (iou > mf_associate_IoU_thresold && label_bbox==label_obj){
+                        std::cout << "!! Associated !!" << std::endl;
+                    }
+                    else {
+                        std::cout << "Not Associated" << std::endl;
+                    }
+                    std::cout << "class(bbox/obj)/IoU: " << label_bbox << "/" \
+                            << label_obj << "/" << iou << std::endl;
+
+                    cv::imshow("Ellipse Projection", img_show);
+                    cv::waitKey(10);
+
+                    std::cout << "Press any key to continue" << endl;
+                    char key = getchar();
+                }
+
+                if (iou > mf_associate_IoU_thresold && label_bbox==label_obj){
+                    // cout << "Associate" << std::endl;
+                    // 这里有一个问题，被关联过的物体可能在下一个det再次被遍历到
+                    has_associate = true;
+                    associateDetWithObject(pKF, pMO, d_i, detKF1, mvpMapPoints);
+                    break;
+                }
             }
             
-            // 如果pMP->object_id小于0，说明该点还没有被分配到任何物体
-            if (pMP->object_id < 0)
-                continue;
-
-            // 根据det中的feature point，统计潜在关联的object_id（的数量）
-            if (observed_object_id.count(pMP->object_id))
-                observed_object_id[pMP->object_id] += 1;
-            else
-                observed_object_id[pMP->object_id] = 1;
-        }
-
-        // If associated with an object
-        if (!observed_object_id.empty())
-        {
-            // Find object that has the most matches
-            int object_id_max_matches = 0;  // global object id
-            int max_matches = 0;
-            for (auto it = observed_object_id.begin(); it != observed_object_id.end(); it++) {
-                if (it->second > max_matches) {
-                    max_matches = it->second;
-                    object_id_max_matches = it->first;
-                }
+            std::cout << "Detection " << d_i << ", class " << label_bbox ;
+            
+            if (has_associate) std::cout << ", associated successfully: ";
+            else std::cout << " associated failed: ";
+            for (auto &iou : iou_stats) {
+                cout << iou << ", ";
             }
-
-            // associated object
-            auto pMO = mpMap->GetMapObject(object_id_max_matches);
-            pKF->AddMapObject(pMO, d_i);  //// Associated objects
-            detKF1->isNew = false;
-
-            // add newly detected feature points to object
-            int newly_matched_points = 0;
+            cout << endl;
+        }
+        else {
+            map<int, int> observed_object_id;
+            int nOutliers = 0;
             for (int k_i : detKF1->GetFeaturePoints()) {
                 auto pMP = mvpMapPoints[k_i];
-                if (pMP)
+                if (!pMP)
+                    continue;
+                if (pMP->isOutlier())
                 {
-                    if (pMP->isBad())
-                        continue;
-                    // new map points
-                    if (pMP->object_id < 0)
-                    {
-                        pMP->in_any_object = true;
-                        pMP->object_id = object_id_max_matches;
-                        pMO->AddMapPoints(pMP);
-                        newly_matched_points++;
-                    }
-                    else
-                    {
-                        // if pMP is already associate to a different object, set bad flag
-                        if (pMP->object_id != object_id_max_matches)
-                            pMP->SetBadFlag();
+                    nOutliers++;
+                    continue;
+                }
+                
+                // 如果pMP->object_id小于0，说明该点还没有被分配到任何物体
+                if (pMP->object_id < 0)
+                    continue;
+
+                // 根据det中的feature point，统计潜在关联的object_id（的数量）
+                if (observed_object_id.count(pMP->object_id))
+                    observed_object_id[pMP->object_id] += 1;
+                else
+                    observed_object_id[pMP->object_id] = 1;
+            }
+
+            // If associated with an object
+            if (!observed_object_id.empty())
+            {
+                // Find object that has the most matches
+                int object_id_max_matches = 0;  // global object id
+                int max_matches = 0;
+                for (auto it = observed_object_id.begin(); it != observed_object_id.end(); it++) {
+                    if (it->second > max_matches) {
+                        max_matches = it->second;
+                        object_id_max_matches = it->first;
                     }
                 }
-            }
-            // pMO->GetMapPointsWithinBoundingCubeToGround();
-            /*cout <<  "Matches: " << max_matches << ", New points: " << newly_matched_points << ", Keypoints: " <<
-                 detKF1->mvKeysIndices.size() << ", Associated to object by projection " << object_id_max_matches
-                 << endl << endl;*/
-        }
 
+                // associated object
+                auto pMO = mpMap->GetMapObject(object_id_max_matches);
+                pKF->AddMapObject(pMO, d_i);  //// Associated objects
+                detKF1->isNew = false;
+
+                // add newly detected feature points to object
+                int newly_matched_points = 0;
+                for (int k_i : detKF1->GetFeaturePoints()) {
+                    auto pMP = mvpMapPoints[k_i];
+                    if (pMP)
+                    {
+                        if (pMP->isBad())
+                            continue;
+                        // new map points
+                        if (pMP->object_id < 0)
+                        {
+                            pMP->in_any_object = true;
+                            pMP->object_id = object_id_max_matches;
+                            pMO->AddMapPoints(pMP);
+                            newly_matched_points++;
+                        }
+                        else
+                        {
+                            // if pMP is already associate to a different object, set bad flag
+                            if (pMP->object_id != object_id_max_matches)
+                                pMP->SetBadFlag();
+                        }
+                    }
+                }
+                // pMO->GetMapPointsWithinBoundingCubeToGround();
+                /*cout <<  "Matches: " << max_matches << ", New points: " << newly_matched_points << ", Keypoints: " <<
+                    detKF1->mvKeysIndices.size() << ", Associated to object by projection " << object_id_max_matches
+                    << endl << endl;*/
+            }
+
+        }
     }
 }
 

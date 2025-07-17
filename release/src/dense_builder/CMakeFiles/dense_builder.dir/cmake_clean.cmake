@@ -1,6 +1,6 @@
 file(REMOVE_RECURSE
-  "../../../lib/libdense_builder.pdb"
-  "../../../lib/libdense_builder.so"
+  "../../../lib_release/libdense_builder.pdb"
+  "../../../lib_release/libdense_builder.so"
   "CMakeFiles/dense_builder.dir/builder.cpp.o"
   "CMakeFiles/dense_builder.dir/builder.cpp.o.d"
 )

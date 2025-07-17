@@ -52,6 +52,8 @@ PointCloudPCL::Ptr Builder::image2PointCloud( cv::Mat& rgb, cv::Mat& depth, doub
     
     Camera camera;
     getCameraParam(mmCalib, camera);
+
+    // std::cout<< "[image2PointCloud] depth: ";
     for (int m = 0; m < depth.rows; m++)
         for (int n=0; n < depth.cols; n++)
         {
@@ -62,9 +64,9 @@ PointCloudPCL::Ptr Builder::image2PointCloud( cv::Mat& rgb, cv::Mat& depth, doub
 
             PointT p;
             p.z = double(d) / mdScale;
-
             if( p.z < 0.5 || p.z > depth_thresh )
                 continue;   
+            // std::cout<< d << "--" << p.z << ";   ";
 
             p.x = (n - camera.cx) * p.z / camera.fx;
             p.y = (m - camera.cy) * p.z / camera.fy;
@@ -75,7 +77,8 @@ PointCloudPCL::Ptr Builder::image2PointCloud( cv::Mat& rgb, cv::Mat& depth, doub
             p.r = rgb.ptr<uchar>(m)[n*3+2];
 
             temp_cloud->points.push_back( p );
-        }
+        }    
+    // std::cout<< std::endl;
 
     temp_cloud->height = 1;
     temp_cloud->width = temp_cloud->points.size();

@@ -92,7 +92,7 @@ dsp_slam_ros_EXTERNAL_OBJECTS =
 
 ../dsp_slam_ros: CMakeFiles/dsp_slam_ros.dir/dsp_slam_ros.cc.o
 ../dsp_slam_ros: CMakeFiles/dsp_slam_ros.dir/build.make
-../dsp_slam_ros: ../lib/libEDSP-SLAM.so
+../dsp_slam_ros: ../lib_release/libEDSP-SLAM.so
 ../dsp_slam_ros: /usr/local/lib/libcv_bridge.so
 ../dsp_slam_ros: /home/robotlab/thirdparty/for_dspslam/opencv/build/lib/libopencv_core.so.3.4.1
 ../dsp_slam_ros: /home/robotlab/thirdparty/for_dspslam/opencv/build/lib/libopencv_imgproc.so.3.4.1
@@ -146,11 +146,12 @@ dsp_slam_ros_EXTERNAL_OBJECTS =
 ../dsp_slam_ros: /usr/lib/x86_64-linux-gnu/libXi.so
 ../dsp_slam_ros: ../Thirdparty/DBoW2/lib/libDBoW2.so
 ../dsp_slam_ros: /usr/lib/x86_64-linux-gnu/libtiff.so.5
-../dsp_slam_ros: ../lib/libEllipsoidExtractor.so
-../dsp_slam_ros: ../lib/libsymmetry.so
+../dsp_slam_ros: ../lib_release/libEllipsoidExtractor.so
+../dsp_slam_ros: ../lib_release/libsymmetry.so
 ../dsp_slam_ros: ../Thirdparty/g2o/lib/libg2o.so
-../dsp_slam_ros: ../lib/libutils.so
-../dsp_slam_ros: ../lib/libPlaneExtractor.so
+../dsp_slam_ros: ../lib_release/libPlaneExtractor.so
+../dsp_slam_ros: ../lib_release/libdense_builder.so
+../dsp_slam_ros: ../lib_release/libutils.so
 ../dsp_slam_ros: /home/robotlab/thirdparty_install/pcl-1.13/lib/libpcl_surface.so
 ../dsp_slam_ros: /home/robotlab/thirdparty_install/pcl-1.13/lib/libpcl_keypoints.so
 ../dsp_slam_ros: /home/robotlab/thirdparty_install/pcl-1.13/lib/libpcl_tracking.so
@@ -244,9 +245,9 @@ dsp_slam_ros_EXTERNAL_OBJECTS =
 ../dsp_slam_ros: /usr/lib/x86_64-linux-gnu/libQt5Core.so.5.12.8
 ../dsp_slam_ros: /usr/lib/x86_64-linux-gnu/libflann_cpp.so
 ../dsp_slam_ros: /usr/lib/x86_64-linux-gnu/libqhull_r.so
-../dsp_slam_ros: ../lib/libPolygon.so
-../dsp_slam_ros: ../lib/libRelationship.so
-../dsp_slam_ros: ../lib/libConfig.so
+../dsp_slam_ros: ../lib_release/libPolygon.so
+../dsp_slam_ros: ../lib_release/libRelationship.so
+../dsp_slam_ros: ../lib_release/libConfig.so
 ../dsp_slam_ros: /home/robotlab/thirdparty/for_dspslam/opencv/build/lib/libopencv_ml.so.3.4.1
 ../dsp_slam_ros: /home/robotlab/thirdparty/for_dspslam/opencv/build/lib/libopencv_objdetect.so.3.4.1
 ../dsp_slam_ros: /home/robotlab/thirdparty/for_dspslam/opencv/build/lib/libopencv_photo.so.3.4.1

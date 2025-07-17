@@ -333,13 +333,47 @@ void MapDrawer::drawPointCloudLists(float pointSize)
 }
 
 
+void MapDrawer::drawPointCloudWithOptions(const std::map<std::string,bool> &options, float pointcloudSize)
+{
+    auto pointLists = mpMap->GetPointCloudList();
+    if(pointLists.size() < 1) return;
+    glPushMatrix();
+
+    for(auto pair:pointLists){
+        auto pPoints = pair.second;
+        if( pPoints == NULL ) continue;
+        
+        auto iter = options.find(pair.first);
+        if(iter == options.end()) {
+            continue;  // not exist
+        }
+        if(iter->second == false) continue; // menu is closed
+
+        // 拷贝指针指向的点云. 过程中应该锁定地图. (理应考虑对性能的影响)
+        PointCloud cloud = mpMap->GetPointCloudInList(pair.first); 
+        for(int i=0; i<cloud.size(); i=i+1)
+        {
+            PointXYZRGB& p = cloud[i];
+            // glPointSize( p.size );
+            glPointSize( pointcloudSize );
+            glBegin(GL_POINTS);
+            glColor3d(p.r/255.0, p.g/255.0, p.b/255.0);
+            glVertex3d(p.x, p.y, p.z);
+            glEnd();
+        }
+    }
+    glPointSize( 1 );
+    glPopMatrix();        
+}
+
+
 bool MapDrawer::drawEllipsoidsVisual(double prob_thresh) {
     // std::vector<ellipsoid*> ellipsoids = mpMap->GetAllEllipsoids();
     // int num_origin = ellipsoids.size();
 
     std::vector<ellipsoid*> ellipsoidsVisual = mpMap->GetAllEllipsoidsVisual();
 
-    std::cout<<"[MapDrawer::drawEllipsoidsVisual] Number of visual ellipsoids: " << ellipsoidsVisual.size() << std::endl;
+    // std::cout<<"[MapDrawer::drawEllipsoidsVisual] Number of visual ellipsoids: " << ellipsoidsVisual.size() << std::endl;
     // ellipsoids.insert(ellipsoids.end(), ellipsoidsVisual.begin(), ellipsoidsVisual.end());
 
     // filter those ellipsoids with prob

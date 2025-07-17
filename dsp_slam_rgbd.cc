@@ -119,6 +119,18 @@ int main(int argc, char **argv)
     // Main loop
     cv::Mat imRGB, imD;
 
+    bool frame_by_frame = true;
+    if(frame_by_frame) {
+        std::cout << "*****************************" << std::endl;
+        std::cout << "input image: Press [ENTER] to continue ... , [y] to autonomous mode" << std::endl;
+        std::cout << "*****************************" << std::endl;
+        char key = getchar();
+        if (key=='y')
+        {
+            frame_by_frame = false;
+        }
+    }
+
     for(int ni = 0; ni < nImages; ni++)
     {
         std::cout << "\n========================================" << std::endl;
@@ -180,6 +192,19 @@ int main(int argc, char **argv)
         //     std::this_thread::sleep_for(std::chrono::microseconds(static_cast<size_t>((T- ttrack)*1e6)));
         // }
 
+        if(frame_by_frame) {
+            std::cout << "*****************************" << std::endl;
+            std::cout << "Press [ENTER] to continue ... , [y] to autonomous mode" << std::endl;
+            std::cout << "*****************************" << std::endl;
+            char key = getchar();
+            if (key=='y')
+            {
+                frame_by_frame = false;
+            }
+            else if (key=='e'){
+                break;
+            }
+        }
     }
 
     SLAM.SaveEntireMap(save_map_dir);

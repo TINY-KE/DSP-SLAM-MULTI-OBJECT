@@ -1902,6 +1902,7 @@ CMakeFiles/EDSP-SLAM.dir/src/Sim3Solver.cc.o: \
  /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/src/symmetry/SymmetrySolver.h \
  /home/robotlab/thirdparty_install/pcl-1.13/include/pcl-1.13/pcl/io/io.h \
  /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/include/MapObject.h \
+ /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/src/config/Config.h \
  /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/include/KeyFrame.h \
  /home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/include/ORBmatcher.h \
  /home/robotlab/thirdparty/for_dspslam/opencv/modules/features2d/include/opencv2/features2d/features2d.hpp

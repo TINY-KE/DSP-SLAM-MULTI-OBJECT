@@ -16,11 +16,12 @@ find_package(catkin REQUIRED COMPONENTS
 )
 catkin_package()   #for ros
 
+# SET(CMAKE_BUILD_TYPE Debug)
+
 IF(NOT CMAKE_BUILD_TYPE)
     SET(CMAKE_BUILD_TYPE Release)
 ENDIF()
 
-SET(CMAKE_BUILD_TYPE Debug)
 
 MESSAGE("Build type: " ${CMAKE_BUILD_TYPE})
 
@@ -91,7 +92,11 @@ include_directories(
 # You need to set to your own Python paths
 add_subdirectory(pybind11)
 
-set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib)
+if(CMAKE_BUILD_TYPE STREQUAL "Debug")
+        set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib_build)
+elseif(CMAKE_BUILD_TYPE STREQUAL "Release")
+        set(CMAKE_LIBRARY_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/lib_release)
+endif()
 
 # # add modules
 add_library(utils SHARED
@@ -128,6 +133,7 @@ add_library(${PROJECT_NAME} SHARED
         src/MapPoint_util.cc
         src/KeyFrame.cc
         src/KeyFrame_util.cc
+        src/KeyFrame_ellipsoid.cc
         src/Map.cc
         src/Map_util.cc
         src/Map_ellipsoid.cc
@@ -171,7 +177,7 @@ target_link_libraries(${PROJECT_NAME}
         ${PCL_LIBRARY_DIRS}
         EllipsoidExtractor
         PlaneExtractor
-        # dense_builder
+        dense_builder
         Polygon
         Relationship
         Config

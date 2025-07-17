@@ -287,6 +287,8 @@ cv::Mat System::TrackRGBD(const cv::Mat &im, const cv::Mat &depthmap, const doub
     }
 
     cv::Mat Tcw = mpTracker->GrabImageRGBD(im,depthmap,timestamp);
+    
+    mpTracker->DenseBuild();
 
     unique_lock<mutex> lock2(mMutexState);
     mTrackingState = mpTracker->mState;
@@ -762,5 +764,9 @@ void System::SetImageNames(vector<string>& vstrImageFilenamesRGB)
     mpTracker->SetImageNames(vstrImageFilenamesRGB);
 }
 
+// ellipsoid-version
+Map* System::getMap() {
+    return mpMap;
+}
 
 } //namespace ORB_SLAM

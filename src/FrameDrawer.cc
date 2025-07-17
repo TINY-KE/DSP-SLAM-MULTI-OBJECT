@@ -32,7 +32,13 @@ namespace ORB_SLAM2
 FrameDrawer::FrameDrawer(Map* pMap):mpMap(pMap)
 {
     mState=Tracking::SYSTEM_NOT_READY;
-    mIm = cv::Mat(480,640,CV_8UC3, cv::Scalar(0,0,0));
+
+    double ImageWidth = Config::Get<int>("Camera.width");
+    double ImageHeight = Config::Get<int>("Camera.height");
+
+    mIm = cv::Mat(ImageHeight,ImageWidth,CV_8UC3, cv::Scalar(0,0,0));
+    mmDepth = cv::Mat(ImageHeight,ImageWidth,CV_8UC3, cv::Scalar(0,0,0));
+
 }
 
 cv::Mat FrameDrawer::DrawFrame()
@@ -164,6 +170,68 @@ cv::Mat FrameDrawer::DrawFrame()
     return imWithInfo;
 }
 
+// cv::Mat FrameDrawer::DrawDepthFrame(){
+//     return mmDepth;
+// }
+
+
+cv::Mat FrameDrawer::DrawDepthFrame() {
+    Frame* frame = &(mpTracker->mCurrentFrame);
+
+    if(frame->depth_img.empty())
+        return mmDepth;
+
+    cv::Mat I = frame->depth_img;   // U16C1 , ushort
+    cv::Mat im,R,G,B;
+
+    double min;
+    double max;
+    cv::minMaxIdx(I, &min, &max);
+
+    I.convertTo(im,CV_8UC1, 255 / (max-min), -min/(max-min)*255); 
+
+    Vector3d color1(51,25,0);
+    Vector3d color2(255,229,204);
+    // Vector3d color1(255,20,0);
+    // Vector3d color2(0,20,255);
+
+    Vector3d scale_color = (color2-color1) / 255.0;
+    // r = color1 + value/255*(color2-color1)
+    // (255-51)/255   51
+    // 220-25
+
+    // ********************************************
+    // Vector3d color1(0,204,102);
+    // Vector3d color2(255,204,102);
+    // double depth_thresh = 8;
+    // double scale = Config::Get<double>("Camera.scale"); 
+
+    // Vector3d scale_param = (color2-color1) / scale / depth_thresh;
+    // // I / scale / depth_thresh   (0-1)   * (color2-color1) + color 1
+
+    // I.convertTo(B, CV_8UC1, scale_param[0], color1[0]);
+    // I.convertTo(G, CV_8UC1, scale_param[1], color1[1]);
+    // I.convertTo(R, CV_8UC1, scale_param[2], color1[2]);
+    // *********************************************
+
+    im.convertTo(R, CV_8UC1, scale_color[0], color1[0]);
+    im.convertTo(G, CV_8UC1, scale_color[1], color1[1]);
+    im.convertTo(B, CV_8UC1, scale_color[2], color1[2]);
+
+    std::vector<cv::Mat> array_to_merge;
+    array_to_merge.push_back(B);
+    array_to_merge.push_back(G);
+    array_to_merge.push_back(R);
+    cv::merge(array_to_merge, im);
+
+    mmDepth = im.clone();
+
+    // cv::Mat out = drawObservationOnImage(im, false);
+    // mmDepth = out.clone();
+
+    return mmDepth;
+}
+
 
 void FrameDrawer::DrawTextInfo(cv::Mat &im, int nState, cv::Mat &imText)
 {
@@ -206,6 +274,7 @@ void FrameDrawer::DrawTextInfo(cv::Mat &im, int nState, cv::Mat &imText)
 void FrameDrawer::Update(Tracking *pTracker)
 {
     unique_lock<mutex> lock(mMutex);
+    mpTracker = pTracker;
     pTracker->mImGray.copyTo(mIm);
     mvCurrentKeys=pTracker->mCurrentFrame.mvKeys;
     N = mvCurrentKeys.size();

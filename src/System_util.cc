@@ -102,7 +102,7 @@ void System::SaveMapCurrentFrame(const string &dir, int frameId) {
              << twc.at<float>(2) << endl;
     f_camera.close();
 
-    cv::Mat frame = mpViewer->GetFrame();
+    cv::Mat frame = mpViewer->GetRGBFrame();
     cv::imwrite(dir + "/" + ss.str() + "-Frame.png", frame);
 }
 

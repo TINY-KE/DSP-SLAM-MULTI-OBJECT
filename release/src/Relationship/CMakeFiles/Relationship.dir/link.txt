@@ -1,1 +1,1 @@
-/usr/bin/c++ -fPIC  -Wall -O3 -march=native -O3 -DNDEBUG -shared -Wl,-soname,libRelationship.so -o ../../../lib/libRelationship.so CMakeFiles/Relationship.dir/Relationship.cpp.o 
+/usr/bin/c++ -fPIC  -Wall -O3 -march=native -O3 -DNDEBUG -shared -Wl,-soname,libRelationship.so -o ../../../lib_release/libRelationship.so CMakeFiles/Relationship.dir/Relationship.cpp.o 

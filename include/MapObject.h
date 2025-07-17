@@ -22,12 +22,20 @@
 #include"KeyFrame.h"
 #include"Frame.h"
 #include"Map.h"
+// #include "ObjectDetection.h"
+
+#include <pcl/point_cloud.h>
+#include <pcl/point_types.h>
+#include "src/config/Config.h"
+
+typedef pcl::PointXYZ PointType;
 
 namespace ORB_SLAM2 {
 
 class KeyFrame;
 class Map;
 class Frame;
+// class ObjectDetection;
 
 class MapObject {
 public:
@@ -127,11 +135,8 @@ public:
     }
 
 // zhjd
-    void GetMapPointsWithinBoundingCubeToGround();
     int label; // object label, 来自于物体检测
-
-    // 根据内部点云计算的8个顶点在world下的坐标
-    void compute_corner();
+    
     Eigen::Vector3f corner_1;
     Eigen::Vector3f corner_2;
     Eigen::Vector3f corner_3;
@@ -140,6 +145,41 @@ public:
     Eigen::Vector3f corner_6;
     Eigen::Vector3f corner_7;
     Eigen::Vector3f corner_8;
+
+
+private:
+    void GetMapPointsWithinBoundingCubeToGround();
+    
+    // 根据内部点云计算的8个顶点在world下的坐标
+    void compute_corner();
+
+    // 通过椭球体设置物体位姿
+    g2o::ellipsoid* mpEllipsold = NULL;
+    bool mbValidEllipsoldFlag;
+
+    std::mutex mMutexPointCloud;
+
+    std::shared_ptr<PointCloud> mPoints;
+    pcl::PointCloud<PointType>::Ptr pcd_ptr;   //深度点云
+
+    bool mbValidDepthPointCloudFlag;
+
+public:
+
+    void SetPoseByEllipsold(g2o::ellipsoid* e);
+
+    // 获取椭球体
+    g2o::ellipsoid* GetEllipsold();
+
+    // 生成椭球体
+    
+    std::shared_ptr<PointCloud> GetPointCloud();
+    void AddDepthPointCloudFromObjectDetection(pcl::PointCloud<PointType>::Ptr new_pcd_ptr);
+
+    // 深度点云
+    bool hasValidDepthPointCloud();
+    pcl::PointCloud<PointType>::Ptr GetDepthPointCloudPCL();
+
 };
 
 }

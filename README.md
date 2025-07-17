@@ -62,7 +62,19 @@ pybind11::handle::dec_ref() is being called while the GIL is either not held or 
     + 降低Viewer的频率
     + 利用drawPointCloudLists，绘制mmPointCloudLists
     + 用很多点在原点，LJ程序中是不是也有很多point离相机特别近（错误定位）
-    + 关闭单帧点的可视化，先完成椭球体融合
+    + 关闭单帧点的可视化，先完成椭球体融合,【会不会过滤后的点是可以可视化的？】
+    + 要使用曼哈顿平面，得先进行TaskManhattanPlanes  和  extractManhattanPlanes
+    + 注意TaskManhattanPlanes中 g2o::plane local_ground = mGroundPlane，要转换为相机坐标系下的平面；
+    + 目前判断：单帧中深度点云是严重不够的，必须多帧融合；
+    + 多帧融合位置：？？？
+    + 在AssociateObjectsByProjection中通过投影，进行关联
+    + 在UpdateObjectsToMap()中更新地图中的椭球体
+    + 在哪进行椭球体的融合：
+    + 展示椭球体的融合
+    + Tracking::DenseBuild()中添加了当前帧的深度点云，有问题
+    + cv::Mat I = frame->frame_img;   // U16C1 , ushort
+    + 为什么是片状的 ??
+        + 
 
 
 + 椭球体的融合
@@ -76,3 +88,5 @@ pybind11::handle::dec_ref() is being called while the GIL is either not held or 
 
 
 # 第五阶段  实现椭球体的二维椭圆投影和隐式形状的二维掩码投影
+
+

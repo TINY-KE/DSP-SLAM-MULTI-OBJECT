@@ -25,7 +25,7 @@
 namespace ORB_SLAM2
 {
 
-bool Map::AddPointCloudList(const string& name, PointCloud* pCloud, int type){
+bool Map::AddPointCloudList(const string& name, PointCloud* pCloud, int type){  //默认是 REPLACE_POINT_CLOUD（0）
     unique_lock<mutex> lock(mMutexMap);
     if(pCloud == NULL)
     {
@@ -127,10 +127,7 @@ bool Map::ClearPointCloudLists(){
     return true;
 }
 
-std::map<string, PointCloud *> Map::GetPointCloudList() {
-    unique_lock<mutex> lock(mMutexMap);
-    return mmPointCloudLists;
-}
+
 
 /**
  * Plane
@@ -157,7 +154,7 @@ void Map::clearPlanes() {
 
 
 // 用于可视化的椭球体，并没用参与优化
-// 添加真值/地图实际
+// 添加真值/单帧生成的椭球体
 void Map::addEllipsoidVisual(ellipsoid *pObj) {
     unique_lock<mutex> lock(mMutexMap);
     mspEllipsoidsVisual.push_back(pObj);
@@ -174,5 +171,37 @@ void Map::ClearEllipsoidsVisual() {
     mspEllipsoidsVisual.clear();
 }
 
+
+// 向地图中添加 多帧优化后的椭球体
+void Map::addEllipsoidObjects(ellipsoid *pObj) {
+    unique_lock<mutex> lock(mMutexMap);
+    mspEllipsoidsObjects.push_back(pObj);
+}
+
+void Map::ClearEllipsoidsObjects() {
+    unique_lock<mutex> lock(mMutexMap);
+    // cout << "!!!! Map::ClearEllipsoidsObjects !!!!" << endl;
+    mspEllipsoidsObjects.clear();
+}
+
+vector<ellipsoid *> Map::GetAllEllipsoidsObjects() {
+    unique_lock<mutex> lock(mMutexMap);
+    return mspEllipsoidsObjects;
+}
+
+// 深度点云
+std::map<string, PointCloud *> Map::GetPointCloudList() {
+    unique_lock<mutex> lock(mMutexMap);
+    return mmPointCloudLists;
+}
+
+PointCloud Map::GetPointCloudInList(const string &name) {
+    unique_lock<mutex> lock(mMutexMap);
+
+    if (mmPointCloudLists.find(name) != mmPointCloudLists.end())
+        return *mmPointCloudLists[name];
+    else
+        return PointCloud(); // 空
+}
 
 } //namespace ORB_SLAM

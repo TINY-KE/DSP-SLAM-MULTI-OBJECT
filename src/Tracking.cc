@@ -181,8 +181,20 @@ Tracking::Tracking(System *pSys, ORBVocabulary* pVoc, FrameDrawer *pFrameDrawer,
     mCamera.fy = fy;
     mCamera.scale = fSettings["DepthMapFactor"];
 
-    
+    // 椭球体数据关联
+    mb_associate_object_with_ellipsold = Config::Get<int>("Tracking.AssociateObjectWithEllipsold");
+    // add_depth_pcd_to_map_object = Config::Get<int>("Tracking.AddDepthPcdToMapObject");
+    mf_associate_IoU_thresold = Config::Get<double>("Tracking.AssociateIoUThresold");
+    mb_associate_debug = Config::Get<int>("Tracking.AssociateDebug");
+
+    // 深度点云可视化
+    mCalib << fx,  0, cx,
+               0, fy, cy,
+               0,  0,  1;
+    mpBuilder = new Builder();
+    mpBuilder->setCameraIntrinsic(mCalib, mCamera.scale);
 }
+
 
 void Tracking::SetLocalMapper(LocalMapping *pLocalMapper)
 {
@@ -1149,7 +1161,7 @@ void Tracking::CreateNewKeyFrame()
         GetObjectDetectionsLiDAR(pKF);
         if (!mpMap->GetAllMapObjects().empty())
         {
-            ObjectDataAssociation(pKF);
+            ObjectDataAssociation_onlyforStereo(pKF);
         }
     }
     else if (mSensor == System::MONOCULAR)

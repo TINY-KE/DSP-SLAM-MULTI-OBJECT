@@ -1,6 +1,6 @@
 file(REMOVE_RECURSE
-  "../../../lib/libPlaneExtractor.pdb"
-  "../../../lib/libPlaneExtractor.so"
+  "../../../lib_release/libPlaneExtractor.pdb"
+  "../../../lib_release/libPlaneExtractor.so"
   "CMakeFiles/PlaneExtractor.dir/PlaneExtractor.cpp.o"
   "CMakeFiles/PlaneExtractor.dir/PlaneExtractor.cpp.o.d"
   "CMakeFiles/PlaneExtractor.dir/PlaneExtractorManhattan.cpp.o"

@@ -1,6 +1,6 @@
 file(REMOVE_RECURSE
-  "../../../lib/libsymmetry.pdb"
-  "../../../lib/libsymmetry.so"
+  "../../../lib_release/libsymmetry.pdb"
+  "../../../lib_release/libsymmetry.so"
   "CMakeFiles/symmetry.dir/BorderExtractor.cpp.o"
   "CMakeFiles/symmetry.dir/BorderExtractor.cpp.o.d"
   "CMakeFiles/symmetry.dir/PointCloudFilter.cpp.o"

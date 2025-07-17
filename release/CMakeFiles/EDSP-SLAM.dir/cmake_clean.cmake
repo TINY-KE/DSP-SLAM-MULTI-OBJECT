@@ -1,6 +1,6 @@
 file(REMOVE_RECURSE
-  "../lib/libEDSP-SLAM.pdb"
-  "../lib/libEDSP-SLAM.so"
+  "../lib_release/libEDSP-SLAM.pdb"
+  "../lib_release/libEDSP-SLAM.so"
   "CMakeFiles/EDSP-SLAM.dir/src/Converter.cc.o"
   "CMakeFiles/EDSP-SLAM.dir/src/Converter.cc.o.d"
   "CMakeFiles/EDSP-SLAM.dir/src/Frame.cc.o"
@@ -13,6 +13,8 @@ file(REMOVE_RECURSE
   "CMakeFiles/EDSP-SLAM.dir/src/KeyFrame.cc.o.d"
   "CMakeFiles/EDSP-SLAM.dir/src/KeyFrameDatabase.cc.o"
   "CMakeFiles/EDSP-SLAM.dir/src/KeyFrameDatabase.cc.o.d"
+  "CMakeFiles/EDSP-SLAM.dir/src/KeyFrame_ellipsoid.cc.o"
+  "CMakeFiles/EDSP-SLAM.dir/src/KeyFrame_ellipsoid.cc.o.d"
   "CMakeFiles/EDSP-SLAM.dir/src/KeyFrame_util.cc.o"
   "CMakeFiles/EDSP-SLAM.dir/src/KeyFrame_util.cc.o.d"
   "CMakeFiles/EDSP-SLAM.dir/src/LocalMapping.cc.o"

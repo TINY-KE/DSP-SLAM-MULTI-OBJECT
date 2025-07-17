@@ -54,6 +54,10 @@ MapObject::MapObject(const Eigen::Matrix4f &T, const Eigen::Matrix<float, 64, 1>
     mnId = nNextId++;
 
     label = class_id;
+
+    // 椭球体相关flag
+    mbValidEllipsoldFlag = false;
+    mbValidDepthPointCloudFlag = false;
 }
 
 MapObject::MapObject(KeyFrame *pRefKF, Map *pMap, int class_id) :
@@ -66,6 +70,9 @@ MapObject::MapObject(KeyFrame *pRefKF, Map *pMap, int class_id) :
     invScale = 1.;
     vShapeCode = Eigen::Matrix<float, 64, 1>::Zero();
     label = class_id;
+    // 椭球体相关flag
+    mbValidEllipsoldFlag = false;
+    mbValidDepthPointCloudFlag = false;
 }
 
 void MapObject::AddObservation(KeyFrame *pKF, int idx)
@@ -834,6 +841,159 @@ void MapObject::compute_corner() {
 
 }
 
+
+void MapObject::SetPoseByEllipsold(g2o::ellipsoid* e)
+{
+    Eigen::Matrix4f Two;
+
+    {
+    // cout << "In SetPoseByEllipsold, e->prob = " << e->prob << endl;
+    if(mpEllipsold == NULL) {
+        {
+            // 这里遇到了一个死锁的问题
+            unique_lock<mutex> lock(mMutexObject);
+            mpEllipsold = new g2o::ellipsoid(*(e));
+        }
+        
+        // mpEllipsold = e;
+        // this->SetBadFlag();
+        cout << "mpEllipsold->prob = " << mpEllipsold->prob << endl;
+        
+    }
+    // 这里遇到了一个死锁的问题
+    unique_lock<mutex> lock(mMutexObject);
+
+    mbValidEllipsoldFlag = true;
+    // else  
+    cout << "[debug] MapObject::SetPoseByEllipsold, Object_id = " << mnId << endl;
+    cout << "[debug] MapObject::SetPoseByEllipsold, mpEllipsold->prob = " << mpEllipsold->prob << endl;
+
+    // SE3Quat pose;  // rigid body transformation, object in world coordinate
+    // Vector3d scale; // a,b,c : half length of axis x,y,z
+
+    // world -> object
+    Two = Converter::toMatrix4f(e->pose);
+    // cout << "Ellipsold->pose, Two = \n" << Two.matrix() << endl;
+
+    Vector3d& scale = e->scale;
+    float s = scale.norm() * 2;
+
+    // Rx(90)*Ry(-90) 
+    Eigen::Matrix3f Ron = Eigen::AngleAxisf(M_PI/2, Eigen::Vector3f(1,0,0)).matrix()
+        * Eigen::AngleAxisf(-M_PI/2, Eigen::Vector3f(0,1,0)).matrix();
+    Two.topLeftCorner(3, 3) = Two.topLeftCorner(3, 3) * Ron;
+
+    // cout << "Two from ellipsold = " << Two.matrix() << endl;
+
+    Two.topLeftCorner(3, 3) = 0.40 * s * Two.topLeftCorner(3, 3);
+
+
+    w = e->scale(1) * 2;  // x
+    h = e->scale(2) * 2;  // y
+    l = e->scale(0) * 2;  // z
+
+    // std::cout << "Setting scale = " << e->scale.transpose().matrix() << std::endl;
+    // cout << "in setPoseByEllipsold: Two = \n" << Two.matrix() << endl;
+    }
+    SetObjectPoseSim3(Two); // Two
+}
+
+
+bool MapObject::hasValidDepthPointCloud()
+{
+    unique_lock<mutex> lock(mMutexPointCloud);
+    return mbValidDepthPointCloudFlag;
+}
+
+std::shared_ptr<PointCloud> MapObject::GetPointCloud()
+{
+    unique_lock<mutex> lock(mMutexPointCloud);
+    return mPoints;
+}
+
+void MapObject::AddDepthPointCloudFromObjectDetection(pcl::PointCloud<PointType>::Ptr new_pcd_ptr)
+{
+    std::cout << "AddDepthPointCloudFromObjectDetection" << std::endl;
+    // // 这里可能还需要一次降采样操作
+    unique_lock<mutex> lock(mMutexPointCloud);
+
+    // std::cout << "mnId = " << mnId << std::endl;
+    if (new_pcd_ptr == nullptr) {
+        std::cout << "new_pcd_ptr = nullptr" << std::endl;
+        return;
+    }
+    
+    if (pcd_ptr == nullptr) 
+    {
+        std::cout << "pcd_ptr = nullptr" << std::endl;
+        pcd_ptr = pcl::PointCloud<PointType>::Ptr(new pcl::PointCloud<PointType>);
+        std::cout << "error in 1" << std::endl;
+        *pcd_ptr = *(new_pcd_ptr);
+        mbValidDepthPointCloudFlag = true;
+    }
+    else{
+        std::cout << "Merging .. " << std::endl;
+        pcl::PointCloud<PointType>::Ptr mergedCloud(new pcl::PointCloud<PointType>);
+        pcl::concatenate(*(new_pcd_ptr), *pcd_ptr, *mergedCloud);
+        pcd_ptr->clear();
+        new_pcd_ptr->clear();
+        *pcd_ptr = *mergedCloud;
+        mbValidDepthPointCloudFlag = true;
+    }
+
+    std::cout << "error in 2" << std::endl;
+    
+    // 打印合并后的点云的大小
+    // std::cout << "Debug: Merged Cloud Size: " << pcd_ptr->size() << std::endl;
+    // std::cout << "mnId = " << mnId << ", Merged Cloud Size: " << std::endl;
+
+    // 进行一次将采样
+    double grid_size = Config::Get<double>("MapObject.PointCloudVoxelSize");
+    static pcl::VoxelGrid<PointType> voxel;
+    double gridsize = grid_size;
+    voxel.setLeafSize( gridsize, gridsize, gridsize );
+    voxel.setInputCloud( pcd_ptr );
+    pcl::PointCloud<PointType>::Ptr tmp( new pcl::PointCloud<PointType>() );
+    voxel.filter( *tmp );
+    pcd_ptr.reset(new pcl::PointCloud<PointType>());
+    pcl::copyPointCloud(*tmp, *pcd_ptr);
+    tmp.reset();
+
+    // std::cout << "Debug: Undersampled Cloud Size: " << pcd_ptr->size() << std::endl;
+
+    // TODO: 这里判定点云有效的参数有待写入参数文件
+    if (pcd_ptr->size() > 5) {
+        mbValidDepthPointCloudFlag = true;
+    }
+
+    mPoints = std::make_shared<PointCloud>(pclXYZToQuadricPointCloud(pcd_ptr));
+
+    // return true;
+}
+
+
+g2o::ellipsoid* MapObject::GetEllipsold()
+{
+    unique_lock<mutex> lock(mMutexObject);
+    // TODO: 这里待解开，为何返回未定义的mpEllipsold会报错
+    if (mpEllipsold == NULL) {
+        // cout << "mpEllipsold == NULL" << endl;
+        // cout << "This MapObject' mpEllipsold == NULL" << endl;
+        return NULL;
+    }
+    else{
+        return mpEllipsold;
+    }
+    // cout << "MapObject::GetEllipsold, Object_id = " << mnId << endl;
+    // cout << "In MapObject, mpEllipsold->prob = " << mpEllipsold->prob << endl;
+    // auto prob = mpEllipsold->prob;
+    // return mpEllipsold;
+}
+
+pcl::PointCloud<PointType>::Ptr MapObject::GetDepthPointCloudPCL()
+{
+    return pcd_ptr;
+}
 
 }
 

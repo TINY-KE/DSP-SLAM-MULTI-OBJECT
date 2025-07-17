@@ -1,6 +1,6 @@
 file(REMOVE_RECURSE
-  "../../../lib/libRelationship.pdb"
-  "../../../lib/libRelationship.so"
+  "../../../lib_release/libRelationship.pdb"
+  "../../../lib_release/libRelationship.so"
   "CMakeFiles/Relationship.dir/Relationship.cpp.o"
   "CMakeFiles/Relationship.dir/Relationship.cpp.o.d"
 )

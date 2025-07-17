@@ -756,7 +756,7 @@ g2o::ellipsoid EllipsoidExtractor::EstimateLocalEllipsoidUsingMultiPlanes(cv::Ma
     clock_t time_start = clock();
     // 1. Get the object points after supporting plane filter and euclidean filter in the world coordinate
     // 注意: 该过程由于进行了与世界平面的操作, 所以位于世界坐标系下.
-    std::cout<< "[debug] EllipsoidExtractor::EstimateLocalEllipsoidUsingMultiPlanes 1"<< std::endl;
+    // std::cout<< "[debug] EllipsoidExtractor::EstimateLocalEllipsoidUsingMultiPlanes 1"<< std::endl;
     pcl::PointCloud<PointType>::Ptr pCloudPCL = ExtractPointCloud(depth,bbox,pose,camera);
 
     // std::cout<< " [debug] EllipsoidExtractor::EstimateLocalEllipsoidUsingMultiPlanes 2"<< std::endl;

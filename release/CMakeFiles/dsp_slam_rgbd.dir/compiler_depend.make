@@ -2073,6 +2073,7 @@ CMakeFiles/dsp_slam_rgbd.dir/dsp_slam_rgbd.cc.o: ../dsp_slam_rgbd.cc \
   /home/robotlab/thirdparty_install/pcl-1.13/include/pcl-1.13/pcl/io/io.h \
   ../include/MapObject.h \
   ../include/Map.h \
+  ../src/config/Config.h \
   ../include/MapDrawer.h \
   ../include/Converter.h \
   /home/robotlab/thirdparty/for_dspslam/Pangolin/components/pango_core/include/pangolin/pangolin.h \
@@ -2775,6 +2776,49 @@ CMakeFiles/dsp_slam_rgbd.dir/dsp_slam_rgbd.cc.o: ../dsp_slam_rgbd.cc \
   /usr/include/eigen3/Eigen/src/SparseCore/SparseFuzzy.h \
   /usr/include/eigen3/Eigen/src/SparseCore/SparseSolverBase.h \
   ../include/Initializer.h \
+  ../src/Relationship/Relationship.h \
+  ../src/plane/PlaneExtractorManhattan.h \
+  ../src/plane/PlaneExtractor.h \
+  /home/robotlab/thirdparty_install/pcl-1.13/include/pcl-1.13/pcl/sample_consensus/method_types.h \
+  /home/robotlab/thirdparty_install/pcl-1.13/include/pcl-1.13/pcl/sample_consensus/model_types.h \
+  /home/robotlab/thirdparty_install/pcl-1.13/include/pcl-1.13/pcl/segmentation/sac_segmentation.h \
+  /home/robotlab/thirdparty_install/pcl-1.13/include/pcl-1.13/pcl/sample_consensus/sac.h \
+  /home/robotlab/thirdparty_install/pcl-1.13/include/pcl-1.13/pcl/sample_consensus/sac_model.h \
+  /usr/include/boost/random/mersenne_twister.hpp \
+  /usr/include/boost/integer/integer_mask.hpp \
+  /usr/include/boost/random/detail/config.hpp \
+  /usr/include/boost/random/detail/ptr_helper.hpp \
+  /usr/include/boost/random/detail/seed.hpp \
+  /usr/include/boost/random/detail/seed_impl.hpp \
+  /usr/include/boost/random/traits.hpp \
+  /usr/include/boost/random/detail/const_mod.hpp \
+  /usr/include/boost/random/detail/large_arithmetic.hpp \
+  /usr/include/boost/random/detail/integer_log2.hpp \
+  /usr/include/boost/integer/integer_log2.hpp \
+  /usr/include/boost/random/detail/disable_warnings.hpp \
+  /usr/include/boost/random/detail/enable_warnings.hpp \
+  /usr/include/boost/random/detail/signed_unsigned_tools.hpp \
+  /usr/include/boost/random/detail/generator_bits.hpp \
+  /usr/include/boost/random/detail/generator_seed_seq.hpp \
+  /usr/include/boost/random/detail/polynomial.hpp \
+  /usr/include/boost/random/uniform_int.hpp \
+  /usr/include/boost/random/uniform_int_distribution.hpp \
+  /usr/include/boost/random/detail/operators.hpp \
+  /usr/include/boost/random/detail/uniform_int_float.hpp \
+  /usr/include/boost/random/variate_generator.hpp \
+  /usr/include/boost/random/uniform_01.hpp \
+  /home/robotlab/thirdparty_install/pcl-1.13/include/pcl-1.13/pcl/filters/extract_indices.h \
+  /home/robotlab/thirdparty_install/pcl-1.13/include/pcl-1.13/pcl/visualization/cloud_viewer.h \
+  /home/robotlab/thirdparty_install/pcl-1.13/include/pcl-1.13/pcl/segmentation/organized_multi_plane_segmentation.h \
+  /home/robotlab/thirdparty_install/pcl-1.13/include/pcl-1.13/pcl/segmentation/planar_region.h \
+  /home/robotlab/thirdparty_install/pcl-1.13/include/pcl-1.13/pcl/segmentation/region_3d.h \
+  /home/robotlab/thirdparty_install/pcl-1.13/include/pcl-1.13/pcl/segmentation/plane_coefficient_comparator.h \
+  /home/robotlab/thirdparty_install/pcl-1.13/include/pcl-1.13/pcl/segmentation/comparator.h \
+  /home/robotlab/thirdparty_install/pcl-1.13/include/pcl-1.13/pcl/segmentation/plane_refinement_comparator.h \
+  /home/robotlab/thirdparty_install/pcl-1.13/include/pcl-1.13/pcl/features/integral_image_normal.h \
+  /home/robotlab/thirdparty_install/pcl-1.13/include/pcl-1.13/pcl/features/integral_image2D.h \
+  /home/robotlab/thirdparty_install/pcl-1.13/include/pcl-1.13/pcl/features/impl/integral_image2D.hpp \
+  ../src/dense_builder/builder.h \
   /usr/include/boost/filesystem.hpp \
   /usr/include/boost/filesystem/config.hpp \
   /usr/include/boost/filesystem/path.hpp \
@@ -2822,6 +2866,38 @@ CMakeFiles/dsp_slam_rgbd.dir/dsp_slam_rgbd.cc.o: ../dsp_slam_rgbd.cc \
 /usr/include/boost/filesystem/path.hpp:
 
 /usr/include/boost/filesystem/config.hpp:
+
+/home/robotlab/thirdparty_install/pcl-1.13/include/pcl-1.13/pcl/features/impl/integral_image2D.hpp:
+
+/home/robotlab/thirdparty_install/pcl-1.13/include/pcl-1.13/pcl/segmentation/plane_refinement_comparator.h:
+
+/home/robotlab/thirdparty_install/pcl-1.13/include/pcl-1.13/pcl/segmentation/planar_region.h:
+
+/home/robotlab/thirdparty_install/pcl-1.13/include/pcl-1.13/pcl/segmentation/organized_multi_plane_segmentation.h:
+
+/usr/include/boost/random/detail/operators.hpp:
+
+/usr/include/boost/random/detail/polynomial.hpp:
+
+/usr/include/boost/random/detail/enable_warnings.hpp:
+
+/usr/include/boost/random/detail/disable_warnings.hpp:
+
+/usr/include/boost/integer/integer_log2.hpp:
+
+/usr/include/boost/random/detail/integer_log2.hpp:
+
+/usr/include/boost/random/detail/large_arithmetic.hpp:
+
+/usr/include/boost/random/traits.hpp:
+
+/usr/include/boost/integer/integer_mask.hpp:
+
+/home/robotlab/thirdparty_install/pcl-1.13/include/pcl-1.13/pcl/sample_consensus/sac.h:
+
+/home/robotlab/thirdparty_install/pcl-1.13/include/pcl-1.13/pcl/sample_consensus/method_types.h:
+
+../src/plane/PlaneExtractor.h:
 
 ../include/Initializer.h:
 
@@ -2981,6 +3057,8 @@ CMakeFiles/dsp_slam_rgbd.dir/dsp_slam_rgbd.cc.o: ../dsp_slam_rgbd.cc \
 
 /usr/include/crypt.h:
 
+/usr/include/boost/random/detail/generator_bits.hpp:
+
 /home/robotlab/anaconda3/envs/dsp-slam-lj/include/python3.7m/pymacconfig.h:
 
 /home/robotlab/anaconda3/envs/dsp-slam-lj/include/python3.7m/patchlevel.h:
@@ -3005,6 +3083,8 @@ CMakeFiles/dsp_slam_rgbd.dir/dsp_slam_rgbd.cc.o: ../dsp_slam_rgbd.cc \
 
 /opt/ros/noetic/include/tf/tfMessage.h:
 
+/home/robotlab/thirdparty_install/pcl-1.13/include/pcl-1.13/pcl/features/integral_image_normal.h:
+
 /opt/ros/noetic/include/tf2_msgs/FrameGraphResponse.h:
 
 /opt/ros/noetic/include/tf2/convert.h:
@@ -3022,6 +3102,8 @@ CMakeFiles/dsp_slam_rgbd.dir/dsp_slam_rgbd.cc.o: ../dsp_slam_rgbd.cc \
 /opt/ros/noetic/include/tf2_ros/buffer_interface.h:
 
 /opt/ros/noetic/include/tf2_ros/buffer.h:
+
+/home/robotlab/thirdparty_install/pcl-1.13/include/pcl-1.13/pcl/sample_consensus/sac_model.h:
 
 /opt/ros/noetic/include/geometry_msgs/Twist.h:
 
@@ -3285,6 +3367,8 @@ CMakeFiles/dsp_slam_rgbd.dir/dsp_slam_rgbd.cc.o: ../dsp_slam_rgbd.cc \
 
 /usr/include/boost/chrono/detail/system.hpp:
 
+/usr/include/boost/thread/detail/platform_time.hpp:
+
 /usr/include/boost/fusion/iterator/value_of.hpp:
 
 /usr/include/boost/fusion/iterator/mpl/convert_iterator.hpp:
@@ -3382,6 +3466,8 @@ CMakeFiles/dsp_slam_rgbd.dir/dsp_slam_rgbd.cc.o: ../dsp_slam_rgbd.cc \
 /usr/include/eigen3/Eigen/src/Eigenvalues/GeneralizedEigenSolver.h:
 
 /usr/include/boost/fusion/support/sequence_base.hpp:
+
+../src/Relationship/Relationship.h:
 
 /opt/ros/noetic/include/tf2/LinearMath/MinMax.h:
 
@@ -3529,6 +3615,8 @@ CMakeFiles/dsp_slam_rgbd.dir/dsp_slam_rgbd.cc.o: ../dsp_slam_rgbd.cc \
 
 /usr/include/c++/8/tr1/unordered_map:
 
+/usr/include/boost/random/uniform_01.hpp:
+
 /usr/include/x86_64-linux-gnu/bits/types/locale_t.h:
 
 ../Thirdparty/g2o/g2o/core/optimizable_graph.h:
@@ -3594,6 +3682,8 @@ CMakeFiles/dsp_slam_rgbd.dir/dsp_slam_rgbd.cc.o: ../dsp_slam_rgbd.cc \
 /usr/include/boost/mpl/aux_/traits_lambda_spec.hpp:
 
 /usr/include/boost/mpl/aux_/begin_end_impl.hpp:
+
+/usr/include/boost/random/detail/seed_impl.hpp:
 
 /usr/include/boost/mpl/sequence_tag_fwd.hpp:
 
@@ -4084,6 +4174,8 @@ CMakeFiles/dsp_slam_rgbd.dir/dsp_slam_rgbd.cc.o: ../dsp_slam_rgbd.cc \
 /usr/include/eigen3/Eigen/Geometry:
 
 /home/robotlab/thirdparty/for_dspslam/Pangolin/components/pango_opengl/include/pangolin/gl/gl.h:
+
+../src/dense_builder/builder.h:
 
 /home/robotlab/thirdparty_install/pcl-1.13/include/pcl-1.13/pcl/pcl_exports.h:
 
@@ -4649,6 +4741,8 @@ CMakeFiles/dsp_slam_rgbd.dir/dsp_slam_rgbd.cc.o: ../dsp_slam_rgbd.cc \
 
 /usr/include/boost/type_traits/add_const.hpp:
 
+/usr/include/boost/random/uniform_int_distribution.hpp:
+
 /opt/ros/noetic/include/ros/static_assert.h:
 
 /usr/include/boost/utility/enable_if.hpp:
@@ -4805,6 +4899,8 @@ CMakeFiles/dsp_slam_rgbd.dir/dsp_slam_rgbd.cc.o: ../dsp_slam_rgbd.cc \
 
 /home/robotlab/thirdparty_install/pcl-1.13/include/pcl-1.13/pcl/io/lzf.h:
 
+/home/robotlab/thirdparty_install/pcl-1.13/include/pcl-1.13/pcl/segmentation/comparator.h:
+
 /home/robotlab/thirdparty/for_dspslam/opencv/modules/core/include/opencv2/core/cv_cpu_dispatch.h:
 
 /usr/include/boost/mpl/aux_/preprocessed/gcc/times.hpp:
@@ -4911,6 +5007,8 @@ CMakeFiles/dsp_slam_rgbd.dir/dsp_slam_rgbd.cc.o: ../dsp_slam_rgbd.cc \
 
 /usr/include/vtk-7.1/vtkPolyDataMapper.h:
 
+/usr/include/boost/random/uniform_int.hpp:
+
 /usr/include/boost/predef/compiler/dignus.h:
 
 /usr/include/boost/predef/os/cygwin.h:
@@ -4990,6 +5088,8 @@ CMakeFiles/dsp_slam_rgbd.dir/dsp_slam_rgbd.cc.o: ../dsp_slam_rgbd.cc \
 ../Thirdparty/g2o/config.h:
 
 /opt/ros/noetic/include/ros/assert.h:
+
+/usr/include/boost/random/detail/seed.hpp:
 
 /usr/include/boost/mpl/erase_key_fwd.hpp:
 
@@ -5381,6 +5481,8 @@ CMakeFiles/dsp_slam_rgbd.dir/dsp_slam_rgbd.cc.o: ../dsp_slam_rgbd.cc \
 
 ../include/Tracking.h:
 
+/usr/include/boost/random/detail/ptr_helper.hpp:
+
 /home/robotlab/thirdparty/for_dspslam/opencv/modules/stitching/include/opencv2/stitching/detail/blenders.hpp:
 
 /usr/include/boost/parameter/aux_/unwrap_cv_reference.hpp:
@@ -5446,6 +5548,8 @@ CMakeFiles/dsp_slam_rgbd.dir/dsp_slam_rgbd.cc.o: ../dsp_slam_rgbd.cc \
 /usr/include/boost/range/reverse_iterator.hpp:
 
 /usr/include/boost/smart_ptr/detail/sp_counted_base_std_atomic.hpp:
+
+/usr/include/boost/random/detail/generator_seed_seq.hpp:
 
 /usr/include/boost/preprocessor/arithmetic/sub.hpp:
 
@@ -5692,6 +5796,8 @@ CMakeFiles/dsp_slam_rgbd.dir/dsp_slam_rgbd.cc.o: ../dsp_slam_rgbd.cc \
 /usr/include/eigen3/Eigen/src/Core/CwiseNullaryOp.h:
 
 /usr/include/x86_64-linux-gnu/bits/types/sigset_t.h:
+
+/home/robotlab/thirdparty_install/pcl-1.13/include/pcl-1.13/pcl/segmentation/plane_coefficient_comparator.h:
 
 /usr/include/boost/signals2/shared_connection_block.hpp:
 
@@ -6029,6 +6135,8 @@ CMakeFiles/dsp_slam_rgbd.dir/dsp_slam_rgbd.cc.o: ../dsp_slam_rgbd.cc \
 
 /usr/include/boost/detail/templated_streams.hpp:
 
+/usr/include/boost/random/detail/uniform_int_float.hpp:
+
 /usr/include/eigen3/Eigen/src/Geometry/ParametrizedLine.h:
 
 /usr/include/c++/8/bits/streambuf_iterator.h:
@@ -6179,6 +6287,8 @@ CMakeFiles/dsp_slam_rgbd.dir/dsp_slam_rgbd.cc.o: ../dsp_slam_rgbd.cc \
 
 /usr/include/boost/fusion/sequence/intrinsic/detail/segmented_end.hpp:
 
+/home/robotlab/thirdparty_install/pcl-1.13/include/pcl-1.13/pcl/visualization/cloud_viewer.h:
+
 /home/robotlab/thirdparty/for_dspslam/opencv/modules/core/include/opencv2/core/neon_utils.hpp:
 
 /usr/include/boost/numeric/conversion/detail/udt_builtin_mixture.hpp:
@@ -6235,6 +6345,8 @@ CMakeFiles/dsp_slam_rgbd.dir/dsp_slam_rgbd.cc.o: ../dsp_slam_rgbd.cc \
 
 /usr/include/boost/type_traits/detail/is_member_function_pointer_cxx_11.hpp:
 
+/home/robotlab/thirdparty_install/pcl-1.13/include/pcl-1.13/pcl/sample_consensus/model_types.h:
+
 /usr/include/boost/type_traits/conditional.hpp:
 
 /home/robotlab/thirdparty/for_dspslam/Pangolin/components/pango_opengl/include/pangolin/gl/gldraw.h:
@@ -6261,6 +6373,8 @@ CMakeFiles/dsp_slam_rgbd.dir/dsp_slam_rgbd.cc.o: ../dsp_slam_rgbd.cc \
 
 /usr/include/boost/fusion/sequence/intrinsic/segments.hpp:
 
+/usr/include/boost/random/detail/config.hpp:
+
 /usr/include/boost/fusion/view/joint_view/joint_view.hpp:
 
 /opt/ros/noetic/include/std_msgs/ColorRGBA.h:
@@ -6270,6 +6384,8 @@ CMakeFiles/dsp_slam_rgbd.dir/dsp_slam_rgbd.cc.o: ../dsp_slam_rgbd.cc \
 ../Thirdparty/DBoW2/DBoW2/FClass.h:
 
 /usr/include/boost/fusion/view/iterator_range.hpp:
+
+/usr/include/boost/random/detail/const_mod.hpp:
 
 /usr/include/boost/range/detail/has_member_size.hpp:
 
@@ -6637,6 +6753,8 @@ CMakeFiles/dsp_slam_rgbd.dir/dsp_slam_rgbd.cc.o: ../dsp_slam_rgbd.cc \
 
 /usr/include/boost/fusion/container/vector/vector_iterator.hpp:
 
+/home/robotlab/thirdparty_install/pcl-1.13/include/pcl-1.13/pcl/segmentation/sac_segmentation.h:
+
 /home/robotlab/thirdparty_install/pcl-1.13/include/pcl-1.13/pcl/visualization/common/impl/common.hpp:
 
 /usr/include/boost/fusion/container/vector/detail/next_impl.hpp:
@@ -6746,6 +6864,8 @@ CMakeFiles/dsp_slam_rgbd.dir/dsp_slam_rgbd.cc.o: ../dsp_slam_rgbd.cc \
 /usr/include/boost/mpl/multiplies.hpp:
 
 /usr/include/boost/config/no_tr1/cmath.hpp:
+
+/usr/include/boost/random/mersenne_twister.hpp:
 
 /usr/include/eigen3/Eigen/src/Core/NumTraits.h:
 
@@ -7075,6 +7195,8 @@ CMakeFiles/dsp_slam_rgbd.dir/dsp_slam_rgbd.cc.o: ../dsp_slam_rgbd.cc \
 
 /usr/include/boost/smart_ptr/bad_weak_ptr.hpp:
 
+/home/robotlab/thirdparty_install/pcl-1.13/include/pcl-1.13/pcl/segmentation/region_3d.h:
+
 /usr/include/boost/mpl/aux_/preprocessed/gcc/advance_forward.hpp:
 
 /usr/include/boost/smart_ptr/detail/sp_typeinfo_.hpp:
@@ -7112,6 +7234,8 @@ CMakeFiles/dsp_slam_rgbd.dir/dsp_slam_rgbd.cc.o: ../dsp_slam_rgbd.cc \
 /usr/include/boost/type_traits/is_lvalue_reference.hpp:
 
 /usr/include/boost/predef/platform/windows_store.h:
+
+/usr/include/boost/random/variate_generator.hpp:
 
 /usr/include/boost/smart_ptr/detail/operator_bool.hpp:
 
@@ -7273,6 +7397,8 @@ CMakeFiles/dsp_slam_rgbd.dir/dsp_slam_rgbd.cc.o: ../dsp_slam_rgbd.cc \
 
 /home/robotlab/thirdparty_install/pcl-1.13/include/pcl-1.13/pcl/kdtree/kdtree.h:
 
+/home/robotlab/thirdparty_install/pcl-1.13/include/pcl-1.13/pcl/features/integral_image2D.h:
+
 /usr/include/boost/cerrno.hpp:
 
 /usr/include/c++/8/cassert:
@@ -7346,6 +7472,8 @@ CMakeFiles/dsp_slam_rgbd.dir/dsp_slam_rgbd.cc.o: ../dsp_slam_rgbd.cc \
 /usr/include/vtk-7.1/vtkSetGet.h:
 
 /usr/include/vtk-7.1/vtkTimeStamp.h:
+
+/home/robotlab/thirdparty_install/pcl-1.13/include/pcl-1.13/pcl/filters/extract_indices.h:
 
 /usr/include/boost/thread/detail/delete.hpp:
 
@@ -7641,8 +7769,6 @@ CMakeFiles/dsp_slam_rgbd.dir/dsp_slam_rgbd.cc.o: ../dsp_slam_rgbd.cc \
 
 /usr/include/boost/mpl/transform.hpp:
 
-/usr/include/boost/signals2/detail/slot_template.hpp:
-
 /usr/include/boost/fusion/container/vector/detail/end_impl.hpp:
 
 /usr/include/vtk-7.1/vtkMathConfigure.h:
@@ -7735,6 +7861,10 @@ CMakeFiles/dsp_slam_rgbd.dir/dsp_slam_rgbd.cc.o: ../dsp_slam_rgbd.cc \
 
 /usr/include/vtk-7.1/vtkLeaderActor2D.h:
 
+/usr/include/boost/signals2/detail/slot_template.hpp:
+
+../src/config/Config.h:
+
 /usr/include/vtk-7.1/vtkInteractorStyleImage.h:
 
 /usr/include/boost/parameter/aux_/pack/tag_deduced.hpp:
@@ -7770,6 +7900,8 @@ CMakeFiles/dsp_slam_rgbd.dir/dsp_slam_rgbd.cc.o: ../dsp_slam_rgbd.cc \
 /usr/include/boost/type_traits/has_right_shift.hpp:
 
 /usr/include/boost/smart_ptr/make_shared_array.hpp:
+
+../src/plane/PlaneExtractorManhattan.h:
 
 /usr/include/boost/move/detail/std_ns_end.hpp:
 
@@ -8031,6 +8163,8 @@ CMakeFiles/dsp_slam_rgbd.dir/dsp_slam_rgbd.cc.o: ../dsp_slam_rgbd.cc \
 
 /usr/include/boost/core/alloc_construct.hpp:
 
+/usr/include/boost/random/detail/signed_unsigned_tools.hpp:
+
 /opt/ros/noetic/include/ros/exception.h:
 
 /usr/include/boost/type_traits/is_bounded_array.hpp:
@@ -8260,5 +8394,3 @@ CMakeFiles/dsp_slam_rgbd.dir/dsp_slam_rgbd.cc.o: ../dsp_slam_rgbd.cc \
 /usr/include/boost/date_time/posix_time/conversion.hpp:
 
 /usr/include/boost/date_time/filetime_functions.hpp:
-
-/usr/include/boost/thread/detail/platform_time.hpp:

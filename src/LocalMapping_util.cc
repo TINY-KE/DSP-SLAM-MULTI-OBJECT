@@ -530,7 +530,8 @@ void LocalMapping::Process_Multi_DetectedObjects_byPythonReconstruct()
     cv::Mat tcw = mpCurrentKeyFrame->GetTranslation();
     auto mvpObjectDetections = mpCurrentKeyFrame->GetObjectDetections();
     auto mvpAssociatedObjects = mpCurrentKeyFrame->GetMapObjectMatches();
-
+    auto mvpGlobalEllipsolds = mpCurrentKeyFrame->GetEllipsoldsGlobal();
+    
     for (int det_i = 0; det_i < mvpObjectDetections.size(); det_i++)
     {
         auto det = mvpObjectDetections[det_i];
@@ -555,15 +556,34 @@ void LocalMapping::Process_Multi_DetectedObjects_byPythonReconstruct()
 
         int numKFsPassedSinceInit = int(mpCurrentKeyFrame->mnId - pMO->mpRefKF->mnId);
 
+        // 把深度点云加到地图物体中
+        bool add_depth_pcd_to_map_object;
+        if (add_depth_pcd_to_map_object) {
+            pMO->AddDepthPointCloudFromObjectDetection(det->pcd_ptr);
+        }
 
         //更新物体的Sim3Two
-        if (numKFsPassedSinceInit < 50){
+        if (numKFsPassedSinceInit < 50 && !pMO->reconstructed ){
             if(mnComputeCuboidType==0)
                 pMO->ComputeCuboidPCA(numKFsPassedSinceInit < 15);   
             else if(mnComputeCuboidType==1)
                 pMO->ComputeCuboidPCA_manhattan(numKFsPassedSinceInit < 15);   
             else if(mnComputeCuboidType==2)
                 pMO->ComputeCuboidPCA_ellipsoid(numKFsPassedSinceInit < 15);   
+            else if(mnComputeCuboidType==3)
+            {
+                if (mvpGlobalEllipsolds[det_i] == NULL) {
+                    cout << "[zhjd-debug] Process_Multi_DetectedObjects : mvpGlobalEllipsolds[" << det_i << "] 为空，无法SetPoseByEllipsold" << endl;
+                    continue;
+                    pMO->SetBadFlag();
+                    // continue;
+                }
+                else{
+                    // Method 2: 使用来自椭球体的位姿信息
+                    std::cout << "[zhjd-debug] Process_Multi_DetectedObjects : 利用椭球体SetPoseByEllipsold" << std::endl;
+                    pMO->SetPoseByEllipsold(mvpGlobalEllipsolds[det_i]);
+                }
+            }
         }
         else  // when we have relative good object shape
             pMO->RemoveOutliersModel();
@@ -941,5 +961,53 @@ void LocalMapping::MergeMapObject(MapObject* pMO_i, MapObject* pMO_j)
 
 
 
+void LocalMapping::UpdateObjectsToMap()
+{
+    cout << "\n[LocalMapping::UpdateObjectsToMap]" << endl;
+    
+    // mpMap->ShowMapInfo();
+
+    // 每次都会重新更新一遍地图中的“椭球体”
+    mpMap->ClearEllipsoidsObjects();
+    mpMap->DeletePointCloudList("MapObject PointCloud", 0);
+    int ellip_num_valid = 0;
+    int pc_num_valid = 0;
+
+    auto mapObjects = mpMap->GetAllMapObjects();
+    for (auto &pMO: mapObjects){
+        if (pMO->isBad()) {
+            continue;
+        }
+
+        // FIXME：这里添加了一个没有初始化的ellipsold导致显示错误，暂时通过判断e的概率小于0.001
+        auto e = pMO->GetEllipsold();
+        if (e != NULL) {
+            mpMap->addEllipsoidObjects(e);
+            ellip_num_valid++;
+        }
+        else{
+            continue;
+        }
+
+        // TODO: 下一步考虑如何将所有物体的点云都添加到地图中，并且可以在每个新帧进行更新
+        if (pMO->hasValidDepthPointCloud()){
+
+            pc_num_valid++;
+            // std::shared_ptr<PointCloud> mPointsPtr = pMO->GetPointCloud();
+            // PointCloud* pPoints = mPointsPtr.get();
+            auto pcl_ptr= pMO->GetDepthPointCloudPCL();
+            auto pPoints = pclXYZToQuadricPointCloudPtr(pcl_ptr);
+            // auto pcd = pMO->GetPointCloud();
+
+            mpMap->AddPointCloudList("MapObject PointCloud", pPoints, 1);
+
+            // int n_valid_points = pPoints->size();
+            // cout << "MapObject PointCloud size = " << pPoints->size() << endl;
+        }
+
+    }
+    cout << " - pc_num_valid = " << pc_num_valid << endl;
+    cout << " - ellip_num_valid = " << ellip_num_valid << endl;
+}
 
 }

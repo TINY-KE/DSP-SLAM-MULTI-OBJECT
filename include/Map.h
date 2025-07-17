@@ -84,7 +84,7 @@ public:
     int mnDynamicObj;
 
     // Object SLAM
-    std::set<MapObject*> mspMapObjects;
+    std::set<MapObject*> mspMapObjects;   //用于椭球体的数据关联
     void AddMapObject(MapObject* pMO);
     void EraseMapObject(MapObject* pMO);
     MapObject* GetMapObject(int object_id);
@@ -122,7 +122,7 @@ public:
     
 protected:
     std::vector<ellipsoid*> mspEllipsoidsVisual;
-    // std::vector<ellipsoid*> mspEllipsoidsObjects;
+    std::vector<ellipsoid*> mspEllipsoidsObjects;
 
 public:
     // 用于可视化的椭球体，并没用参与优化
@@ -130,8 +130,14 @@ public:
     void addEllipsoidVisual(ellipsoid* pObj);
     std::vector<ellipsoid*> GetAllEllipsoidsVisual();
     void ClearEllipsoidsVisual();
-    std::map<string, PointCloud *>  GetPointCloudList();  //用户提取椭球体的深度点云，用于可视化debug
 
+    void addEllipsoidObjects(ellipsoid* pObj);
+    std::vector<ellipsoid*> GetAllEllipsoidsObjects();
+    void ClearEllipsoidsObjects();
+    
+    // 深度点云
+    std::map<string, PointCloud *>  GetPointCloudList();  //用户提取椭球体的深度点云，用于可视化debug
+    PointCloud GetPointCloudInList(const string& name);
 
 };
 

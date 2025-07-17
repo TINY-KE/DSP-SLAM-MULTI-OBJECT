@@ -1,6 +1,8 @@
 cmake-build-debug/
 cmake-build-release/
 build/
+build*/
+release/
 reconstruct/.ipynb_checkpoints/
 reconstruct/__pycache__/
 reconstruct/experiments/
@@ -8,6 +10,8 @@ reconstruct/viewer/
 deep_sdf/__pycache__/
 deep_sdf/networks/__pycache__/
 lib/
+lib_build/
+lib_release/
 .idea/
 Vocabulary/ORBvoc.txt.tar.gz
 tools/bin_vocabulary

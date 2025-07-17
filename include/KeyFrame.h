@@ -261,6 +261,12 @@ public:
     cv::Mat depth_img;      // depth img for processing
     cv::Mat gray_img;       // gray! for texture
 
+// ellipsoid-verison
+private:
+    std::vector<g2o::ellipsoid*> mpGlobalEllipsolds; // global 3d ellipsoid
+public :
+    void AddEllipsoldsGlobal(g2o::ellipsoid* e);
+    std::vector<g2o::ellipsoid*> GetEllipsoldsGlobal();
 };
 
 } //namespace ORB_SLAM

@@ -45,6 +45,13 @@
 // ellipsoid-version
 #include "utils/dataprocess_utils.h"
 #include <src/pca/EllipsoidExtractor.h>
+#include <src/Relationship/Relationship.h>
+#include <src/plane/PlaneExtractorManhattan.h>
+#include <src/config/Config.h>
+#include <src/dense_builder/builder.h>
+
+// #include <src/plane/PlaneExtractor.h>
+
 
 typedef pcl::PointXYZ PointType;
 
@@ -64,6 +71,12 @@ class LocalMapping;
 class LoopClosing;
 class System;
 class MapObject;
+
+enum OBJECT_MODEL
+{
+    POINT_MODEL = 0,
+    QUADRIC_MODEL = 1
+};
 
 class Tracking
 {  
@@ -92,7 +105,7 @@ public:
     // Object SLAM by Jingwen
     // KITTI (stereo+LiDAR)
     void GetObjectDetectionsLiDAR(KeyFrame *pKF);
-    void ObjectDataAssociation(KeyFrame *pKF);
+    void ObjectDataAssociation_onlyforStereo(KeyFrame *pKF);
     // Freiburg Cars and Redwood (Mono)
     int maskErrosion;
     std::string detection_path;  // path to associated detected instances
@@ -279,16 +292,29 @@ public:
 
 
     // 用于生成椭球体模型
+private:
     EllipsoidExtractor* mpEllipsoidExtractor;  //椭球体提取器
     void UpdateObjectEllipsoidObservation(ORB_SLAM2::Frame *pFrame, KeyFrame* pKF, bool withAssociation);
     void UpdateDepthEllipsoidEstimation(ORB_SLAM2::Frame* pFrame, KeyFrame* pKF, bool withAssociation);
     void TaskRelationship(ORB_SLAM2::Frame* pFrame);
     void RefineObjectsWithRelations(ORB_SLAM2::Frame *pFrame);
     // bool calibrateMeasurement(Eigen::Vector4d &measure , int rows, int cols, int config_boarder = 10, int config_size = 100); 
+    PlaneExtractorManhattan* pPlaneExtractorManhattan;
     
     camera_intrinsic mCamera; // 相机内参
     
+// 用于椭球体数据关联
+private:
+    double mf_associate_IoU_thresold;
+    bool mb_associate_debug;
+    bool mb_associate_object_with_ellipsold;
+    int associateDetWithObject(ORB_SLAM2::KeyFrame *pKF, MapObject* pMO, int d_i, ObjectDetection* detKF1, vector<MapPoint*>& mvpMapPoints);
 
+//深度点云可视化
+public:
+    void DenseBuild();
+    Builder* mpBuilder;     // a dense pointcloud builder from visualization
+    Eigen::Matrix3d mCalib;
 };
 
 } //namespace ORB_SLAM

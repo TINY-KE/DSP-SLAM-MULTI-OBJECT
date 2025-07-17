@@ -47,6 +47,10 @@ public:
 
     // Draw last processed frame.
     cv::Mat DrawFrame();
+    cv::Mat DrawDepthFrame();
+protected:
+    cv::Mat mmDepth;
+    Tracking* mpTracker;
 
 protected:
 

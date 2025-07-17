@@ -154,6 +154,10 @@ void LocalMapping::Run()
                         * 看看有无必要使用隐式位形优化结果中的Loss对物体点云进行剔除
                         */
                         Process_Multi_DetectedObjects_byPythonReconstruct();
+
+                        // 处理完检测到的物体之后，要把它们更新到地图中
+                        UpdateObjectsToMap();
+
                     }
 
                 }

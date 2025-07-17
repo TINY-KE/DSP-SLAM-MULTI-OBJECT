@@ -54,9 +54,14 @@ Viewer::Viewer(System* pSystem, FrameDrawer *pFrameDrawer, MapDrawer *pMapDrawer
     mUsePangolin =  fSettings["Viewer.UsePangolin"];
 }
 
-cv::Mat Viewer::GetFrame()
+cv::Mat Viewer::GetRGBFrame()
 {
     return mpFrameDrawer->DrawFrame();
+}
+
+cv::Mat Viewer::GetDepthFrame()
+{
+    return mpFrameDrawer->DrawDepthFrame();
 }
 
 void Viewer::Run()
@@ -88,8 +93,17 @@ void Viewer::Run()
     pangolin::Var<bool> menuShowSdfObjects("menu.Show SDF Objects",true,true);
     // 深度点云
     pangolin::Var<float> SliderPointCloudListSize("menu.Pointcloud Size", 1.0, 0.5, 5.0);
-    pangolin::Var<bool> menuShowDepthPoints("menu.Show Depth Points",false,false);
+    pangolin::Var<bool> menuShowDepthPoints("menu.Show Depth Points",false,true);
 
+    // 图片
+    pangolin::Var<bool> menuShowFrameImg("menu.Show FrameImg", false, true);
+    pangolin::GlTexture imageTexture(mImageWidth,mImageHeight,GL_RGB,false,0,GL_BGR,GL_UNSIGNED_BYTE);
+    pangolin::View& rgb_image = pangolin::Display("rgb")
+        .SetBounds(0,0.3,0.2,0.5,float(mImageWidth) / float(mImageHeight))
+        .SetLock(pangolin::LockLeft, pangolin::LockBottom);
+    pangolin::View& depth_image = pangolin::Display("depth")
+        .SetBounds(0,0.3,0.5,0.8,float(mImageWidth) / float(mImageHeight))
+        .SetLock(pangolin::LockLeft, pangolin::LockBottom);
 
     // Define Camera Render Object (for view / scene browsing)
     pangolin::OpenGlRenderState s_cam(
@@ -178,15 +192,47 @@ void Viewer::Run()
                 float pointcloudSize = SliderPointCloudListSize;
                 mpMapDrawer->drawPointCloudLists(pointcloudSize);
             }
+
+            // 展示图片
+            if (menuShowFrameImg) {
+                cv::Mat rgb = GetRGBFrame();
+                if(!rgb.empty())
+                {
+                    imageTexture.Upload(rgb.data,GL_BGR,GL_UNSIGNED_BYTE);
+                    //display the image
+                    rgb_image.Activate();
+                    glColor3f(1.0,1.0,1.0);
+                    imageTexture.RenderToViewportFlipY();
+                }
+
+                cv::Mat depth = GetDepthFrame();
+                if(!depth.empty())
+                {
+                    imageTexture.Upload(depth.data,GL_BGR,GL_UNSIGNED_BYTE);
+                    //display the image
+                    depth_image.Activate();
+                    glColor3f(1.0,1.0,1.0);
+                    imageTexture.RenderToViewportFlipY();
+                }
+            }
+
+            // 展示Tracking::DenseBuild()中生成的点云
+            RefreshMenuForDepthPointCloud();
+            RefreshPointCloudOptions();
+            float pointcloudSize = SliderPointCloudListSize;
+            mpMapDrawer->drawPointCloudWithOptions(mmPointCloudOptionMap, pointcloudSize);
+            // end
+
+            
             pangolin::FinishFrame();
         }
 
-        cv::Mat im = GetFrame();
-//        double scale = float(w) / im.size().width;
-//        cv::Mat scaled_im;
-//        cv::resize(im, scaled_im, cv::Size(0, 0), scale, scale);
-        cv::imshow("DSP-SLAM: Current Frame", im);
-        cv::waitKey(mT);
+        // cv::Mat im = GetRGBFrame();
+        // // double scale = float(w) / im.size().width;
+        // // cv::Mat scaled_im;
+        // // cv::resize(im, scaled_im, cv::Size(0, 0), scale, scale);
+        // // cv::imshow("DSP-SLAM: Current Frame", im);
+        // cv::waitKey(mT);
 
         if(menuReset)
         {
@@ -216,6 +262,52 @@ void Viewer::Run()
     }
 
     SetFinish();
+}
+
+// 
+void Viewer::RefreshMenuForDepthPointCloud(){
+    unique_lock<mutex> lock(mMutexFinish);
+
+    // 以名称为单位，给 pointcloud list 中的每个点云设置菜单
+    auto pointLists = mpSystem->getMap()->GetPointCloudList();
+
+    // Iterate over the menu and delete the menu if the corresponding clouds are no longer available
+    // 遍历菜单，如果对应的点云没有了则删除菜单
+    for( auto menuPair = mmDepthPointCloudOptionMenus.begin(); menuPair!=mmDepthPointCloudOptionMenus.end();)
+    {
+        if(pointLists.find(menuPair->first) == pointLists.end())
+        {
+            if( menuPair->second !=NULL ){
+                delete menuPair->second;        // destroy the dynamic menu 
+                menuPair->second = NULL;
+            }
+            menuPair = mmDepthPointCloudOptionMenus.erase(menuPair);  
+            continue;
+        }
+        menuPair++;
+    }
+
+    // Iterate over the cloud lists to add new menu.
+    // 遍历点云列表，添加新菜单
+    for( auto cloudPair: pointLists )
+    {
+        if(mmDepthPointCloudOptionMenus.find(cloudPair.first) == mmDepthPointCloudOptionMenus.end())
+        {
+            pangolin::Var<bool>* pMenu = new pangolin::Var<bool>(string("menu.") + cloudPair.first, false, true);
+            mmDepthPointCloudOptionMenus.insert(make_pair(cloudPair.first, pMenu));            
+        }
+    }
+}
+
+void Viewer::RefreshPointCloudOptions()
+{
+    // generate options from mmPointCloudOptionMenus, pointclouds with names will only be drawn when their options are activated.
+    std::map<std::string,bool> options;
+    for( auto pair : mmDepthPointCloudOptionMenus)
+        options.insert(make_pair(pair.first, pair.second->Get()));
+    
+    mmPointCloudOptionMap.clear();
+    mmPointCloudOptionMap = options;
 }
 
 void Viewer::RequestFinish()

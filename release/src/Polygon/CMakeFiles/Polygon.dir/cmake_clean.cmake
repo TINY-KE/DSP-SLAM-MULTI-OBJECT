@@ -1,6 +1,6 @@
 file(REMOVE_RECURSE
-  "../../../lib/libPolygon.pdb"
-  "../../../lib/libPolygon.so"
+  "../../../lib_release/libPolygon.pdb"
+  "../../../lib_release/libPolygon.so"
   "CMakeFiles/Polygon.dir/Polygon.cpp.o"
   "CMakeFiles/Polygon.dir/Polygon.cpp.o.d"
 )

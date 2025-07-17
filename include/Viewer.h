@@ -59,7 +59,8 @@ public:
 
     void Release();
 
-    cv::Mat GetFrame();
+    cv::Mat GetRGBFrame();
+    cv::Mat GetDepthFrame();
 
 private:
 
@@ -90,6 +91,13 @@ private:
     // rviz可视化
     MapPublisher* mpMapPublisher;
     int mUsePangolin;
+
+    // ellipsoid-version
+    // 用于可视化深度点云
+    std::map<std::string,bool> mmPointCloudOptionMap;
+    void RefreshPointCloudOptions();
+    void RefreshMenuForDepthPointCloud();
+    map<string,pangolin::Var<bool>*> mmDepthPointCloudOptionMenus;
 
 };
 

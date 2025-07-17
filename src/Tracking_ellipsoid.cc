@@ -685,7 +685,6 @@ namespace ORB_SLAM2 {
                     // 添加debug, 测试筛选图像平面内的bbox平面
                     // VisualizeCuboidsPlanesInImages(e_extractByFitting_newSym, pFrame->cam_pose_Twc, mCalib, mRows, mCols, mpMap);
 
-
                 }   // successful estimation.
 
                 // // 存储条件1: 该检测 3d_prob > 0.5
@@ -702,6 +701,9 @@ namespace ORB_SLAM2 {
 
             // 若不成功保持为NULL
             pFrame->mpLocalObjects.push_back(pLocalEllipsoidThisObservation);
+            // ellipsoid-verison
+            pKF->AddEllipsoldsGlobal(pGlobalEllipsoidThisObservation);
+
         }
 
         return;
@@ -801,6 +803,101 @@ namespace ORB_SLAM2 {
         //     }
         // }
         // std::cout << "Refine result : " << success_num << " objs." << std::endl;
+    }
+
+    int Tracking::associateDetWithObject(ORB_SLAM2::KeyFrame *pKF, MapObject* pMO, int d_i, ObjectDetection* detKF1, vector<MapPoint*>& mvpMapPoints)
+    {
+        // 设置该帧的某个观测对应的物体
+        pKF->AddMapObject(pMO, d_i);
+        pMO->AddObservation(pKF, d_i);
+
+        // 设置物体所包含的观测
+        detKF1->isNew = false;
+
+        int associate_object_id = pMO->mnId;
+        // pMO
+
+        // 将新观测的特征点，添加到物体中
+        int newly_matched_points = 0;
+        for (int k_i : detKF1->GetFeaturePoints()) {
+            auto pMP = mvpMapPoints[k_i];
+            if (pMP && !pMP->isBad())
+            {
+                // new map points
+                if (pMP->object_id < 0)
+                {
+                    pMP->in_any_object = true;
+                    pMP->object_id = associate_object_id;
+                    pMO->AddMapPoints(pMP);
+                    newly_matched_points++;
+                }
+                else
+                {
+                    // if pMP is already associate to a different object, set bad flag
+                    // 一个特征点在不同帧可以在不同物体的mask内
+                    if (pMP->object_id != associate_object_id)
+                        pMP->SetBadFlag();
+                }
+            }
+        }
+
+        return newly_matched_points;
+
+        // cout <<  "Matches: " << max_matches << ", New points: " << newly_matched_points << ", Keypoints: " <<
+        //     detKF1->mvKeysIndices.size() << ", Associated to object by projection " << object_id_max_matches
+        //     << endl << endl;
+        /*cout <<  "Matches: " << max_matches << ", New points: " << newly_matched_points << ", Keypoints: " <<
+            detKF1->mvKeysIndices.size() << ", Associated to object by projection " << object_id_max_matches
+            << endl << endl;*/
+    }
+
+
+
+    void Tracking::DenseBuild()
+    {
+        bool mbOpenBuilder = Config::Get<int>("Visualization.Builder.Open") > 0;
+        if(mbOpenBuilder)
+        {
+            double depth_range = Config::ReadValue<double>("EllipsoidExtractor_DEPTH_RANGE");   // Only consider pointcloud within depth_range
+
+            if(!mCurrentFrame.color_img.empty()){    // RGB images are needed.
+                Eigen::VectorXd pose = mCurrentFrame.cam_pose_Twc.toVector();
+                // cv::imshow("mCurrentFrame->rgb_img", mCurrentFrame->rgb_img);
+                // cv::waitKey(20);
+
+                // cout << "DenseBuild: before processFrame ";
+                // printMemoryUsage();
+
+                // TODO： 下面这一步产生了较大的内存使用
+                mpBuilder->processFrame(mCurrentFrame.color_img, mCurrentFrame.depth_img, pose, depth_range);
+                // cout << "DenseBuild: after processFrame ";
+                // printMemoryUsage();
+
+                double voxel_size = Config::Get<double>("Visualization.Builder.VoxelSize");
+                // std::cout<< "[DenseBuild] Voxel size: " << voxel_size << std::endl;
+
+                mpBuilder->voxelFilter(voxel_size);   // Down sample threshold; smaller the finer; depend on the hardware.
+                // cout << "DenseBuild: after voxelFilter ";
+                // printMemoryUsage();
+
+                PointCloudPCL::Ptr pCurrentCloudPCL = mpBuilder->getCurrentMap();
+                // cout << "DenseBuild: after getCurrentMap ";
+                // printMemoryUsage();
+
+                auto pCloudLocal = pclToQuadricPointCloudPtr(pCurrentCloudPCL);
+                // cout << "DenseBuild: after pclToQuadricPointCloudPtr ";
+                // printMemoryUsage();
+
+                mpMap->AddPointCloudList("Builder.Local Points", pCloudLocal);
+                // cout << "DenseBuild: after AddPointCloudList ";
+                // printMemoryUsage();
+
+                // // Get and visualize global pointcloud.
+                // PointCloudPCL::Ptr pCloudPCL = mpBuilder->getMap();
+                // auto pCloud = pclToQuadricPointCloudPtr(pCloudPCL);
+                // mpMap->AddPointCloudList("Builder.Global Points", pCloud);
+            }
+        }
     }
 
 
