@@ -621,7 +621,7 @@ namespace ORB_SLAM2 {
                 std::cout<< "[Tracking::UpdateDepthEllipsoid Estimation] 利用多平面估计椭球体" << std::endl;
                 g2o::ellipsoid e_extractByFitting_newSym = \
                     mpEllipsoidExtractor->EstimateLocalEllipsoidUsingMultiPlanes(\
-                        pFrame->depth_img, measurement, label, measurement_prob, pose, mCamera, pcd_ptr_of_frame);
+                        pFrame->pointcloud_img, measurement, label, measurement_prob, pose, mCamera, pcd_ptr_of_frame);
                 
                 // 无非两个特殊情况需要考虑： 椭球体提取不成功，深度点云提取不成功
                 // 根据深度点云的提取结果，修改
@@ -869,7 +869,7 @@ namespace ORB_SLAM2 {
                 // printMemoryUsage();
 
                 // TODO： 下面这一步产生了较大的内存使用
-                mpBuilder->processFrame(mCurrentFrame.color_img, mCurrentFrame.depth_img, pose, depth_range);
+                mpBuilder->processFrame(mCurrentFrame.color_img, mCurrentFrame.pointcloud_img, pose, depth_range);
                 // cout << "DenseBuild: after processFrame ";
                 // printMemoryUsage();
 

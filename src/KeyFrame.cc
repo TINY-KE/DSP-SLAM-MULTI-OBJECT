@@ -44,8 +44,9 @@ KeyFrame::KeyFrame(Frame &F, Map *pMap, KeyFrameDatabase *pKFDB):
     mbToBeErased(false), mbBad(false), mHalfBaseline(F.mb/2), mpMap(pMap)
 {
     color_img = F.color_img.clone();
-    depth_img = F.depth_img.clone();
+    // depth_img = F.depth_img.clone();
     gray_img = F.gray_img.clone();
+    cv::Mat pointcloud_img; // raw depth image， 直接根据深度图生成点云
     
     mnId=nNextId++;
 

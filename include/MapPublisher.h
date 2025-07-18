@@ -37,6 +37,11 @@
 //#include <pcl/common/io.h>
 //#include <pcl/common/impl/io.hpp>
 
+#include <pcl/point_cloud.h>
+#include <pcl/point_types.h>
+#include <pcl_conversions/pcl_conversions.h>
+#include <opencv2/opencv.hpp>
+
 //// pcl边界
 //#include <pcl/features/boundary.h>
 //#include <pcl/features/normal_3d.h>
@@ -79,6 +84,7 @@ public:
     
     void SetCurrentCameraPose(const cv::Mat &Tcw);
 
+    void publishDepthAsPointCloud_debug(const cv::Mat& depth, float fx, float fy, float cx, float cy, float scale);
 
 private:
 
@@ -107,6 +113,8 @@ private:
     ros::Publisher publisher_CubeObject;
     ros::Publisher publisher_ObjectPoints;
     ros::Publisher publisher_ellipsoid;
+    ros::Publisher publisher_depth_current_frame;
+
     //tf tree
     //tf::TransformBroadcaster odom_broadcaster;
     //tf::TransformBroadcaster camera_broadcaster;
@@ -147,6 +155,8 @@ private:
     geometry_msgs::Point corner_to_marker(Eigen::Vector3d& v);
     geometry_msgs::Point corner_to_marker(const std::vector<float>& v);
     geometry_msgs::Point corner_to_marker(const std::vector<double>& v);
+
+
 
 };
 

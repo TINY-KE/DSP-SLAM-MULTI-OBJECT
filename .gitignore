@@ -3,6 +3,7 @@ cmake-build-release/
 build/
 build*/
 release/
+release*/
 reconstruct/.ipynb_checkpoints/
 reconstruct/__pycache__/
 reconstruct/experiments/

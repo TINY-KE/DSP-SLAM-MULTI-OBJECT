@@ -314,6 +314,8 @@ private:
 public:
     void DenseBuild();
     Builder* mpBuilder;     // a dense pointcloud builder from visualization
+
+private:
     Eigen::Matrix3d mCalib;
 };
 

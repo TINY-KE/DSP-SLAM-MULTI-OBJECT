@@ -59,7 +59,7 @@ public:
             ORBextractor* extractorRight, ORBVocabulary* voc, cv::Mat &K, cv::Mat &distCoef, const float &bf, const float &thDepth);
 
     // Constructor for RGB-D cameras.
-    Frame(const cv::Mat &imGray, const cv::Mat &imDepth, const cv::Mat &imRGB, const double &timeStamp, ORBextractor* extractor,ORBVocabulary* voc, cv::Mat &K, cv::Mat &distCoef, const float &bf, const float &thDepth);
+    Frame(const cv::Mat &imGray, const cv::Mat &imDepth, const cv::Mat &imDepth_raw, const cv::Mat &imRGB, const double &timeStamp, ORBextractor* extractor,ORBVocabulary* voc, cv::Mat &K, cv::Mat &distCoef, const float &bf, const float &thDepth);
 
     // Constructor for Monocular cameras.
     Frame(const cv::Mat &imGray, const cv::Mat &imRGB, const double &timeStamp, ORBextractor* extractor,ORBVocabulary* voc, cv::Mat &K, cv::Mat &distCoef, const float &bf, const float &thDepth);
@@ -216,9 +216,9 @@ private:
 
 public:
     cv::Mat color_img;   // rgb img 用于可视化和物体检测
-    cv::Mat depth_img;      // depth img for processing
+    // cv::Mat depth_img;      // depth img for processing
     cv::Mat gray_img;       // gray! for texture
-
+    cv::Mat pointcloud_img; // raw depth image， 直接根据深度图生成点云
     //地面
     cv::Mat mGroundtruthPose_mat;           // camera groundtruth
 

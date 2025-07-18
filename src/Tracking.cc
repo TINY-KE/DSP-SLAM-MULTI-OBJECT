@@ -276,8 +276,12 @@ cv::Mat Tracking::GrabImageRGBD(const cv::Mat &imRGB,const cv::Mat &imD, const d
     if((fabs(mDepthMapFactor-1.0f)>1e-5) || imDepth.type()!=CV_32F)
         imDepth.convertTo(imDepth,CV_32F,mDepthMapFactor);
 
-    mCurrentFrame = Frame(mImGray,imDepth,imRGB,timestamp,mpORBextractorLeft,mpORBVocabulary,mK,mDistCoef,mbf,mThDepth);
-    
+    std::cout<<"[debug] Tracking.cc: GrabImageRGBD: imDepth.type() = " << imDepth.type() <<", mDepthMapFactor:"<<mDepthMapFactor<< std::endl;
+
+    // mpMapPublisher->publishDepthAsPointCloud_debug(imD, mCamera.fx, mCamera.fy, mCamera.cx, mCamera.cy, mCamera.scale);
+
+    mCurrentFrame = Frame(mImGray,imDepth,imD,imRGB,timestamp,mpORBextractorLeft,mpORBVocabulary,mK,mDistCoef,mbf,mThDepth);    
+
     // [改进] [位姿真值] [groundtruth] 初始帧的位姿
     SetRealPose();
 

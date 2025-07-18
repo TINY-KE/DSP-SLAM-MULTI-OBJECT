@@ -178,10 +178,10 @@ cv::Mat FrameDrawer::DrawFrame()
 cv::Mat FrameDrawer::DrawDepthFrame() {
     Frame* frame = &(mpTracker->mCurrentFrame);
 
-    if(frame->depth_img.empty())
+    if(frame->pointcloud_img.empty())
         return mmDepth;
 
-    cv::Mat I = frame->depth_img;   // U16C1 , ushort
+    cv::Mat I = frame->pointcloud_img;   // U16C1 , ushort
     cv::Mat im,R,G,B;
 
     double min;

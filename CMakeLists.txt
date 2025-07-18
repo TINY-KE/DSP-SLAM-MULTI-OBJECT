@@ -214,3 +214,16 @@ target_link_libraries(dsp_slam_ros ${PROJECT_NAME})
 # set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR})
 # add_executable(translate_gt eval/translate_gt.cpp)
 # target_link_libraries(translate_gt ${catkin_LIBRARIES}  ${OpenCV_LIBS}  ${EIGEN3_LIBS})
+
+
+
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/src/rgbd_test/)
+add_executable(rgbd_viewer src/rgbd_test/rgbd_viewer.cc)
+target_link_libraries(rgbd_viewer 
+        ${catkin_LIBRARIES}  #for ros
+        ${OpenCV_LIBS}
+        ${EIGEN3_LIBS}
+        /usr/lib/x86_64-linux-gnu/libtiff.so.5
+        ${PCL_LIBRARY_DIRS}
+        EllipsoidExtractor
+)

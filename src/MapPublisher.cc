@@ -110,7 +110,7 @@ MapPublisher::MapPublisher(Map* pMap, const string &strSettingPath):mpMap(pMap),
     mReferencePoints.action=visualization_msgs::Marker::ADD;
     mReferencePoints.color.r =1.0f;
     mReferencePoints.color.a = 1.0;
-
+    
 
     //Configure Publisher
     publisher = nh.advertise<visualization_msgs::Marker>("Point", 1000);
@@ -133,6 +133,7 @@ MapPublisher::MapPublisher(Map* pMap, const string &strSettingPath):mpMap(pMap),
     publisher_CubeObject = nh.advertise<visualization_msgs::Marker>("/cubeobjects", 10);
     publisher_ObjectPoints = nh.advertise<visualization_msgs::Marker>("/objectpoint", 1000);
     publisher_ellipsoid = nh.advertise<visualization_msgs::Marker>("/ellipsoid_slam", 1000);
+    publisher_depth_current_frame = nh.advertise<sensor_msgs::PointCloud2>("/depth/points", 1);
 
     publisher.publish(mPoints);
     publisher.publish(mReferencePoints);
@@ -631,6 +632,33 @@ void MapPublisher::PublishEllipsoid(MapObject* vObjs){
 //     publisher_ObjectInfo.publish(multiarray_msg);
 // }
 
+void MapPublisher::publishDepthAsPointCloud_debug(const cv::Mat& depth, float fx, float fy, float cx, float cy, float scale) {
+    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZ>);
+
+    for (int v = 0; v < depth.rows; ++v) {
+        for (int u = 0; u < depth.cols; ++u) {
+            ushort d = depth.at<ushort>(v, u);
+            if (d == 0) continue;
+
+            float z = d / scale;
+            float x = (u - cx) * z / fx;
+            float y = (v - cy) * z / fy;
+
+            cloud->points.push_back(pcl::PointXYZ(x, y, z));
+        }
+    }
+
+    cloud->width = cloud->points.size();
+    cloud->height = 1;
+    cloud->is_dense = false;
+
+    sensor_msgs::PointCloud2 cloud_msg;
+    pcl::toROSMsg(*cloud, cloud_msg);
+    cloud_msg.header.stamp = ros::Time::now();
+    cloud_msg.header.frame_id = MAP_FRAME_ID; 
+
+    publisher_depth_current_frame.publish(cloud_msg);
+}
 
 
 void MapPublisher::SetCurrentCameraPose(const cv::Mat &Tcw)    //zhangjiadong  用在map.cc中
