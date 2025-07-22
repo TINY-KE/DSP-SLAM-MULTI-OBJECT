@@ -559,9 +559,9 @@ bool MapDrawer::drawPlanes(int visual_group) {
         }
     }
     // if(success_debug)
-    //     std::cout << "[MapDrawer::drawPlanes] draw " << planes.size() << " planes in visual group " << visual_group << std::endl;
+    //     std::cout << "[debug MapDrawer::drawPlanes] draw " << planes.size() << " planes in visual group " << visual_group << std::endl;
     // else
-    //     std::cout << "[MapDrawer::drawPlanes] no planes in visual group " << visual_group << std::endl;
+    //     std::cout << "[debug MapDrawer::drawPlanes] no planes in visual group " << visual_group << std::endl;
 
     return true;
 }
