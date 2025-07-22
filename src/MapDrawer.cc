@@ -549,13 +549,19 @@ void MapDrawer::drawAxisNormal()
 bool MapDrawer::drawPlanes(int visual_group) {
     std::vector<plane*> planes = mpMap->GetAllPlanes();
     // std::cout << "plane_num = " << planes.size() << std::endl;
+    // bool success_debug = false;
     for( size_t i=0; i<planes.size(); i++) {
         g2o::plane* ppl = planes[i];
         if(ppl->miVisualGroup == visual_group) {
             // std::cout << "drawPlaneWithEquation : " << ppl->param.transpose().matrix() << std::endl;
             drawPlaneWithEquation(ppl);
+            // success_debug = true;
         }
     }
+    // if(success_debug)
+    //     std::cout << "[MapDrawer::drawPlanes] draw " << planes.size() << " planes in visual group " << visual_group << std::endl;
+    // else
+    //     std::cout << "[MapDrawer::drawPlanes] no planes in visual group " << visual_group << std::endl;
 
     return true;
 }

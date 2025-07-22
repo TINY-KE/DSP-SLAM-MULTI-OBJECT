@@ -12,7 +12,7 @@
 
 namespace ORB_SLAM2
 {
-void VisualizeConstrainPlanes(g2o::ellipsoid& e_local, g2o::SE3Quat& Twc, Map* pMap)
+void VisualizeConstrainPlanes(g2o::ellipsoid& e_local, g2o::SE3Quat& Twc, Map* pMap, int visual_group)
 {
     std::vector<g2o::ConstrainPlane*> &vCPlanes = e_local.mvCPlanes;
     g2o::ellipsoid e_global = e_local.transform_from(Twc);
@@ -41,7 +41,7 @@ void VisualizeConstrainPlanes(g2o::ellipsoid& e_local, g2o::SE3Quat& Twc, Map* p
         g2o::plane *pPlane = new g2o::plane(planeVec, color);
         pPlane->transform(Twc);
         pPlane->InitFinitePlane(center, plane_size);
-        pMap->addPlane(pPlane);
+        pMap->addPlane(pPlane, visual_group);
     }
 
     return;
@@ -833,7 +833,7 @@ g2o::ellipsoid EllipsoidExtractor::EstimateLocalEllipsoidUsingMultiPlanes(cv::Ma
     // 接下来添加 ConstrainPlanes.
     Matrix3d calib = CameraToCalibMatrix(camera);
     GenerateConstrainPlanesToEllipsoid(e_local_normalized, bbox, depth, campose_wc, calib);
-    // VisualizeConstrainPlanes(e_local_normalized, campose_wc, mpMap); // 中点定在全局坐标系
+    VisualizeConstrainPlanes(e_local_normalized, campose_wc, mpMap); // 中点定在全局坐标系
 
     // 评估本次提取的概率 : 投影回来的矩形与 bbox 的 IoU 作为规律.
     double prob_3d = CalculateProbability(e_local_normalized, bbox, calib);

@@ -57,11 +57,13 @@ Viewer::Viewer(System* pSystem, FrameDrawer *pFrameDrawer, MapDrawer *pMapDrawer
 cv::Mat Viewer::GetRGBFrame()
 {
     return mpFrameDrawer->DrawFrame();
+    // return mpFrameDrawer->mIm;
 }
 
 cv::Mat Viewer::GetDepthFrame()
 {
     return mpFrameDrawer->DrawDepthFrame();
+    // return mpFrameDrawer->mmDepth;
 }
 
 void Viewer::Run()
@@ -94,7 +96,10 @@ void Viewer::Run()
     // 深度点云
     pangolin::Var<float> SliderPointCloudListSize("menu.Pointcloud Size", 1.0, 0.5, 5.0);
     pangolin::Var<bool> menuShowDepthPoints("menu.Show Depth Points",false,true);
-
+    // 地面
+    pangolin::Var<bool> menuShowGroundPlane("menu.Show GroundPlane",true,true);
+    // 最新帧中的bbox平面
+    pangolin::Var<bool> menuShowBboxPlane("menu.Show Bbox Plane",true,true);
     // 图片
     pangolin::Var<bool> menuShowFrameImg("menu.Show FrameImg", false, true);
     pangolin::GlTexture imageTexture(mImageWidth,mImageHeight,GL_RGB,false,0,GL_BGR,GL_UNSIGNED_BYTE);
@@ -194,7 +199,9 @@ void Viewer::Run()
             }
 
             // 展示图片
-            if (menuShowFrameImg) {
+            if (menuShowFrameImg) 
+            // if(mpTracker->mState != Tracking::NOT_INITIALIZED)
+            {
                 cv::Mat rgb = GetRGBFrame();
                 if(!rgb.empty())
                 {
@@ -216,6 +223,14 @@ void Viewer::Run()
                 }
             }
 
+            // 地面
+            if(menuShowGroundPlane)
+                mpMapDrawer->drawPlanes(-1); // -1 是地面的默认值
+
+            // 最新帧中的观测切面
+            if(menuShowBboxPlane)
+                mpMapDrawer->drawPlanes(0); 
+
             // 展示Tracking::DenseBuild()中生成的点云
             RefreshMenuForDepthPointCloud();
             RefreshPointCloudOptions();
@@ -231,8 +246,8 @@ void Viewer::Run()
         // // double scale = float(w) / im.size().width;
         // // cv::Mat scaled_im;
         // // cv::resize(im, scaled_im, cv::Size(0, 0), scale, scale);
-        // // cv::imshow("DSP-SLAM: Current Frame", im);
-        // cv::waitKey(mT);
+        // cv::imshow("DSP-SLAM: Current Frame", im);
+        cv::waitKey(mT);
 
         if(menuReset)
         {
@@ -266,7 +281,7 @@ void Viewer::Run()
 
 // 
 void Viewer::RefreshMenuForDepthPointCloud(){
-    unique_lock<mutex> lock(mMutexFinish);
+    // unique_lock<mutex> lock(mMutexFinish);
 
     // 以名称为单位，给 pointcloud list 中的每个点云设置菜单
     auto pointLists = mpSystem->getMap()->GetPointCloudList();

@@ -136,7 +136,7 @@ bool Map::ClearPointCloudLists(){
 void Map::addPlane(plane *pPlane, int visual_group) {
     // std::cout<< "[Map::addPlane] Add plane with visual group 1"<< std::endl;
     unique_lock<mutex> lock(mMutexMap);
-    // std::cout<< "[Map::addPlane] Add plane with visual group 2"<< std::endl;
+    // std::cout<< "[Map::addPlane] Add plane with visual group: "<< visual_group << std::endl;
     pPlane->miVisualGroup = visual_group;
     mspPlanes.insert(pPlane);
 }

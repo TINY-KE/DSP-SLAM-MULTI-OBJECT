@@ -73,11 +73,15 @@ pybind11::handle::dec_ref() is being called while the GIL is either not held or 
     + 展示椭球体的融合
     + Tracking::DenseBuild()中添加了当前帧的深度点云，有问题
     + cv::Mat I = frame->frame_img;   // U16C1 , ushort
-    + 为什么是片状的 ??
-        + 
     + 写一个程序展示读取后的深度点云
 
++ global点云可视化
+    + 设置过滤倍数
+    + 图片和local点如何同时显示
+    + 画出地面
+    
 + 椭球体的融合
+    + 显示每一帧的椭球体观测平面
     + 
 
 + 可视化当前帧中的椭球体  答：在pangolin中实现

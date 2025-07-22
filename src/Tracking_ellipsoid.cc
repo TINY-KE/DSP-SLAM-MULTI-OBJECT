@@ -603,7 +603,10 @@ namespace ORB_SLAM2 {
 
             // 对观测进行椭球体提取的几大条件
             if( c5_prob_check && c1 && c2 && !c3 && c4 ){
-
+                
+                mpMap->clearPlanes();
+                mpMap->addPlane(&mGroundPlane);
+                
                 // std::cout << "*****************************" << std::endl;
                 // std::cout << "Ready to EstimateLocalEllipsoidUsingMultiPlanes, press [ENTER] to continue ... " << std::endl;
                 // std::cout << "*****************************" << std::endl;
@@ -892,10 +895,10 @@ namespace ORB_SLAM2 {
                 // cout << "DenseBuild: after AddPointCloudList ";
                 // printMemoryUsage();
 
-                // // Get and visualize global pointcloud.
-                // PointCloudPCL::Ptr pCloudPCL = mpBuilder->getMap();
-                // auto pCloud = pclToQuadricPointCloudPtr(pCloudPCL);
-                // mpMap->AddPointCloudList("Builder.Global Points", pCloud);
+                // Get and visualize global pointcloud.
+                PointCloudPCL::Ptr pCloudPCL = mpBuilder->getMap();
+                auto pCloud = pclToQuadricPointCloudPtr(pCloudPCL);
+                mpMap->AddPointCloudList("Builder.Global Points", pCloud);
             }
         }
     }

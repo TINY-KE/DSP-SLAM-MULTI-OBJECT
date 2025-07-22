@@ -167,6 +167,7 @@ cv::Mat FrameDrawer::DrawFrame()
     cv::Mat imWithInfo;
     DrawTextInfo(im,state, imWithInfo);
 
+    // mIm = imWithInfo.clone();
     return imWithInfo;
 }
 
@@ -315,6 +316,11 @@ void FrameDrawer::Update(Tracking *pTracker)
         }
     }
     mState=static_cast<int>(pTracker->mLastProcessedState);
+    
+    // // 绘制
+    // DrawFrame();
+    // DrawDepthFrame();
+
 }
 
 } //namespace ORB_SLAM

@@ -74,7 +74,7 @@ public:
 
     void clear();
 
-    vector<KeyFrame*> mvpKeyFrameOrigins;
+    vector<KeyFrame*> mvpKeyFrameOrigins;  //没用？
 
     std::mutex mMutexMapUpdate;
 
@@ -109,12 +109,12 @@ protected:
 // ellipsoid-version
 public:
     bool AddPointCloudList(const string& name, PointCloud* pCloud, int type = REPLACE_POINT_CLOUD);   // type 0: replace when exist,  type 1: add when exist
-    bool DeletePointCloudList(const string& name, int type = 0);    // type 0: complete matching, 1: partial matching
+    bool DeletePointCloudList(const string& name, int type = 0);    // [废弃方案] type 0: complete matching, 1: partial matching
     bool ClearPointCloudLists();
     std::map<string, PointCloud*> mmPointCloudLists; // name-> pClouds
 
     // plane
-    void addPlane(plane* pPlane, int visual_group = 0);
+    void addPlane(plane* pPlane, int visual_group = -1);
     std::vector<plane*> GetAllPlanes();
     std::set<plane*> mspPlanes;
     void clearPlanes();
