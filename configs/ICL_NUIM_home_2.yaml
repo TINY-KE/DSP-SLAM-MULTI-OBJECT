@@ -116,7 +116,7 @@ EllipsoidExtraction.ClusterTolerance: 0.1
 EllipsoidExtraction.MinClusterSize: 5
 EllipsoidExtraction.CenterDis: 0.5
 
-EllipsoidExtraction.ManhattanPlanesFilter.Open: 0
+EllipsoidExtraction.ManhattanPlanesFilter.Open: 1
 EllipsoidExtractor.Rotation.NormalVoter.KSearchNum: 35
 EllipsoidExtractor.MinNeighborsInRadius: 40
 EllipsoidExtractor.StatisticalOutlierRemoval.MeanK: 50

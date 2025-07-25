@@ -499,14 +499,14 @@ namespace ORB_SLAM2 {
         // 使用深度图像估计物体椭球体
         UpdateDepthEllipsoidEstimation(pFrame, pKF, withAssociation);
 
-        // // [3] Extract Relationship
-        // 构建椭球体与曼哈顿平面之间的关联关系
-        TaskRelationship(pFrame);
+        // // // [3] Extract Relationship
+        // // 构建椭球体与曼哈顿平面之间的关联关系
+        // TaskRelationship(pFrame);
 
-        // [4] Use Relationship To Refine Ellipsoids
-        // 注意: Refine时必然在第一步可以初始化出有效的物体.
-        RefineObjectsWithRelations(pFrame, pKF);
-        std::cout << "Finish RefineObjectsWithRelations" << std::endl;
+        // // [4] Use Relationship To Refine Ellipsoids
+        // // 注意: Refine时必然在第一步可以初始化出有效的物体.
+        // RefineObjectsWithRelations(pFrame, pKF);
+        // std::cout << "Finish RefineObjectsWithRelations" << std::endl;
 
     }
 
@@ -634,22 +634,29 @@ namespace ORB_SLAM2 {
                 // FIXME: 需要判断返回的 e_extractByFitting_newSym 是否合法（初始化完成）
                 // 同时提取点云，存入pcd_ptr_of_frame中
                 std::cout<< "[Tracking::UpdateDepthEllipsoid Estimation] 利用地面和bbox切面估计椭球体" << std::endl;
-                // pcl::PointCloud<PointType>::Ptr pcd_ptr_of_frame(new pcl::PointCloud<PointType>);
-                // g2o::ellipsoid e_extractByFitting_newSym = \
-                //     mpEllipsoidExtractor->EstimateLocalEllipsoidUsingMultiPlanes(\
-                //         pFrame->pointcloud_img, measurement, label, measurement_prob, pose, mCamera, pcd_ptr_of_frame);
-                // auto det = mvpObjectDetections[i];
-                // if (pcd_ptr_of_frame==NULL){
-                //     std::cerr << "[Tracking::UpdateDepthEllipsoid Estimation]  椭球体提取中，当前帧点云为空" << std::endl;
-                //     det->isValidPcd = false;
-                // }
-                // else{
-                //     det->isValidPcd = true;
-                // }
-                g2o::ellipsoid e_extractByFitting_newSym = \
-                     mpEllipsoidExtractor->EstimateLocalEllipsoidWithSupportingPlane( \
-                        pFrame->pointcloud_img, measurement, label, measurement_prob, pose, mCamera, &mGroundPlane);
-                auto det = mvpObjectDetections[i];  det->isValidPcd = true;
+                g2o::ellipsoid e_extractByFitting_newSym;
+                bool type = 2;
+                if(type == 1){
+                    pcl::PointCloud<PointType>::Ptr pcd_ptr_of_frame(new pcl::PointCloud<PointType>);
+                    e_extractByFitting_newSym = \
+                        mpEllipsoidExtractor->EstimateLocalEllipsoidUsingMultiPlanes(\
+                            pFrame->pointcloud_img, measurement, label, measurement_prob, pose, mCamera, pcd_ptr_of_frame);
+                    auto det = mvpObjectDetections[i];
+                    if (pcd_ptr_of_frame==NULL){
+                        std::cerr << "[Tracking::UpdateDepthEllipsoid Estimation]  椭球体提取中，当前帧点云为空" << std::endl;
+                        det->isValidPcd = false;
+                    }
+                    else{
+                        det->isValidPcd = true;
+                    }
+                }
+                else if(type == 2)
+                {
+                    e_extractByFitting_newSym = \
+                        mpEllipsoidExtractor->EstimateLocalEllipsoidWithSupportingPlane( \
+                            pFrame->pointcloud_img, measurement, label, measurement_prob, pose, mCamera, &mGroundPlane);
+                    auto det = mvpObjectDetections[i];  det->isValidPcd = true;
+                }
 
                 
                 // 5. 椭球体结果处理

@@ -226,12 +226,12 @@ int main(int argc, char **argv)
     cout << "median tracking time: " << vTimesTrack[nImages/2] << endl;
     cout << "mean tracking time: " << totaltime/nImages << endl;
 
-    cout << "Press y to quit." << endl;
+    cout << "Press [e] to quit." << endl;
     char key;
     key = getchar();
 
     while(key!='e' && key!='E'){
-        cout << "Press e to quit." << endl;
+        cout << "Press [e] to quit." << endl;
         key = getchar();
     }
 

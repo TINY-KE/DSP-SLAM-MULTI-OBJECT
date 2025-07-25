@@ -119,6 +119,8 @@ pybind11::handle::dec_ref() is being called while the GIL is either not held or 
 
 + mpEllipsoidExtractor->OpenSymmetry(); 对成型用到了吗
 
++ 给EstimateLocalEllipsoidWithSupportingPlane和主导曼哈顿平面各加开关，控制变量找到问题在哪？
+
 # 第五阶段  实现椭球体的二维椭圆投影和隐式形状的二维掩码投影
 
 
