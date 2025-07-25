@@ -88,7 +88,8 @@ public:
     ORB_SLAM2::PointCloud* GetPointCloudDebug();   // get the debug point cloud before Eucliden filter
 
     void SetExtractionMethod(int method);
-    void SetManhattanPlanes(const std::vector<g2o::plane*> vpPlanes);
+    void OpenManhattanPlanesFilter(const std::vector<g2o::plane*> vpPlanes);
+    void CloseManhattanPlanes();   // close the manhattan plane filter
 
 private:
     void LoadSymmetryPrior();  // define object symmetry prior
@@ -140,7 +141,7 @@ private:
 
     // supporting plane
     bool mbSetPlane;    
-    g2o::plane* mpPlane;
+    g2o::plane* mpDefaultSupportingPlane;
 
     // symmetry prior
     std::map<int,int> mmLabelSymmetry;
@@ -165,9 +166,9 @@ private:
     bool mbOpenSymmetry;
 
     bool mbOpenMHPlanesFilter;
-    std::vector<g2o::plane*> mvpMHPlanes;
+    std::vector<g2o::plane*> mvpHomeDominantMHPlanes;
 
-    bool mbLocalSupportingPlane;
+    bool mbLocalSupportingPlane_nouse;
 };
 
 

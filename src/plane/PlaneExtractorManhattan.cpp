@@ -20,15 +20,18 @@ bool PlaneExtractorManhattan::extractManhattanPlanes(const cv::Mat &depth, Eigen
     mParam.RangeOpen = false;
     mvPotentialGroundPlanePoints.clear();
     mvPotentialMHPlanesPoints.clear();
-    mvpPotentialMHPlanes.clear();   // 满足了曼哈顿假设的都放进去
-    mvpPotentialStructuralMHPlanes.clear();
+    mvpPotentialMHPlanes.clear();   // 当前提取的所有曼哈顿平面 ("仅满足垂直平行约束")
+    mvpPotentialStructuralMHPlanes_nouse.clear();     // 当前提取的潜在曼哈顿结构平面 ("经过大小过滤")
     mbResult = false;
 
-    // 直接提取!
+    // 1. 提取初步平面
     // 注意: 该部分结果完全可以与地平面共用
     extractPlanes(depth);
     if( mvPlaneCoefficients.size() < 1)     // there should be more than 1 potential planes 
-        return false;
+    {
+        std::cout << "[debug] Extracting Manhattan Planes Failed, 未提取到曼哈顿平面" << std::endl;
+        return false;   // 没有平面
+    }    
 
     // *******************************************
     //     筛选曼哈顿！  需要参考平面: 地平面(重力方向)
@@ -38,36 +41,44 @@ bool PlaneExtractorManhattan::extractManhattanPlanes(const cv::Mat &depth, Eigen
     std::vector<g2o::plane*> vpPlanes;
     std::vector<std::pair<g2o::plane*, int>> mapPlaneSize;
 
+    // 构造曼哈顿平面筛选条件
+    // config_angle_delta：容忍角度误差为 5 度，控制“平行”、“垂直”的判断；
+    // MH_plane_size：平面点数的最小阈值（用于判断是否“足够大”），防止误识别小平面。
     double config_angle_delta = 5 / 180.0 * M_PI;   // 5 deg.
-    int MH_plane_size = depth.rows * depth.cols / 6;   // 要求具有屏幕 1/4的点!
-    MH_plane_size = MH_plane_size / 9;
+    int MH_points_in_plane_size = depth.rows * depth.cols / 6;   // 要求具有屏幕 1/4的点!
+    MH_points_in_plane_size = MH_points_in_plane_size / 9;
+
+    // 遍历所有初步提取的平面，判断是否是曼哈顿平面
     for( int i=0; i<mvPlaneCoefficients.size(); i++ )
     {
+        // 提取该平面法向量：
         Eigen::Vector4d vec;
         auto& coeff = mvPlaneCoefficients[i];
         vec << double(coeff.at<float>(0)), double(coeff.at<float>(1)), double(coeff.at<float>(2)), double(coeff.at<float>(3));
 
+        // 判断法向与重力方向夹角
         Eigen::Vector3d axis_gravity = local_gt;       
         Eigen::Vector3d axisNorm = vec.head(3);
         double cos_theta = axisNorm.transpose() * axis_gravity;
         cos_theta = cos_theta / axisNorm.norm() / axis_gravity.norm();
-
         double angle = acos( cos_theta );      // acos : [0,pi]
 
+        // 角度接近 0° 或 180°：水平平面（如地面、桌面）；
+        // 角度接近 90°：垂直平面（如墙面）；
+        // 否则不是曼哈顿平面，忽略。
         int iMHType = 0;
         if( std::abs(angle - 0)<config_angle_delta || 
                 std::abs(angle- M_PI) < config_angle_delta ) 
         {
             iMHType = 1;    // parallel
-
         }
-
         // ---- DEBUG: 暂时取消垂直倚靠关系. 只考虑普遍存在的支撑关系
         else if( std::abs(angle - M_PI/2.0)<config_angle_delta )
         {
             iMHType = 2; // Vertical
         }
 
+        // 若是曼哈顿平面（与地面平行或垂直），则保存进 mvpPotentialMHPlanes 中
         if( iMHType > 0 )
         {
             g2o::plane* pPlane = new g2o::plane();
@@ -77,8 +88,9 @@ bool PlaneExtractorManhattan::extractManhattanPlanes(const cv::Mat &depth, Eigen
             mvpPotentialMHPlanes.push_back(pPlane);   // 满足了曼哈顿假设的都放进去
             mvPotentialMHPlanesPoints.push_back(mvPlanePoints[i]);
 
+            // 如果满足曼哈顿平面大小要求，则加入到 mvpPotentialStructuralMHPlanes_nouse 中
             int num_size = mvPlanePoints[i].size();
-            if( num_size > MH_plane_size){
+            if( num_size > MH_points_in_plane_size){
                 vpPlanes.push_back(pPlane);
                 mvPotentialGroundPlanePoints.push_back(mvPlanePoints[i]);
             }
@@ -95,61 +107,73 @@ bool PlaneExtractorManhattan::extractManhattanPlanes(const cv::Mat &depth, Eigen
         }  
     }
 
-    std::cout << "Potential MHPlanes size: " << vpPlanes.size() << std::endl;
+    std::cout<< "[debug] Extracting Manhattan Planes, 提取到Potential Structural MHPlanes 数量: " << vpPlanes.size() << std::endl;
     if( vpPlanes.size() < 1) {      // there should be more than 1 valid planes 
         return false;
     }
 
     // 保存结果！
-    mvpPotentialStructuralMHPlanes = vpPlanes;
+    mvpPotentialStructuralMHPlanes_nouse = vpPlanes;
 
-    // 针对此次结果更新存储的曼哈顿平面
-    UpdateMHPlanes(Twc);
+    // 针对此次结果，更新房间的主导曼哈顿平面
+    UpdateHomeDominantStructuralMHPlanes(Twc);
 
     return true;
 }
 
 void PlaneExtractorManhattan::AddNewDominantMHPlane(g2o::plane* vP)
 {
-    mvpDominantStructuralMHPlanes.push_back(vP);
-    std::cout << "[Manhattan] Add new MH Plane. Total : " << mvpDominantStructuralMHPlanes.size() << std::endl;
+    mvpHomeDominantStructuralMHPlanes.push_back(vP);
+    std::cout << "[Manhattan] Add new MH Plane. Total : " << mvpHomeDominantStructuralMHPlanes.size() << std::endl;
 
-    if(mvpDominantStructuralMHPlanes.size() == 5)
+    if(mvpHomeDominantStructuralMHPlanes.size() == 5)
         mbDominantResult = true;
 }
 
-std::vector<g2o::plane*> PlaneExtractorManhattan::GetDominantMHPlanes()
+std::vector<g2o::plane*> PlaneExtractorManhattan::GetHomeDominantStructuralMHPlanes()
 {
-    return mvpDominantStructuralMHPlanes;
+    return mvpHomeDominantStructuralMHPlanes;
 }
 
 
 PlaneExtractorManhattan::PlaneExtractorManhattan():mbResult(false),mbDominantResult(false),mpGroundplane(NULL)
 {}
 
-void PlaneExtractorManhattan::UpdateMHPlanes(g2o::SE3Quat &Twc)
+PlaneExtractorManhattan::PlaneExtractorManhattan(PlaneExtractorParam& param, g2o::plane* gplane):mbResult(false),mbDominantResult(false),mpGroundplane(NULL)
 {
+    SetParam(param);
+    SetGroundPlane(gplane);
+}
+
+// zhjd: 从当前帧提取出的结构性曼哈顿平面中筛选出“主导曼哈顿平面”（Dominant Manhattan Planes）并进行全局更新。
+// 在不重复已有平面的前提下，筛选出新的、方向独立且不重叠的主导平面，维护一个最多5个的主导曼哈顿平面集合。
+void PlaneExtractorManhattan::UpdateHomeDominantStructuralMHPlanes(g2o::SE3Quat &Twc)
+{
+    // 若mbDominantResult为 false，说明尚未更新主导曼哈顿平面，继续处理。
     if(!mbDominantResult)
     {
-        // 一一判断 mvpPotentialStructuralMHPlanes 是否为新的曼哈顿帧, 条件:
+        // 一一判断 mvpPotentialStructuralMHPlanes_nouse 是否为新的曼哈顿帧, 条件:
         // 0). 平面之大小: 已经过滤完毕.
         // 1). 不能与已有的距离太近 ( 2m )
         // 2). 与已有平面法向量相同的, 不能超过2个 
-
-        for( auto& vP:mvpPotentialStructuralMHPlanes)
+        for( auto& vP:mvpPotentialStructuralMHPlanes_nouse)
         {
-            if( mvpDominantStructuralMHPlanes.size() >= 5) break; // 已经满了
+            // 最多只保留5个主导曼哈顿平面，超过则不再添加。   
+            if( mvpHomeDominantStructuralMHPlanes.size() >= 5) break; // 已经满了
+
 
             // 对每个检查所有已确定 MH Plane
             int state = 0;
             int parallel_count = 0;
             int vertical_count = 0;
 
+            // 将当前结构平面转换到世界坐标系
             g2o::plane* pPlanesGlobal = new g2o::plane(*vP); pPlanesGlobal->transform(Twc);
             Vector4d param_plane = pPlanesGlobal->param; 
             Eigen::Vector3d norm_plane = param_plane.head(3);
 
-            std::vector<g2o::plane*> MHPlanes = mvpDominantStructuralMHPlanes;
+            // 遍历已有主导平面（加上地面）,对每个已有平面判断角度关系, 判断角度关系 + 距离关系
+            std::vector<g2o::plane*> MHPlanes = mvpHomeDominantStructuralMHPlanes;
             MHPlanes.push_back(mpGroundplane);   // 加入地平面
             for( auto& vMHP : MHPlanes ) // 注意可能添加新的 mvpD 进去! 无所谓，是新的循环了
             {
@@ -176,7 +200,7 @@ void PlaneExtractorManhattan::UpdateMHPlanes(g2o::SE3Quat &Twc)
                     if( distance < 3.0) // TODO: 输出调试这个值.
                     {
                         state = 1;      // 1) 发现距离太近平面
-                        std::cout << "distance : " << distance << std::endl;
+                        std::cout << "[debug] UpdateHomeDominantStructuralMHPlanes.distance : " << distance << std::endl;
                     }
                 }
                 else if (std::abs(angle-M_PI/2) < angle_tolerance )
@@ -215,19 +239,30 @@ void PlaneExtractorManhattan::UpdateMHPlanes(g2o::SE3Quat &Twc)
                 AddNewDominantMHPlane(pPlanesGlobal);
                 mbResult = true;    // 添加了新的，本次成功.
 
+                std::cout<< "[debug] 房间 Dominant Manhattan Planes添加成功, 已有平面数量: " << mvpHomeDominantStructuralMHPlanes.size() << std::endl;
             }
-            else 
-                std::cout << " [Manhattan] MH Plane Fails. State: " << state << std::endl;
+            else {
+                switch (state) {
+                    case 1:
+                        std::cout << "[debug] 房间 Dominant Manhattan Planes添加失败, 距离已有平面太近（<3米）" << std::endl;
+                        break;
+                    case 2:
+                        std::cout << "[debug] 房间 Dominant Manhattan Planes添加失败, 该方向已有两个平行平面" << std::endl;
+                        break;
+                    case 3:
+                        std::cout << "[debug] 房间 Dominant Manhattan Planes添加失败, 与已有平面既不平行也不垂直" << std::endl;
+                        break;
+                    default:
+                        std::cout << "[debug] 房间 Dominant Manhattan Planes添加失败, 未知原因" << state << std::endl;
+                        break;
+                }
+            }
 
         }
 
     }
 }
 
-std::vector<g2o::plane*> PlaneExtractorManhattan::GetPotentialStructuralMHPlanes()
-{
-    return mvpPotentialStructuralMHPlanes;
-}
 
 std::vector<g2o::plane*> PlaneExtractorManhattan::GetPotentialMHPlanes()
 {

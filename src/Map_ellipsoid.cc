@@ -25,6 +25,29 @@
 namespace ORB_SLAM2
 {
 
+bool Map::AddPointCloudList(const string &name, std::vector<pcl::PointCloud<pcl::PointXYZRGB>> &vCloudPCL, g2o::SE3Quat &Twc, int type) {
+    if (type == REPLACE_POINT_CLOUD) {
+        DeletePointCloudList(name, COMPLETE_MATCHING);
+    }
+    srand(time(0));
+    for (auto &cloud : vCloudPCL) {
+        ORB_SLAM2::PointCloud cloudQuadri = pclToQuadricPointCloud(cloud);
+        ORB_SLAM2::PointCloud *pCloudGlobal = new ORB_SLAM2::PointCloud(cloudQuadri);
+        transformPointCloudSelf(pCloudGlobal, &Twc);
+
+        int r = rand() % 155;
+        int g = rand() % 155;
+        int b = rand() % 155;
+        SetPointCloudProperty(pCloudGlobal, r, g, b, 4);
+        bool result = AddPointCloudList(name, pCloudGlobal, ADD_POINT_CLOUD);
+        if (!result) {
+            delete pCloudGlobal;
+            pCloudGlobal = NULL;
+        }
+    }
+    return true;
+}
+
 bool Map::AddPointCloudList(const string& name, PointCloud* pCloud, int type){  //默认是 REPLACE_POINT_CLOUD（0）
     unique_lock<mutex> lock(mMutexMap);
     if(pCloud == NULL)
@@ -43,12 +66,12 @@ bool Map::AddPointCloudList(const string& name, PointCloud* pCloud, int type){  
             return false;
         }
 
-        if( type == 0){
+        if( type == REPLACE_POINT_CLOUD){
             // replace it.
             pCloudInMap->clear(); // release it
             mmPointCloudLists[name] = pCloud;
         }
-        else if( type == 1 )
+        else if( type == ADD_POINT_CLOUD )
         {
             // add together
             for( auto &p : *pCloud )
@@ -70,7 +93,7 @@ bool Map::AddPointCloudList(const string& name, PointCloud* pCloud, int type){  
 
 // 删除点云
 bool Map::DeletePointCloudList(const string& name, int type){
-    std::cout << "[debug] Map address: " << this << std::endl;  // 检查this是否合法
+    // std::cout << "[debug] Map address: " << this << std::endl;  // 检查this是否合法
     
     unique_lock<mutex> lock(mMutexMap);
 

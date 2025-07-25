@@ -267,6 +267,7 @@ private:
     std::vector<g2o::ellipsoid*> mpGlobalEllipsolds; // global 3d ellipsoid
 public :
     void AddEllipsoldsGlobal(g2o::ellipsoid* e);
+    void ReplaceEllipsoldsGlobal(int obj_id, g2o::ellipsoid* e_global);
     std::vector<g2o::ellipsoid*> GetEllipsoldsGlobal();
 };
 

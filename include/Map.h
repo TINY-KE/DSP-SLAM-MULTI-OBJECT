@@ -49,7 +49,11 @@ enum ADD_POINT_CLOUD_TYPE
     REPLACE_POINT_CLOUD = 0,
     ADD_POINT_CLOUD = 1
 };
-
+enum DELETE_POINT_CLOUD_TYPE
+{
+    COMPLETE_MATCHING = 0,
+    PARTIAL_MATCHING = 1
+};
 class Map
 {
 public:
@@ -108,6 +112,7 @@ protected:
 
 // ellipsoid-version
 public:
+    bool AddPointCloudList(const string& name, std::vector<pcl::PointCloud<pcl::PointXYZRGB>>& vCloudPCL, g2o::SE3Quat& Twc, int type = REPLACE_POINT_CLOUD);
     bool AddPointCloudList(const string& name, PointCloud* pCloud, int type = REPLACE_POINT_CLOUD);   // type 0: replace when exist,  type 1: add when exist
     bool DeletePointCloudList(const string& name, int type = 0);    // [废弃方案] type 0: complete matching, 1: partial matching
     bool ClearPointCloudLists();

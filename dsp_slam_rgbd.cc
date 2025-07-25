@@ -194,7 +194,7 @@ int main(int argc, char **argv)
 
         if(frame_by_frame) {
             std::cout << "*****************************" << std::endl;
-            std::cout << "Press [ENTER] to continue ... , [y] to autonomous mode" << std::endl;
+            std::cout << "Press [ENTER] to continue ... , [y] to autonomous mode, [e] to quit." << std::endl;
             std::cout << "*****************************" << std::endl;
             char key = getchar();
             if (key=='y')
@@ -230,8 +230,8 @@ int main(int argc, char **argv)
     char key;
     key = getchar();
 
-    while(key!='y' && key!='Y'){
-        cout << "Press y to quit." << endl;
+    while(key!='e' && key!='E'){
+        cout << "Press e to quit." << endl;
         key = getchar();
     }
 

@@ -242,11 +242,11 @@ void Viewer::Run()
             pangolin::FinishFrame();
         }
 
-        // cv::Mat im = GetRGBFrame();
+        cv::Mat im = GetRGBFrame();
         // // double scale = float(w) / im.size().width;
         // // cv::Mat scaled_im;
         // // cv::resize(im, scaled_im, cv::Size(0, 0), scale, scale);
-        // cv::imshow("DSP-SLAM: Current Frame", im);
+        cv::imshow("DSP-SLAM: Current Frame", im);
         cv::waitKey(mT);
 
         if(menuReset)

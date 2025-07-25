@@ -49,6 +49,7 @@
 #include <src/plane/PlaneExtractorManhattan.h>
 #include <src/config/Config.h>
 #include <src/dense_builder/builder.h>
+#include <src/Relationship/Relationship.h>
 
 // #include <src/plane/PlaneExtractor.h>
 
@@ -294,12 +295,14 @@ public:
     // 用于生成椭球体模型
 private:
     EllipsoidExtractor* mpEllipsoidExtractor;  //椭球体提取器
+    RelationExtractor* mpRelationExtractor;   //空间关系提取器
+    PlaneExtractorManhattan* pPlaneExtractorManhattan; // Manhattan平面（目前只有水平面，例如地面、桌面）提取器
     void UpdateObjectEllipsoidObservation(ORB_SLAM2::Frame *pFrame, KeyFrame* pKF, bool withAssociation);
+    void ExtractManhattanPlanes(ORB_SLAM2::Frame *pFrame);
     void UpdateDepthEllipsoidEstimation(ORB_SLAM2::Frame* pFrame, KeyFrame* pKF, bool withAssociation);
     void TaskRelationship(ORB_SLAM2::Frame* pFrame);
-    void RefineObjectsWithRelations(ORB_SLAM2::Frame *pFrame);
+    void RefineObjectsWithRelations(ORB_SLAM2::Frame *pFrame, KeyFrame* pKF);
     // bool calibrateMeasurement(Eigen::Vector4d &measure , int rows, int cols, int config_boarder = 10, int config_size = 100); 
-    PlaneExtractorManhattan* pPlaneExtractorManhattan;
     
     camera_intrinsic mCamera; // 相机内参
     

@@ -25,6 +25,13 @@ void KeyFrame::AddEllipsoldsGlobal(g2o::ellipsoid* e)
     mpGlobalEllipsolds.push_back(e);
 }
 
+void KeyFrame::ReplaceEllipsoldsGlobal(int obj_id, g2o::ellipsoid* e_global)
+{
+    unique_lock<mutex> lock(mMutexObjects);
+    mpGlobalEllipsolds[obj_id] = e_global;
+
+}
+
 std::vector<g2o::ellipsoid*> KeyFrame::GetEllipsoldsGlobal()
 {
     unique_lock<mutex> lock(mMutexObjects);

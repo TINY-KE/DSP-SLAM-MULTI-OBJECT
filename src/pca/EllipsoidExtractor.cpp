@@ -175,17 +175,16 @@ pcl::PointCloud<PointType>::Ptr EllipsoidExtractor::ExtractPointCloud(cv::Mat& d
     clock_t time_2_getPointsDownsampleTransToWorld = clock();
 
     PointCloud* pPoints_planeFiltered;
-    mbOpenMHPlanesFilter = false;  //zhjd: 暂时使用地面进行过滤，之后可以改为使用曼哈顿平面
-    if(!mbOpenMHPlanesFilter){
-        std::cout << "使用支撑平面进行滤波" << std::endl;
+
+    if(!mbOpenMHPlanesFilter){   //如果当前帧中提取曼哈顿平面成功，则开启
+        std::cout << "[debug] 物体物体点云过滤，仅使用地平面进行滤波，" << std::endl;
         pPoints_planeFiltered = ApplySupportingPlaneFilter(pPoints_global);
     }
     else 
     {
-        std::cout << "使用曼哈顿平面进行滤波," ;
-        std::vector<g2o::plane*> vMHPlanes = mvpMHPlanes;
-        vMHPlanes.push_back(mpPlane);
-        std::cout << "vMHPlanes.size() = " << vMHPlanes.size() << std::endl;
+        std::cout << "[debug] 物体物体点云过滤，使用曼哈顿支撑平面进行滤波，" ;
+        std::vector<g2o::plane*> vMHPlanes = mvpHomeDominantMHPlanes;
+        vMHPlanes.push_back(mpDefaultSupportingPlane);
         pPoints_planeFiltered = ApplyMHPlanesFilter(pPoints_global, vMHPlanes);
     }
     clock_t time_3_SupportingPlaneFilter = clock();
@@ -301,7 +300,7 @@ void EllipsoidExtractor::ApplyGravityPrior(PCAResult &data)
 {
     assert( mbSetPlane && "Please set the supporting plane first.");
     
-    Eigen::Matrix3d matRot = calibRotMatAccordingToGroundPlane( data.rotMat, mpPlane->param.head(3));
+    Eigen::Matrix3d matRot = calibRotMatAccordingToGroundPlane( data.rotMat, mpDefaultSupportingPlane->param.head(3));
     data.rotMat = matRot;
     return;
 }
@@ -318,7 +317,7 @@ void EllipsoidExtractor::AlignZAxisToGravity(PCAResult &data){
 
     Vector3d z_axis;
     if( mbSetPlane )
-        z_axis = mpPlane->param.head(3).normalized();
+        z_axis = mpDefaultSupportingPlane->param.head(3).normalized();
     else
         z_axis = Vector3d(0,0,1);
 
@@ -680,7 +679,7 @@ ORB_SLAM2::PointCloud* EllipsoidExtractor::ApplySupportingPlaneFilter(ORB_SLAM2:
     int num = pCloud->size();
 
     double config_dis_thresh = Config::Get<double>("EllipsoidExtractor.SupportingPlaneFilter.DisThresh");
-    // if(mbLocalSupportingPlane)
+    // if(mbLocalSupportingPlane_nouse)
     //     config_dis_thresh = 0.01;
     // else 
     //     config_dis_thresh = 0.03;
@@ -691,7 +690,7 @@ ORB_SLAM2::PointCloud* EllipsoidExtractor::ApplySupportingPlaneFilter(ORB_SLAM2:
     int i=0;
     for(auto p: (*pCloud))
     {
-        double dis = mpPlane->distanceToPoint(Vector3d(p.x,p.y,p.z),true); // ture means keeping the flag. The PlaneExtractor has made sure the positive value means the point is above the plane.
+        double dis = mpDefaultSupportingPlane->distanceToPoint(Vector3d(p.x,p.y,p.z),true); // ture means keeping the flag. The PlaneExtractor has made sure the positive value means the point is above the plane.
 
         bool ok = dis > config_dis_thresh;
         
@@ -877,18 +876,10 @@ double EllipsoidExtractor::getDistanceFromPointToCloud(Vector3d& point, pcl::Poi
     return mini_dis;
 }
 
-void EllipsoidExtractor::SetSupportingPlane(g2o::plane* pPlane, bool local){
-    std::cout<<"[debug] tracking.cc: SetGroundPlaneMannually 2-1:"<<pPlane->param.transpose() <<std::endl;
-    
-    pPlane;
-    std::cout<<"[debug] tracking.cc: SetGroundPlaneMannually 2-2"<<std::endl;
-    
-    mpPlane = pPlane;
-    std::cout<<"[debug] tracking.cc: SetGroundPlaneMannually 2-3"<<std::endl;
+void EllipsoidExtractor::SetSupportingPlane(g2o::plane* pPlane, bool local){ 
+    mpDefaultSupportingPlane = pPlane;
     mbSetPlane = true;
-
-    mbLocalSupportingPlane = local;
-    std::cout<<"[debug] tracking.cc: SetGroundPlaneMannually 2-4"<<std::endl;
+    mbLocalSupportingPlane_nouse = local;  
 }
 
 void EllipsoidExtractor::AdjustChirality(PCAResult &data){
@@ -930,8 +921,6 @@ void EllipsoidExtractor::OpenVisualization(Map* pMap)
 
 void EllipsoidExtractor::ClearPointCloudList()
 {
-    std::cout << "[debug] Map address 2: " << mpMap << std::endl;  // 检查this是否合法
-
     if( mbOpenVisualizeDepthPoints )
     {
         mpMap->DeletePointCloudList("EllipsoidExtractor", 1);  // partial martching   

@@ -30,7 +30,7 @@ namespace ORB_SLAM2
         else
             row_start = 0;
 
-        std::cout << "Processing plane extraction, row range : " << row_start << " - " << imDepth.rows << ", Jump: " << jump << std::endl;
+        std::cout << "Processing plane extraction, row range : " << row_start << " - " << imDepth.rows << ", Jump: " << jump << ", --- ";
         // std::cout << "[Config] Row range : " << row_start << " - " << imDepth.rows << std::endl;
         // std::cout << "[Config] Jump : " << jump << std::endl;
         PointCloudPCL::Ptr inputCloud( new PointCloudPCL() );
@@ -69,9 +69,9 @@ namespace ORB_SLAM2
         double AngTh = Config::ReadValue<double>("Plane.AngleThreshold");
         double DisTh = Config::ReadValue<double>("Plane.DistanceThreshold");
 
-        std::cout << "[Extractor.cpp] min_plane : " << min_plane << std::endl;
-        std::cout << "[Extractor.cpp] AngTh : " << AngTh << std::endl;
-        std::cout << "[Extractor.cpp] DisTh : " << DisTh << std::endl;
+        std::cout << "min_plane : " << min_plane;
+        std::cout << ", AngTh : " << AngTh;
+        std::cout << ", DisTh : " << DisTh << std::endl;
 
         vector<pcl::ModelCoefficients> coefficients;
         vector<pcl::PointIndices> inliers;
@@ -112,6 +112,11 @@ namespace ORB_SLAM2
 
     void PlaneExtractor::SetParam(PlaneExtractorParam& param){
         mParam = param;
+        std::cout<<"[debug] 设置平面提取器的相机参数, cx:" << mParam.cx << ", cy:" 
+                 << mParam.cy << ", fx:" 
+                 << mParam.fx << ", fy:" 
+                 << mParam.fy << ", scale:" 
+                 << mParam.scale << std::endl;
     }
 
 

@@ -36,6 +36,7 @@
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 #include "ellipsoid-version/Ellipsoid.h"
+#include <src/Relationship/Relationship.h>
 
 
 namespace ORB_SLAM2
@@ -45,6 +46,9 @@ namespace ORB_SLAM2
 
 class MapPoint;
 class KeyFrame;
+
+// ellipsoid-version
+typedef std::vector<Relation> Relations;
 
 class Frame
 {
@@ -231,6 +235,10 @@ public:
 
     g2o::SE3Quat cam_pose_Tcw;	     // optimized pose  world to cam
     g2o::SE3Quat cam_pose_Twc;	     // optimized pose  cam to world
+
+    // 椭球体与空间平面之间的关系  Store relations
+    bool mbSetRelation;
+    Relations relations;
 };
 
 }// namespace ORB_SLAM

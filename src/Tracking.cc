@@ -163,14 +163,13 @@ Tracking::Tracking(System *pSys, ORBVocabulary* pVoc, FrameDrawer *pFrameDrawer,
     // 设置地面为默认值，包括tracker、map、EllipsoidExtractor
     SetGroundPlaneMannually( Eigen::Vector4d(0,0,1,0));
     std::cout<<"[debug] tracking.cc: SetGroundPlaneMannually: "<<mGroundPlane.param.transpose()<<std::endl;
-    std::cout << "[debug] Map address -1: " << mpMap << std::endl;  // 检查this是否合法
     mpMap->addPlane(&mGroundPlane);
-    std::cout<<"[debug] tracking.cc: SetGroundPlaneMannually 2: "<<mGroundPlane.param.transpose()<<std::endl;
+    // std::cout<<"[debug] tracking.cc: SetGroundPlaneMannually 2: "<<mGroundPlane.param.transpose()<<std::endl;
 
     // 椭球体提取器初始化
     mpEllipsoidExtractor = new EllipsoidExtractor(mpMap);
     mpEllipsoidExtractor->SetSupportingPlane(&mGroundPlane, false);
-    std::cout<<"[debug] tracking.cc: SetGroundPlaneMannually 3: "<<mGroundPlane.param.transpose()<<std::endl;
+    // std::cout<<"[debug] tracking.cc: SetGroundPlaneMannually 3: "<<mGroundPlane.param.transpose()<<std::endl;
 
     mRows = fSettings["Camera.height"];
     mCols = fSettings["Camera.width"];
@@ -186,6 +185,17 @@ Tracking::Tracking(System *pSys, ORBVocabulary* pVoc, FrameDrawer *pFrameDrawer,
     // add_depth_pcd_to_map_object = Config::Get<int>("Tracking.AddDepthPcdToMapObject");
     mf_associate_IoU_thresold = Config::Get<double>("Tracking.AssociateIoUThresold");
     mb_associate_debug = Config::Get<int>("Tracking.AssociateDebug");
+
+    // 曼哈顿平面
+    PlaneExtractorParam param;
+    param.fx = mK.at<float>(0,0);
+    param.fy = mK.at<float>(1,1);
+    param.cx = mK.at<float>(0,2);
+    param.cy = mK.at<float>(1,2);
+    param.scale = Config::Get<double>("DepthMapFactor");
+    // pPlaneExtractor = new PlaneExtractor;
+    // pPlaneExtractor->SetParam(param);
+    pPlaneExtractorManhattan = new PlaneExtractorManhattan(param, &mGroundPlane);
 
     // 深度点云可视化
     mCalib << fx,  0, cx,
@@ -275,8 +285,6 @@ cv::Mat Tracking::GrabImageRGBD(const cv::Mat &imRGB,const cv::Mat &imD, const d
 
     if((fabs(mDepthMapFactor-1.0f)>1e-5) || imDepth.type()!=CV_32F)
         imDepth.convertTo(imDepth,CV_32F,mDepthMapFactor);
-
-    std::cout<<"[debug] Tracking.cc: GrabImageRGBD: imDepth.type() = " << imDepth.type() <<", mDepthMapFactor:"<<mDepthMapFactor<< std::endl;
 
     // mpMapPublisher->publishDepthAsPointCloud_debug(imD, mCamera.fx, mCamera.fy, mCamera.cx, mCamera.cy, mCamera.scale);
 

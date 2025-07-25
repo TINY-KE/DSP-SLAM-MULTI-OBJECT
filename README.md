@@ -79,17 +79,45 @@ pybind11::handle::dec_ref() is being called while the GIL is either not held or 
     + 设置过滤倍数
     + 图片和local点如何同时显示
     + 画出地面
-    
+
 + 椭球体的融合
     + 显示每一帧的椭球体观测平面
+    + 多针融合
+    + 提取曼哈顿平面
     + 
+
++ 利用椭球体设置物体位姿
+    + else if(mnComputeCuboidType==3) 没起作用
+    + pMap->addPlane(pPlane, visual_group); 曼哈顿平面的分组没修改
+    + 读取以下lj程序的mh平面的数量
+    [debug] Tracking::RefineObjectsWithRelations 1, 共有 1 个支撑关系
+    + *pcd_ptr = *pCloudPCL;  !!!!  这是什么问题？？？？
+    + 要不要把点云添加到观测中
+        // if (pcd_ptr_of_frame!=NULL) {
+                //     std::cout << "  - !!! det->setPcdPtr(pcd_ptr_of_frame);" << std::endl;
+                //     det->setPcdPtr(pcd_ptr_of_frame);
+                // }
+
++ 如何使用曼哈顿平面
+    + mbOpenMHPlanesFilter = false;  //zhjd: 暂时使用地面进行过滤，之后可以改为使用曼哈顿平面
+    + 前一，TaskManhattanPlanes(ORB_SLAM2::Frame *pFrame)
+    + 添加 SetManhattanPlanes(, 开启mbOpenMHPlanesFilter， 激活ApplyMHPlanesFilter
+    + lj没开启Plane.ManhattanPlane.Open
+
++   mvpPotentialMHPlanes与
+    mvpDominantStructuralMHPlanes的区别：
+    mvpPotentialStructuralMHPlanes
+
++ 测试新程序有没有问题
+    + 看看曼哈顿平面作为支撑平面，是否运行成功
++ 
 
 + 可视化当前帧中的椭球体  答：在pangolin中实现
 + 多帧联合优化
 
 + 添加回来 VisualizeRelations和
 
-
++ mpEllipsoidExtractor->OpenSymmetry(); 对成型用到了吗
 
 # 第五阶段  实现椭球体的二维椭圆投影和隐式形状的二维掩码投影
 

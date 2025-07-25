@@ -116,12 +116,18 @@ EllipsoidExtraction.ClusterTolerance: 0.1
 EllipsoidExtraction.MinClusterSize: 5
 EllipsoidExtraction.CenterDis: 0.5
 
+EllipsoidExtraction.ManhattanPlanesFilter.Open: 0
 EllipsoidExtractor.Rotation.NormalVoter.KSearchNum: 35
 EllipsoidExtractor.MinNeighborsInRadius: 40
 EllipsoidExtractor.StatisticalOutlierRemoval.MeanK: 50
 EllipsoidExtractor.SupportingPlaneFilter.DisThresh: 0.03
 
 EllipsoidExtractor_DEPTH_RANGE: 7
+
+# 地平面提取参数： Ground Plane Extraction
+Plane.MinSize: 1000
+Plane.AngleThreshold: 3.0
+Plane.DistanceThreshold: 0.05
 
 # Bounding box filter
 Measurement.Border.Pixels: 10
