@@ -122,7 +122,7 @@ int main(int argc, char **argv)
     bool frame_by_frame = true;
     if(frame_by_frame) {
         std::cout << "*****************************" << std::endl;
-        std::cout << "input image: Press [ENTER] to continue ... , [y] to autonomous mode" << std::endl;
+        std::cout << "input image: Press [ENTER] to continue ... , [y] to autonomous mode, [e] to quit" << std::endl;
         std::cout << "*****************************" << std::endl;
         char key = getchar();
         if (key=='y')
@@ -249,14 +249,12 @@ int main(int argc, char **argv)
 void LoadImages(const string &strAssociationFilename, vector<string> &vstrImageFilenamesRGB,
                 vector<string> &vstrImageFilenamesD, vector<double> &vTimestamps, bool order_rgb_depth)
 {
-    std::cout<< "System Init 6-3: "<<strAssociationFilename << std::endl;
+    std::cout<< "Load Images From: "<<strAssociationFilename << std::endl;
 
     //输入文件流
     ifstream fAssociation;
     //打开关联文件
     fAssociation.open(strAssociationFilename.c_str());
-
-    std::cout<< "System Init 6-4 "<< std::endl;
 
     //一直读取,知道文件结束
     while(!fAssociation.eof())

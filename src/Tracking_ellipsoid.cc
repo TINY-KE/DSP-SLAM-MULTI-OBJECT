@@ -499,14 +499,18 @@ namespace ORB_SLAM2 {
         // 使用深度图像估计物体椭球体
         UpdateDepthEllipsoidEstimation(pFrame, pKF, withAssociation);
 
-        // // // [3] Extract Relationship
-        // // 构建椭球体与曼哈顿平面之间的关联关系
-        // TaskRelationship(pFrame);
+        int type = Config::Get<int>("Debug.EllipsoidExtraction.OpenRelations");
+        if(type){
+            // // [3] Extract Relationship
+            // 构建椭球体与曼哈顿平面之间的关联关系
+            TaskRelationship(pFrame);
 
-        // // [4] Use Relationship To Refine Ellipsoids
-        // // 注意: Refine时必然在第一步可以初始化出有效的物体.
-        // RefineObjectsWithRelations(pFrame, pKF);
-        // std::cout << "Finish RefineObjectsWithRelations" << std::endl;
+            // [4] Use Relationship To Refine Ellipsoids
+            // 注意: Refine时必然在第一步可以初始化出有效的物体.
+            RefineObjectsWithRelations(pFrame, pKF);
+            std::cout << "Finish RefineObjectsWithRelations" << std::endl;
+        }
+        
 
     }
 
@@ -635,8 +639,9 @@ namespace ORB_SLAM2 {
                 // 同时提取点云，存入pcd_ptr_of_frame中
                 std::cout<< "[Tracking::UpdateDepthEllipsoid Estimation] 利用地面和bbox切面估计椭球体" << std::endl;
                 g2o::ellipsoid e_extractByFitting_newSym;
-                bool type = 2;
+                int type = Config::Get<int>("Debug.EllipsoidExtraction.UsingMultiPlanes");
                 if(type == 1){
+                    std::cout<<"[debug] Tracking::UpdateDepthEllipsoidEstimation, Using Multi Planes" << std::endl;
                     pcl::PointCloud<PointType>::Ptr pcd_ptr_of_frame(new pcl::PointCloud<PointType>);
                     e_extractByFitting_newSym = \
                         mpEllipsoidExtractor->EstimateLocalEllipsoidUsingMultiPlanes(\
@@ -652,9 +657,12 @@ namespace ORB_SLAM2 {
                 }
                 else if(type == 2)
                 {
+                    std::cout<<"[debug] Tracking::UpdateDepthEllipsoidEstimation, Using Supporting Planes" << std::endl;
+                    g2o::plane* pSupPlaneLocal = new g2o::plane(mGroundPlane);
+                    pSupPlaneLocal->transform(pFrame->cam_pose_Twc.inverse());
                     e_extractByFitting_newSym = \
                         mpEllipsoidExtractor->EstimateLocalEllipsoidWithSupportingPlane( \
-                            pFrame->pointcloud_img, measurement, label, measurement_prob, pose, mCamera, &mGroundPlane);
+                            pFrame->pointcloud_img, measurement, label, measurement_prob, pose, mCamera, pSupPlaneLocal);
                     auto det = mvpObjectDetections[i];  det->isValidPcd = true;
                 }
 

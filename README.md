@@ -118,8 +118,20 @@ pybind11::handle::dec_ref() is being called while the GIL is either not held or 
 + 添加回来 VisualizeRelations和
 
 + mpEllipsoidExtractor->OpenSymmetry(); 对成型用到了吗
+    + 似乎这个在lzw中，就被废弃了
 
-+ 给EstimateLocalEllipsoidWithSupportingPlane和主导曼哈顿平面各加开关，控制变量找到问题在哪？
++ EstimateLocalEllipsoidUsingMultiPlanes中，为什么地平面不起到作用
+    + 可视化椭球体平面时，为什么地面没有，是过滤掉了吗？
+    + 【重要】感觉最重要的就是没有把曼哈顿平面用上。
+        + 可视化出supporting平面
+        + 把地面/桌面，加入到mvCPlanes中
+    + 
+
++ 研究明白为什么
+
+
++ 地面（支撑面）似乎没起到作用
+
 
 # 第五阶段  实现椭球体的二维椭圆投影和隐式形状的二维掩码投影
 
