@@ -825,7 +825,8 @@ namespace ORB_SLAM2 {
                         // success_num++;
 
                     // }
-
+                    
+                    
                     // 此处设定 Refine 一定优先.
                     (*pFrame->mpLocalObjects[obj_id]) = e;
 

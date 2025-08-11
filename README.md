@@ -129,7 +129,11 @@ pybind11::handle::dec_ref() is being called while the GIL is either not held or 
 
 + 研究明白为什么
 
-
++ 观察李建的可视化结果中，为什么地面和bbox平面没有起作用？ 有优化吗
+    + 蓝色平面和绿色平面的区别
+    + 
+    + 
+    
 + 地面（支撑面）似乎没起到作用
 
 
