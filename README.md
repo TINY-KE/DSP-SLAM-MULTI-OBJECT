@@ -139,7 +139,8 @@ pybind11::handle::dec_ref() is being called while the GIL is either not held or 
         + pKF->mpGlobalEllipsolds.push_back(pGlobalEllipsoidThisObservation);
     + 存储数据关联：
         + 废弃：在map中构建一个与全局物体vector一样的typedef std::vector<Observation*> Observations;
-        + 已经存储在了：mObservations[pKF]=idx;
+        + obj在pKF 中对应第obj.mObservations[pKF]个观测
+            + 如果mObservations[pKF]为空，则
     + 优化： 将object中的椭球体与Observations相关联，使用OptimizeWithDataAssociationUsingMultiplanes()
     + 用椭球体生成dsp
 

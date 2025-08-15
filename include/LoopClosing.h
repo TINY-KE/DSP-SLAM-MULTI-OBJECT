@@ -40,7 +40,6 @@ class Tracking;
 class LocalMapping;
 class KeyFrameDatabase;
 
-
 class LoopClosing
 {
 public:

@@ -592,6 +592,54 @@ void Optimizer::LocalJointBundleAdjustment_forLocalMapping(KeyFrame *pKF, bool *
             }
         }
     }
+    
+    // ellipsoid-version
+    bool optimize_ellipsoid = false;
+    if(optimize_ellipsoid)
+    for (auto pMO : lLocalMapObjects)
+    {
+        if (!pMO->isDynamic())
+        {
+            g2o::VertexSE3Expmap *vSE3Obj = new g2o::VertexSE3Expmap();
+            vSE3Obj->setEstimate(Converter::toSE3Quat(pMO->SE3Tow));
+            int id = pMO->mnId + maxKFid + maxMPid + 2;
+            vSE3Obj->setId(id);
+            optimizer.addVertex(vSE3Obj);
+
+            const map<KeyFrame*, size_t> observations = pMO->GetObservations();
+
+            for (auto observation : observations)
+            {
+                KeyFrame* pKFi = observation.first;
+                if (msKeyframeIDs.count(pKFi->mnId) == 0)
+                    continue;
+
+                if(!pKFi->isBad())
+                {
+                    auto mvpObjectDetections = pKFi->GetObjectDetections();
+                    // cout << "Object KF ID: " << pKFi->mnId << endl;
+                    EdgeSE3LieAlgebra* e = new EdgeSE3LieAlgebra();
+                    e->setVertex(0, optimizer.vertex(pKFi->mnId));
+                    e->setVertex(1, optimizer.vertex(id));
+                    auto det = mvpObjectDetections[observation.second];
+                    e->setMeasurement(Converter::toSE3Quat(det->SE3Tco));
+                    Eigen::Matrix<double, 6, 6> Info = Eigen::Matrix<double, 6, 6>::Identity();
+                    Info*= invSigmaObject;
+                    e->setInformation(Info);
+
+                    g2o::RobustKernelHuber* rk = new g2o::RobustKernelHuber;
+                    e->setRobustKernel(rk);
+                    rk->setDelta(thHuberObject);
+
+                    optimizer.addEdge(e);
+                    vpEdgesCamObj.push_back(e);
+                    vpEdgeKFCamObj.push_back(pKFi);
+                    vpMapObjectEdgeCamObj.push_back(pMO);
+                }
+            }
+        }
+    }
+    
 
     if(pbStopFlag)
     {
