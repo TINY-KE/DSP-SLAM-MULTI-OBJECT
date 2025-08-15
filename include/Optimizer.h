@@ -45,10 +45,10 @@ public:
                                  const unsigned long nLoopKF=0, const bool bRobust = true);
     void static GlobalBundleAdjustemnt(Map* pMap, int nIterations=5, bool *pbStopFlag=NULL,
                                        const unsigned long nLoopKF=0, const bool bRobust = true);
-    void static GlobalJointBundleAdjustemnt(Map* pMap, int nIterations=5, bool *pbStopFlag=NULL,
+    void static GlobalJointBundleAdjustemnt_forLoopClosing(Map* pMap, int nIterations=5, bool *pbStopFlag=NULL,
                                        const unsigned long nLoopKF=0, const bool bRobust = true);
     void static LocalBundleAdjustment(KeyFrame* pKF, bool *pbStopFlag, Map *pMap);
-    void static LocalJointBundleAdjustment(KeyFrame* pKF, bool *pbStopFlag, Map *pMap);
+    void static LocalJointBundleAdjustment_forLocalMapping(KeyFrame* pKF, bool *pbStopFlag, Map *pMap);
     void static LocalJointBundleAdjustment(KeyFrame* pKF, bool *pbStopFlag, Map *pMap, py::object *pyOptimizer);
     int static PoseOptimization(Frame* pFrame);
 

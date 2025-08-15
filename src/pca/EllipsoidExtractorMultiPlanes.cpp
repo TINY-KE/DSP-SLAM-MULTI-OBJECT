@@ -608,17 +608,21 @@ g2o::SE3Quat GenerateTransformNormalToGravity(double yaw)
 }
 
 std::vector<g2o::ConstrainPlane*> GenerateConstrainPlanesOfBbox(Vector4d& bbox, Matrix3d& calib, int rows, int cols)
-{
+{   
+    // ### ① 生成初始平面参数
     g2o::SE3Quat local_wc = g2o::SE3Quat();
     MatrixXd mPlanesParamLocal_Col = GenerateBboxPlanes(local_wc, bbox, calib);  // attention: store as 列
     MatrixXd mPlanesParamLocal = mPlanesParamLocal_Col.transpose(); 
 
+    // ### ② 将矩阵转成平面对象
     std::vector<g2o::ConstrainPlane*> vCPlanesWithBorderFlags = GenerateConstrainPlanesFromMatrix(mPlanesParamLocal);
 
+    // ### ③ 标记平面类型（bbox类型）
     // 添加flag
     for(auto pCPlane : vCPlanesWithBorderFlags)
         pCPlane->type = 0;  // 0, bbox ; 1, cuboids
 
+    // ### ④ 标记边界平面（是否贴边）
     // 添加边界flag
     std::vector<bool> bboxIsBorderFlags = GetBorderFlags(bbox, rows, cols);
     for( int i=0;i<4;i++)
@@ -627,6 +631,7 @@ std::vector<g2o::ConstrainPlane*> GenerateConstrainPlanesOfBbox(Vector4d& bbox, 
         vCPlanesWithBorderFlags[i]->image_border = bboxIsBorderFlags[i];
     }
 
+    // ### ⑤ 修正平面朝向（法向量必须朝向物体）
     // Update: 2020-12-27 保持切平面法向量指向约束物体
     // 方法: 直接以相机中心判断，必须方向为正
     for(auto ppl : vCPlanesWithBorderFlags){
@@ -778,16 +783,20 @@ g2o::ellipsoid EllipsoidExtractor::EstimateLocalEllipsoidUsingMultiPlanes(cv::Ma
     if(miSystemState > 0 )
         return e;
 
-
+    // ✅ 4. 构建重力坐标系
     // 搭建世界系描述下的物体重力坐标系
     // gravity 系: 位于物体中心, Z轴与重力方向对齐.
     // 转化之后，点云的正方向即z轴, 即世界系重力方向.
     // get supporting plane
     std::cout<< " [debug] EstimateLocalEllipsoidUsingMultiPlanes 2-1" << std::endl;
+    // 获取默认支撑平面（地面）；
     VectorXd sup_plane = mpDefaultSupportingPlane->param;    
+    // 计算物体点云中心；
     Eigen::Vector4d centroid; pcl::compute3DCentroid(*pCloudPCL, centroid);
+    // 构造从世界坐标系到重力坐标系的变换 Twg：
     g2o::SE3Quat Twg = GenerateGravityCoordinate(centroid.head(3), sup_plane.head(3));
 
+    // ✅ 5. 将点云转换到重力坐标系
     // 获得该系下的点云.
     std::cout<< " [debug] EstimateLocalEllipsoidUsingMultiPlanes 2-2, 当前帧中的物体点云中心:"<< centroid << std::endl;
     g2o::SE3Quat SE3Tgw = Twg.inverse();
@@ -800,14 +809,15 @@ g2o::ellipsoid EllipsoidExtractor::EstimateLocalEllipsoidUsingMultiPlanes(cv::Ma
     // // mpMap->AddPointCloudList("cloud_gravity", pObjectCloudGravity, 0);
     // delete pObjectCloudGravity; pObjectCloudGravity = NULL;
 
+    // ✅ 6. 估计物体主方向（Yaw角）
     // 开始计算朝向: 使用法向量投票器    
     // 计算该点云的 normal voters
     std::cout<< " [debug] EstimateLocalEllipsoidUsingMultiPlanes 3" << std::endl;
     double yaw = NormalVoter(pCloudPCLGravity);  // 该函数获得一个位于 XY 平面内的, 三维法向量. 可与 Z轴组完整旋转矩阵.
-
     // 通过yaw角度将 Gravity - > normalized 
     g2o::SE3Quat Tgn = GenerateTransformNormalToGravity(yaw); 
 
+    // ✅ 7. 点云变换到归一化坐标系
     Eigen::Matrix4d transform_ng = Tgn.inverse().to_homogeneous_matrix();
     pcl::PointCloud<PointType>::Ptr pCloudPCLNormalized(new pcl::PointCloud<PointType>);
     pcl::transformPointCloud (*pCloudPCLGravity, *pCloudPCLNormalized, transform_ng);
@@ -816,11 +826,13 @@ g2o::ellipsoid EllipsoidExtractor::EstimateLocalEllipsoidUsingMultiPlanes(cv::Ma
     // 可视化: 物体重力坐标系下，转角对齐后的点云
     // mpMap->AddPointCloudList("cloud_normalized", pObjectCloudNormalized, 0);
 
+    // ✅ 8. 椭球建模（归一化坐标系下）
     // 基于PCA结果生成最小包围盒顶点. 位于相机坐标系内.
     std::cout<< " [debug] EstimateLocalEllipsoidUsingMultiPlanes 4" << std::endl;
     g2o::ellipsoid e_zero_normalized = GetEllipsoidFromNomalizedPointCloud(pObjectCloudNormalized);
     delete pObjectCloudNormalized; pObjectCloudNormalized = NULL;
 
+    // ✅ 9. 椭球体变换回相机坐标系
     // 变换回局部坐标系
     g2o::SE3Quat campose_wc; campose_wc.fromVector(pose);
     g2o::SE3Quat Twn = Twg * Tgn;
@@ -829,6 +841,7 @@ g2o::ellipsoid EllipsoidExtractor::EstimateLocalEllipsoidUsingMultiPlanes(cv::Ma
     
     // -------------- 到此已获得相机坐标系下的椭球体!
 
+    // ✅ 10. 添加bbox约束平面（提升精度）
     // 接下来添加 ConstrainPlanes.
     std::cout<< " [debug] EstimateLocalEllipsoidUsingMultiPlanes 5" << std::endl;
     Matrix3d calib = CameraToCalibMatrix(camera);

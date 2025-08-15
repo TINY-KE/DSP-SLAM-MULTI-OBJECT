@@ -124,7 +124,7 @@ EllipsoidExtractor.SupportingPlaneFilter.DisThresh: 0.03
 
 EllipsoidExtractor_DEPTH_RANGE: 7
 
-Debug.EllipsoidExtraction.UsingMultiPlanes: 1 # 1：使用多平面函数，2：使用支撑平面（输入的平面的local plane）
+Debug.EllipsoidExtraction.UsingMultiPlanes: 2 # 最终发现，两者没区别  # 1：使用多平面函数，2：使用支撑平面（输入的平面的local plane） 
 Debug.EllipsoidExtraction.OpenRelations: 0
 
 

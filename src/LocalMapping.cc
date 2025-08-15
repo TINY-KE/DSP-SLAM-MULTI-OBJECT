@@ -176,12 +176,18 @@ void LocalMapping::Run()
                     // cout << "Entered Local BA Optimization!!!!!!!" << endl;
                     if (mpTracker->mSensor == System::STEREO)
                     {
-                        Optimizer::LocalJointBundleAdjustment(mpCurrentKeyFrame, &mbAbortBA, mpMap);
+                        Optimizer::LocalJointBundleAdjustment_forLocalMapping(mpCurrentKeyFrame, &mbAbortBA, mpMap);
                     }
-                    else
+                    else if (mpTracker->mSensor == System::RGBD)
+                    {
+                        cout << "Local Bundle Adjustment for RGBD" << endl;
+                        Optimizer::LocalJointBundleAdjustment_forLocalMapping(mpCurrentKeyFrame, &mbAbortBA, mpMap);
+                    }
+                    else if (mpTracker->mSensor == System::MONOCULAR)
                     {
                         Optimizer::LocalBundleAdjustment(mpCurrentKeyFrame, &mbAbortBA, mpMap);
                     }
+
                     // cout << "Number of Loacl BA done: " << Optimizer::nBAdone << endl;
                 }
 

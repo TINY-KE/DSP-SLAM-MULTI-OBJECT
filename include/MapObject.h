@@ -180,6 +180,10 @@ public:
     bool hasValidDepthPointCloud();
     pcl::PointCloud<PointType>::Ptr GetDepthPointCloudPCL();
 
+// 用于g2o优化：
+public:
+    std::vector<int> measurementIDs;
+
 };
 
 }

@@ -329,7 +329,8 @@ void Tracking::AssociateObjectsByProjection(ORB_SLAM2::KeyFrame *pKF)
     {
         // cout << "Detection: " << d_i + 1 << endl;
         auto detKF1 = detectionsKF1[d_i];
-
+        // mpMap->AddGlobalObjectDetections(detKF1);
+        
         if(mb_associate_object_with_ellipsold){    
             cout << "Tracking::AssociateObjectsByProjection" << endl;
 

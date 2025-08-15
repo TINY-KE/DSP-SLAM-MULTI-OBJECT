@@ -227,4 +227,21 @@ PointCloud Map::GetPointCloudInList(const string &name) {
         return PointCloud(); // 空
 }
 
+
+// ellipsoid-version
+// void Map::AddGlobalObjectDetections(ObjectDetection* pOD){
+//     unique_lock<mutex> lock(mMutexMap);
+//     // if (pOD == NULL) {
+//     //     std::cout << "NULL ObjectDetection." << std::endl;
+//     //     return;
+//     // }
+//     mvpGlobalObjectDetections.push_back(pOD);
+// }
+
+
+// std::vector<ObjectDetection*> Map::GetGlobalObjectDetections(){
+//     unique_lock<mutex> lock(mMutexMap);
+//     return mvpGlobalObjectDetections;
+// }
+
 } //namespace ORB_SLAM

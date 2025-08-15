@@ -666,6 +666,11 @@ namespace g2o
         NormalizeConstrainPlanes();
     }
 
+    // 用于确保所有平面的法向量指向椭球体中心
+    // 遍历所有约束平面；
+    // 对每个平面 pPlane，判断椭球体中心（pose.translation()）在该平面哪一侧；
+    // 如果椭球中心不在法向量指向的一侧，就反转法向量（即 param = -param）；
+    // 平面方程：n·x + d = 0，反转等价于把法向量 n 指向相反方向。
     void ellipsoid::NormalizeConstrainPlanes()
     {
         int cplane_num = mvCPlanes.size();

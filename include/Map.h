@@ -88,17 +88,24 @@ public:
     int mnDynamicObj;
 
     // Object SLAM
-    std::set<MapObject*> mspMapObjects;   //用于椭球体的数据关联
     void AddMapObject(MapObject* pMO);
     void EraseMapObject(MapObject* pMO);
     MapObject* GetMapObject(int object_id);
     std::vector<MapObject*> GetAllMapObjects();
+
+    // // ellipsoid-version 
+    // void AddGlobalObjectDetections(ObjectDetection* pOD);
+    // std::vector<ObjectDetection*> GetGlobalObjectDetections();
 
 protected:
     std::set<MapPoint*> mspMapPoints;
     std::set<KeyFrame*> mspKeyFrames;
 
     std::vector<MapPoint*> mvpReferenceMapPoints;
+
+    std::set<MapObject*> mspMapObjects;   //用于椭球体的数据关联
+    
+    // std::vector<ObjectDetection*> mvpGlobalObjectDetections; 
 
     long unsigned int mnMaxKFid;
 

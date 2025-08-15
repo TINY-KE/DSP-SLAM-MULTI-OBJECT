@@ -180,7 +180,7 @@ Tracking::Tracking(System *pSys, ORBVocabulary* pVoc, FrameDrawer *pFrameDrawer,
     mCamera.fy = fy;
     mCamera.scale = fSettings["DepthMapFactor"];
 
-    // 椭球体数据关联xxxx
+    // 椭球体数据关联
     mb_associate_object_with_ellipsold = Config::Get<int>("Tracking.AssociateObjectWithEllipsold");
     // add_depth_pcd_to_map_object = Config::Get<int>("Tracking.AddDepthPcdToMapObject");
     mf_associate_IoU_thresold = Config::Get<double>("Tracking.AssociateIoUThresold");
@@ -1203,7 +1203,7 @@ void Tracking::CreateNewKeyFrame()
         UpdateObjectEllipsoidObservation(&mCurrentFrame, pKF, withAssociation);
 
 
-        // 物体的数据关联 todo：改为距离
+        // 物体的数据关联，使用深度点云
         if (!mpMap->GetAllMapObjects().empty())
         {
             // AssociateObjects(pKF);

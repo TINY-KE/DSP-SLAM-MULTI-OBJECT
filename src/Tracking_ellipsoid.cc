@@ -499,6 +499,7 @@ namespace ORB_SLAM2 {
         // 使用深度图像估计物体椭球体
         UpdateDepthEllipsoidEstimation(pFrame, pKF, withAssociation);
 
+        // [3] 使用曼哈顿平面（当前只有地面和桌面）优化椭球体  //重要：其实没有用，因为椭球体生成中地面只是提供重力方向。
         int type = Config::Get<int>("Debug.EllipsoidExtraction.OpenRelations");
         if(type){
             // // [3] Extract Relationship
@@ -510,7 +511,6 @@ namespace ORB_SLAM2 {
             RefineObjectsWithRelations(pFrame, pKF);
             std::cout << "Finish RefineObjectsWithRelations" << std::endl;
         }
-        
 
     }
 
@@ -768,7 +768,7 @@ namespace ORB_SLAM2 {
 
         // std::cout << "EllipObjects: " << vpEllipsoids.size() << std::endl;
         // std::cout << "Relation Planes : " << vpPlanes.size() << std::endl;
-        // std::cout << "Relations : " << rls.size() << std::endl;
+        // std::cout << "Relations : " << rls.size() <Measurement< std::endl;
     }
 
     // *******
@@ -848,6 +848,7 @@ namespace ORB_SLAM2 {
         // 设置该帧的某个观测对应的物体
         pKF->AddMapObject(pMO, d_i);
         pMO->AddObservation(pKF, d_i);
+        // pMO->AddmessutionsId(d_i);   此函数内自动加上原有的size
 
         // 设置物体所包含的观测
         detKF1->isNew = false;

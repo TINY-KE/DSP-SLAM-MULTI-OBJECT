@@ -595,13 +595,16 @@ g2o::ellipsoid EllipsoidExtractor::EstimateLocalEllipsoid(cv::Mat& depth, Eigen:
     return g2o::ellipsoid(); // return an empty ellipsoid if the function is not implemented.
 }
 
+// 这是一个简化版的 PCA 处理函数，用于从点云中估计出椭球体的中心 (center) 和半轴长度 (scale)，但没有进行真正的主成分分析（PCA 方向提取）。
 PCAResult EllipsoidExtractor::ProcessPCANormalized(ORB_SLAM2::PointCloud* pObject)
 {
+    // 1. 初始化变量
     PCAResult data;
     double x,y,z;
     x=0;y=0;z=0;
     int num = pObject->size();
 
+    // 2. 遍历点云，统计最大/最小值
     double max_x = 0, min_x=0;
     double max_y = 0, min_y=0;
     double max_z = 0, min_z=0;
@@ -624,17 +627,17 @@ PCAResult EllipsoidExtractor::ProcessPCANormalized(ORB_SLAM2::PointCloud* pObjec
         if( pz < min_z ) min_z = pz;
     }
 
-    // x /= num;
-    // y /= num;
-    // z /= num;
+    // 3. 计算中心点坐标（包围盒中心）
     double center_x = (max_x+min_x)/2.0;
     double center_y = (max_y+min_y)/2.0;
     double center_z = (max_z+min_z)/2.0;
-
+    
+    // 4. 计算尺寸（各方向半长）
     double scale_x = (max_x-min_x)/2.0;
     double scale_y = (max_y-min_y)/2.0;
     double scale_z = (max_z-min_z)/2.0;
 
+    // 5. 构造输出结构体
     // data.covariance = Vector3d(x,y,z);
     data.center = Vector3d(center_x,center_y,center_z);          // a new center is also needed
     data.rotMat = Matrix3d::Identity();
@@ -984,6 +987,7 @@ void EllipsoidExtractor::OpenSymmetry()
 g2o::ellipsoid EllipsoidExtractor::GetEllipsoidFromNomalizedPointCloud(ORB_SLAM2::PointCloud* pCloud)
 {
     g2o::ellipsoid e_zero_normalized;
+    // 简化版的 PCA 处理函数，用于从点云pCloud中估计出椭球体的中心 (center) 和半轴长度 (scale)，但没有进行真正的主成分分析（PCA 方向提取）。
     PCAResult dataCenterPCA = ProcessPCANormalized(pCloud);     // find the max value along x,y,z axis
     e_zero_normalized = ConstructEllipsoid(dataCenterPCA);
     return e_zero_normalized;

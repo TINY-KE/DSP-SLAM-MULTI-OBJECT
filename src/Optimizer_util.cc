@@ -33,11 +33,12 @@ G2O_REGISTER_TYPE(EDGE_SE3:LIE_ALGEBRA, EdgeSE3LieAlgebra);
 
 int Optimizer::nBAdone = 0;
 
-void Optimizer::GlobalJointBundleAdjustemnt(Map *pMap, int nIterations, bool *pbStopFlag, const unsigned long nLoopKF,
+void Optimizer::GlobalJointBundleAdjustemnt_forLoopClosing(Map *pMap, int nIterations, bool *pbStopFlag, const unsigned long nLoopKF,
                                        const bool bRobust) {
     vector < KeyFrame * > vpKFs = pMap->GetAllKeyFrames();
     vector < MapPoint * > vpMP = pMap->GetAllMapPoints();
     vector < MapObject * > vpMO = pMap->GetAllMapObjects();
+    // vector < ObjectDetection * > vpOD = pMap->GetAllObjectDetections();
     JointBundleAdjustment(vpKFs, vpMP, vpMO, nIterations, pbStopFlag, nLoopKF, bRobust);
 }
 
@@ -173,6 +174,7 @@ void Optimizer::JointBundleAdjustment(const vector<KeyFrame *> &vpKFs, const vec
         }
     }
 
+    //Objects SLAM 优化
     // Set MapObject Vertices
     bool optimize_object = false;
     if(optimize_object)
@@ -282,7 +284,7 @@ void Optimizer::JointBundleAdjustment(const vector<KeyFrame *> &vpKFs, const vec
         }
     }
 
-    // Objects
+    // Objects SLAM 回填
     if(optimize_object)
         for (size_t i = 0; i < vpMO.size(); i++) {
             if (vbNotIncludedMO[i])
@@ -309,7 +311,7 @@ void Optimizer::JointBundleAdjustment(const vector<KeyFrame *> &vpKFs, const vec
         }
 }
 
-void Optimizer::LocalJointBundleAdjustment(KeyFrame *pKF, bool *pbStopFlag, Map *pMap)
+void Optimizer::LocalJointBundleAdjustment_forLocalMapping(KeyFrame *pKF, bool *pbStopFlag, Map *pMap)
 {
     // Local KeyFrames: First Breath Search from Current Keyframe
     list<KeyFrame*> lLocalKeyFrames;
@@ -543,6 +545,7 @@ void Optimizer::LocalJointBundleAdjustment(KeyFrame *pKF, bool *pbStopFlag, Map 
         }
     }
 
+    //Objects SLAM 优化
     // Set map object vertices and edges
     bool optimize_object = false;
     if(optimize_object)
@@ -760,7 +763,7 @@ void Optimizer::LocalJointBundleAdjustment(KeyFrame *pKF, bool *pbStopFlag, Map 
         pMP->UpdateNormalAndDepth();
     }
 
-    //Objects
+    //Objects SLAM 回填
     if(optimize_object)
     for (auto pMO : lLocalMapObjects)
     {

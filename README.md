@@ -121,10 +121,7 @@ pybind11::handle::dec_ref() is being called while the GIL is either not held or 
     + 似乎这个在lzw中，就被废弃了
 
 + EstimateLocalEllipsoidUsingMultiPlanes中，为什么地平面不起到作用
-    + 可视化椭球体平面时，为什么地面没有，是过滤掉了吗？
-    + 【重要】感觉最重要的就是没有把曼哈顿平面用上。
-        + 可视化出supporting平面
-        + 把地面/桌面，加入到mvCPlanes中
+    + 答案：只使用点云生成，并没有用到地平面
     + 
 
 + 研究明白为什么
@@ -134,8 +131,17 @@ pybind11::handle::dec_ref() is being called while the GIL is either not held or 
     + 
     + 
     
-+ 地面（支撑面）似乎没起到作用
-
++ 既然dsp本身就有物体与相机之间的优化，那么只需要做好两件事
+    + 数据关联：数据关联用李建的椭球体projection
+        + lj是如何将最后一个椭球体放入到到object中的
+        + 使用SetPoseByEllipsold ————- pMO->SetPoseByEllipsold(mvpGlobalEllipsolds[det_i]);
+        + mpGlobalEllipsolds是怎么存入的
+        + pKF->mpGlobalEllipsolds.push_back(pGlobalEllipsoidThisObservation);
+    + 存储数据关联：
+        + 废弃：在map中构建一个与全局物体vector一样的typedef std::vector<Observation*> Observations;
+        + 已经存储在了：mObservations[pKF]=idx;
+    + 优化： 将object中的椭球体与Observations相关联，使用OptimizeWithDataAssociationUsingMultiplanes()
+    + 用椭球体生成dsp
 
 # 第五阶段  实现椭球体的二维椭圆投影和隐式形状的二维掩码投影
 
