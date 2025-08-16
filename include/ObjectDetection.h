@@ -74,6 +74,8 @@ public:
     pcl::PointCloud<PointType>::Ptr pcd_ptr;
     void setPcdPtr(pcl::PointCloud<PointType>::Ptr& pcd_ptr_);  //往单帧观测中添加深度点云
 
+    // 单帧椭球体提取结果
+    g2o::ellipsoid* pLocalEllipsoidOneFrame = NULL;  // 单帧椭球体提取结果
 };
 }
 

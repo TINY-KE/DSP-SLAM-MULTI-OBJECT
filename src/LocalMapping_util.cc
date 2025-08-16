@@ -460,7 +460,7 @@ void LocalMapping::ProcessDetectedObjects_byPythonReconstruct()
             pMO->vertices = pyMesh.attr("vertices").cast<Eigen::MatrixXf>();
             pMO->faces = pyMesh.attr("faces").cast<Eigen::MatrixXi>();
             pMO->reconstructed = true;
-            pMO->AddObservation(mpCurrentKeyFrame, det_i);
+            pMO->AddObjectObservation(mpCurrentKeyFrame, det_i);
             mpCurrentKeyFrame->AddMapObject(pMO, det_i);
             mpObjectDrawer->AddObject(pMO);
             mlpRecentAddedMapObjects.push_back(pMO);
@@ -821,7 +821,7 @@ void LocalMapping::Process_Multi_DetectedObjects_byPythonReconstruct()
             pMO->vertices = pyMesh.attr("vertices").cast<Eigen::MatrixXf>();
             pMO->faces = pyMesh.attr("faces").cast<Eigen::MatrixXi>();
             pMO->reconstructed = true;
-            pMO->AddObservation(mpCurrentKeyFrame, det_i);
+            pMO->AddObjectObservation(mpCurrentKeyFrame, det_i);
             mpCurrentKeyFrame->AddMapObject(pMO, det_i);
             mpObjectDrawer->AddObject(pMO);
             mlpRecentAddedMapObjects.push_back(pMO);

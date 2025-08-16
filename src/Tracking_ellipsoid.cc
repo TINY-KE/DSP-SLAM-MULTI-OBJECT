@@ -724,12 +724,21 @@ namespace ORB_SLAM2 {
 
                     g2o::ellipsoid *pE_extractByFittingGlobal = new g2o::ellipsoid(*(pObjByFitting));
                     pGlobalEllipsoidThisObservation = pE_extractByFittingGlobal;
+
                 }
 
             }
 
             // 若不成功保持为NULL
+            // 将椭球体观测结果存入Frame
+            std::cout<< "[Tracking::UpdateDepthEllipsoid Estimation] 当前帧椭球体提取结果中的切面数量 1: " << std::endl;
             pFrame->mpLocalObjects.push_back(pLocalEllipsoidThisObservation);
+            std::cout<< "[Tracking::UpdateDepthEllipsoid Estimation] 当前帧椭球体提取结果中的切面数量 2: " << std::endl;
+            // 将椭球体观测结果存入KeyFrame
+            mvpObjectDetections[i]->pLocalEllipsoidOneFrame = pLocalEllipsoidThisObservation;  // 用于椭球体联合优化
+            std::cout<< "[Tracking::UpdateDepthEllipsoid Estimation] 当前帧椭球体提取结果中的切面数量 2-2: " << std::endl;
+            if(mvpObjectDetections[i]->pLocalEllipsoidOneFrame != NULL)
+                std::cout<< "[Tracking::UpdateDepthEllipsoid Estimation] 当前帧椭球体提取结果中的切面数量 3: " << mvpObjectDetections[i]->pLocalEllipsoidOneFrame->mvCPlanes.size() << std::endl;
             // ellipsoid-verison
             pKF->AddEllipsoldsGlobal(pGlobalEllipsoidThisObservation);
 
@@ -847,7 +856,7 @@ namespace ORB_SLAM2 {
     {
         // 设置该帧的某个观测对应的物体
         pKF->AddMapObject(pMO, d_i);
-        pMO->AddObservation(pKF, d_i);
+        pMO->AddObjectObservation(pKF, d_i);
         // pMO->AddmessutionsId(d_i);   此函数内自动加上原有的size
 
         // 设置物体所包含的观测

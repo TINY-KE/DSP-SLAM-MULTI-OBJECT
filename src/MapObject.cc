@@ -75,9 +75,15 @@ MapObject::MapObject(KeyFrame *pRefKF, Map *pMap, int class_id) :
     mbValidDepthPointCloudFlag = false;
 }
 
-void MapObject::AddObservation(KeyFrame *pKF, int idx)
+void MapObject::AddObjectObservation(KeyFrame *pKF, int idx)
 {
     unique_lock<mutex> lock(mMutexObject);
+
+    if(pKF->GetObjectDetections()[idx] == NULL){
+        std::cerr << "[debug] 没有提取出椭球体，无法用于合法物体观测" << std::endl;
+        std::exit(EXIT_FAILURE);  // 退出程序，返回非 0 状态（失败）
+    }
+
     if(!mObservations.count(pKF))
         nObs++;
     mObservations[pKF]=idx;
@@ -185,7 +191,7 @@ void MapObject::Replace(MapObject *pMO)
         if(!pMO->IsInKeyFrame(pKF))
         {
             pKF->ReplaceMapObjectMatch(mit->second, pMO);
-            pMO->AddObservation(pKF, mit->second);
+            pMO->AddObjectObservation(pKF, mit->second);
         }
         else
         {

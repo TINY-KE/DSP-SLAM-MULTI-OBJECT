@@ -25,6 +25,10 @@
 # include "Thirdparty/g2o/g2o/core/factory.h"
 # include "ObjectPoseGraph.h"
 
+// ellipsoid-version
+#include "src/pca/EllipsoidExtractorEdges.h"
+#include "include/ellipsoid-version/ConstrainPlane.h"
+
 namespace ORB_SLAM2
 {
 
@@ -398,6 +402,7 @@ void Optimizer::LocalJointBundleAdjustment_forLocalMapping(KeyFrame *pKF, bool *
     unsigned long maxKFid = 0;
     std::set<long unsigned int> msKeyframeIDs;
 
+    // 顶点：关键帧的SE3位姿
     // Set Local KeyFrame vertices
     for(list<KeyFrame*>::iterator lit=lLocalKeyFrames.begin(), lend=lLocalKeyFrames.end(); lit!=lend; lit++)
     {
@@ -427,6 +432,7 @@ void Optimizer::LocalJointBundleAdjustment_forLocalMapping(KeyFrame *pKF, bool *
             maxKFid=pKFi->mnId;
     }
 
+    // 顶点和边： 地图点的3D位置
     // Set MapPoint vertices and edges
     const int nExpectedSize = (lLocalKeyFrames.size()+lFixedCameras.size())*lLocalMapPoints.size();
 
@@ -548,6 +554,7 @@ void Optimizer::LocalJointBundleAdjustment_forLocalMapping(KeyFrame *pKF, bool *
     //Objects SLAM 优化
     // Set map object vertices and edges
     bool optimize_object = false;
+    unsigned long maxMOid = 0;
     if(optimize_object)
     for (auto pMO : lLocalMapObjects)
     {
@@ -589,23 +596,29 @@ void Optimizer::LocalJointBundleAdjustment_forLocalMapping(KeyFrame *pKF, bool *
                     vpEdgeKFCamObj.push_back(pKFi);
                     vpMapObjectEdgeCamObj.push_back(pMO);
                 }
+
+                if(pMO->mnId > maxMOid)
+                    maxMOid = pMO->mnId;
             }
         }
     }
     
-    // ellipsoid-version
+    // ellipsoid-version 优化
     bool optimize_ellipsoid = false;
+    unsigned long maxMEid = 0;
     if(optimize_ellipsoid)
     for (auto pMO : lLocalMapObjects)
     {
         if (!pMO->isDynamic())
         {
-            g2o::VertexSE3Expmap *vSE3Obj = new g2o::VertexSE3Expmap();
-            vSE3Obj->setEstimate(Converter::toSE3Quat(pMO->SE3Tow));
-            int id = pMO->mnId + maxKFid + maxMPid + 2;
-            vSE3Obj->setId(id);
-            optimizer.addVertex(vSE3Obj);
+            g2o::VertexEllipsoidXYZABCYaw *vEllipsoid = new g2o::VertexEllipsoidXYZABCYaw();
+            vEllipsoid->setEstimate(*(pMO->GetEllipsold()));
+            int id = pMO->mnId + maxKFid+1 + maxMPid+1 + maxMOid+1;
+            vEllipsoid->setId(id);
+            vEllipsoid->setFixed(false);
+            optimizer.addVertex(vEllipsoid);
 
+            // 地图中的物体pMO，是由多个观测中的椭球体融合而来的，即每个observation.second对应一个椭球体观测，每个observation.second中包含四个平面
             const map<KeyFrame*, size_t> observations = pMO->GetObservations();
 
             for (auto observation : observations)
@@ -617,24 +630,42 @@ void Optimizer::LocalJointBundleAdjustment_forLocalMapping(KeyFrame *pKF, bool *
                 if(!pKFi->isBad())
                 {
                     auto mvpObjectDetections = pKFi->GetObjectDetections();
-                    // cout << "Object KF ID: " << pKFi->mnId << endl;
-                    EdgeSE3LieAlgebra* e = new EdgeSE3LieAlgebra();
-                    e->setVertex(0, optimizer.vertex(pKFi->mnId));
-                    e->setVertex(1, optimizer.vertex(id));
                     auto det = mvpObjectDetections[observation.second];
-                    e->setMeasurement(Converter::toSE3Quat(det->SE3Tco));
-                    Eigen::Matrix<double, 6, 6> Info = Eigen::Matrix<double, 6, 6>::Identity();
-                    Info*= invSigmaObject;
-                    e->setInformation(Info);
 
-                    g2o::RobustKernelHuber* rk = new g2o::RobustKernelHuber;
-                    e->setRobustKernel(rk);
-                    rk->setDelta(thHuberObject);
+                    // ObjectDetection存在，，并不代表当前帧能提取出椭球体。因此AddObjectObservation时，应该加上对椭球体的判断
+                    if(det->pLocalEllipsoidOneFrame == NULL){
+                        std::cerr << "[debug] 没有提取出椭球体，无法用于椭球体bbox联合优化" << std::endl;
+                        std::exit(EXIT_FAILURE);  // 退出程序，返回非 0 状态（失败）
+                        // continue;
+                    }
 
-                    optimizer.addEdge(e);
-                    vpEdgesCamObj.push_back(e);
-                    vpEdgeKFCamObj.push_back(pKFi);
-                    vpMapObjectEdgeCamObj.push_back(pMO);
+                    std::vector<g2o::ConstrainPlane*> vCPlanes = det->pLocalEllipsoidOneFrame->mvCPlanes;
+                    int plane_num = vCPlanes.size();
+
+                    for( int i=0;i<plane_num;i++){
+                        g2o::ConstrainPlane* pCPlane = vCPlanes[i];
+                        Vector4d planeVec = pCPlane->pPlane->param.head(4); // local coordinate
+
+                        g2o::EdgeSE3EllipsoidPlane* e = new g2o::EdgeSE3EllipsoidPlane;
+                        e->setVertex(0, optimizer.vertex(pKFi->mnId));
+                        e->setVertex(1, optimizer.vertex(id));
+                        e->setMeasurement(planeVec);
+
+                        // double config_ellipsoid_2d_scale = Config::ReadValue<double>("Optimizer.Edges.2D.Scale");
+                        double config_ellipsoid_2d_scale = 0.1;
+                        Matrix<double,1,1> inv_sigma;
+                        inv_sigma << 1 * config_ellipsoid_2d_scale;
+                        MatrixXd info = inv_sigma.cwiseProduct(inv_sigma).asDiagonal();
+                        e->setInformation(info);
+                        g2o::RobustKernelHuber* rk = new g2o::RobustKernelHuber;
+                        e->setRobustKernel(rk);
+                        // rk->setDelta(thHuberObject);
+
+                        optimizer.addEdge(e);
+                        // vpEdgesCamObj.push_back(e);
+                        // vpEdgeKFCamObj.push_back(pKFi);
+                        // vpMapObjectEdgeCamObj.push_back(pMO);
+                    }
                 }
             }
         }

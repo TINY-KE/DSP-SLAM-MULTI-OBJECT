@@ -42,7 +42,7 @@ public:
     MapObject(const Eigen::Matrix4f &T, const Eigen::Matrix<float, 64, 1> &vCode, KeyFrame *pRefKF, Map *pMap, int class_id);
     MapObject(KeyFrame *pRefKF, Map *pMap, int class_id);
 
-    void AddObservation(KeyFrame *pKF, int idx);
+    void AddObjectObservation(KeyFrame *pKF, int idx);
     int Observations();
     std::map<KeyFrame*,size_t> GetObservations();
     void SetObjectPoseSim3(const Eigen::Matrix4f &Two);  //用于localmapping
@@ -182,8 +182,7 @@ public:
 
 // 用于g2o优化：
 public:
-    std::vector<int> measurementIDs;
-
+    // std::vector<int> measurementIDs;
 };
 
 }

@@ -137,13 +137,20 @@ pybind11::handle::dec_ref() is being called while the GIL is either not held or 
         + 使用SetPoseByEllipsold ————- pMO->SetPoseByEllipsold(mvpGlobalEllipsolds[det_i]);
         + mpGlobalEllipsolds是怎么存入的
         + pKF->mpGlobalEllipsolds.push_back(pGlobalEllipsoidThisObservation);
+        + ObjectDetection中的pEllipsoidOneFrame时怎么放入的
     + 存储数据关联：
         + 废弃：在map中构建一个与全局物体vector一样的typedef std::vector<Observation*> Observations;
         + obj在pKF 中对应第obj.mObservations[pKF]个观测
             + 如果mObservations[pKF]为空，则
     + 优化： 将object中的椭球体与Observations相关联，使用OptimizeWithDataAssociationUsingMultiplanes()
     + 用椭球体生成dsp
+    + lzw三类优化的区别是什么？
+    + 优化结果的回填
+        + 
+    + 使用椭球体筛选点云，并生成物体
+    + 该生成
+
 
 # 第五阶段  实现椭球体的二维椭圆投影和隐式形状的二维掩码投影
-
+    + 
 

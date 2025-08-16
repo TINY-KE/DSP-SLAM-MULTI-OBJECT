@@ -128,7 +128,7 @@ void Tracking::ObjectDataAssociation_onlyforStereo(KeyFrame *pKF)
             if (!pKF->mdAssociatedObjects.count(pMO)) {
                 pKF->mdAssociatedObjects[pMO] = minDist;
                 pKF->AddMapObject(pMO, i);
-                pMO->AddObservation(pKF, i);
+                pMO->AddObjectObservation(pKF, i);
             } else // Another detection is associated with pMO, compare distance
             {
                 if (minDist < pKF->mdAssociatedObjects[pMO]) {
@@ -138,7 +138,7 @@ void Tracking::ObjectDataAssociation_onlyforStereo(KeyFrame *pKF)
                     pKF->EraseMapObjectMatch(detId);
                     vDetections[detId]->isNew = true;
                     pKF->AddMapObject(pMO, i);
-                    pMO->AddObservation(pKF, i);
+                    pMO->AddObjectObservation(pKF, i);
                 }
             }
         }
