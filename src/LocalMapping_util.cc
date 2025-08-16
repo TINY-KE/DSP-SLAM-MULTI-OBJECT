@@ -581,7 +581,7 @@ void LocalMapping::Process_Multi_DetectedObjects_byPythonReconstruct()
                 else{
                     // Method 2: 使用来自椭球体的位姿信息
                     std::cout << "[zhjd-debug] Process_Multi_DetectedObjects : 利用椭球体SetPoseByEllipsold" << std::endl;
-                    pMO->SetPoseByEllipsold(mvpGlobalEllipsolds[det_i]);
+                    pMO->SetPoseByEllipsoid(mvpGlobalEllipsolds[det_i]);
                 }
             }
         }

@@ -133,24 +133,21 @@ pybind11::handle::dec_ref() is being called while the GIL is either not held or 
     
 + 既然dsp本身就有物体与相机之间的优化，那么只需要做好两件事
     + 数据关联：数据关联用李建的椭球体projection
-        + lj是如何将最后一个椭球体放入到到object中的
-        + 使用SetPoseByEllipsold ————- pMO->SetPoseByEllipsold(mvpGlobalEllipsolds[det_i]);
-        + mpGlobalEllipsolds是怎么存入的
-        + pKF->mpGlobalEllipsolds.push_back(pGlobalEllipsoidThisObservation);
-        + ObjectDetection中的pEllipsoidOneFrame时怎么放入的
+        + 利用原本的assoication by projection
+        + 单帧观测的存储形式为 pLocalEllipsoidOneFrame
     + 存储数据关联：
-        + 废弃：在map中构建一个与全局物体vector一样的typedef std::vector<Observation*> Observations;
-        + obj在pKF 中对应第obj.mObservations[pKF]个观测
-            + 如果mObservations[pKF]为空，则
+        + 还是存储在ObjectDetection中
     + 优化： 将object中的椭球体与Observations相关联，使用OptimizeWithDataAssociationUsingMultiplanes()
-    + 用椭球体生成dsp
-    + lzw三类优化的区别是什么？
+        + lzw三类优化的区别是什么？  
     + 优化结果的回填
-        + 
-    + 使用椭球体筛选点云，并生成物体
-    + 该生成
+        + 直接修改全局物体中的椭球体
+
++ 使用椭球体筛选点云，并生成dsp物体
+    + 先不使用联合优化，
+    + 
 
 
 # 第五阶段  实现椭球体的二维椭圆投影和隐式形状的二维掩码投影
     + 
 
+# 第六阶段  联合优化中加上relations平面（水平面和垂直面）

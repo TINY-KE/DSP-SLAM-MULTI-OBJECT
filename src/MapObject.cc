@@ -55,6 +55,8 @@ MapObject::MapObject(const Eigen::Matrix4f &T, const Eigen::Matrix<float, 64, 1>
 
     label = class_id;
 
+    // ellipsoid-version
+    mpEllipsold = new g2o::ellipsoid();
     // 椭球体相关flag
     mbValidEllipsoldFlag = false;
     mbValidDepthPointCloudFlag = false;
@@ -70,6 +72,8 @@ MapObject::MapObject(KeyFrame *pRefKF, Map *pMap, int class_id) :
     invScale = 1.;
     vShapeCode = Eigen::Matrix<float, 64, 1>::Zero();
     label = class_id;
+    // ellipsoid-version
+    mpEllipsold = new g2o::ellipsoid();
     // 椭球体相关flag
     mbValidEllipsoldFlag = false;
     mbValidDepthPointCloudFlag = false;
@@ -847,32 +851,37 @@ void MapObject::compute_corner() {
 
 }
 
+void MapObject::SetEllipsoid(g2o::ellipsoid e){
+    // 为ellipsoid赋值
+    unique_lock<mutex> lock(mMutexObject);
+    if(e.scale(0) <= 0.1 || e.scale(1) <= 0.1 || e.scale(2) <= 0.1){
+        std::cerr << "[debug] SetEllipsoid() 遇到 输入椭球体 无效" << endl;
+        std::exit(EXIT_FAILURE);  // 或者：std::abort();
+    } else {
+        (*mpEllipsold) = e;
+    }
+}
 
-void MapObject::SetPoseByEllipsold(g2o::ellipsoid* e)
+void MapObject::SetPoseByEllipsoid(g2o::ellipsoid* e)
 {
     Eigen::Matrix4f Two;
 
     {
-    // cout << "In SetPoseByEllipsold, e->prob = " << e->prob << endl;
+    // cout << "In SetPoseByEllipsoid, e->prob = " << e->prob << endl;
     if(mpEllipsold == NULL) {
         {
             // 这里遇到了一个死锁的问题
             unique_lock<mutex> lock(mMutexObject);
             mpEllipsold = new g2o::ellipsoid(*(e));
         }
-        
-        // mpEllipsold = e;
-        // this->SetBadFlag();
-        cout << "mpEllipsold->prob = " << mpEllipsold->prob << endl;
-        
     }
     // 这里遇到了一个死锁的问题
     unique_lock<mutex> lock(mMutexObject);
 
     mbValidEllipsoldFlag = true;
     // else  
-    cout << "[debug] MapObject::SetPoseByEllipsold, Object_id = " << mnId << endl;
-    cout << "[debug] MapObject::SetPoseByEllipsold, mpEllipsold->prob = " << mpEllipsold->prob << endl;
+    cout << "[debug] MapObject::SetPoseByEllipsoid, Object_id = " << mnId << endl;
+    cout << "[debug] MapObject::SetPoseByEllipsoid, mpEllipsold->prob = " << mpEllipsold->prob << endl;
 
     // SE3Quat pose;  // rigid body transformation, object in world coordinate
     // Vector3d scale; // a,b,c : half length of axis x,y,z
@@ -981,19 +990,14 @@ void MapObject::AddDepthPointCloudFromObjectDetection(pcl::PointCloud<PointType>
 g2o::ellipsoid* MapObject::GetEllipsold()
 {
     unique_lock<mutex> lock(mMutexObject);
-    // TODO: 这里待解开，为何返回未定义的mpEllipsold会报错
     if (mpEllipsold == NULL) {
-        // cout << "mpEllipsold == NULL" << endl;
-        // cout << "This MapObject' mpEllipsold == NULL" << endl;
+        std::cerr << "[debug] GetEllipsold() 遇到 mpEllipsold == NULL" << endl;
+        std::exit(EXIT_FAILURE);  // 或者：std::abort();
         return NULL;
     }
     else{
         return mpEllipsold;
     }
-    // cout << "MapObject::GetEllipsold, Object_id = " << mnId << endl;
-    // cout << "In MapObject, mpEllipsold->prob = " << mpEllipsold->prob << endl;
-    // auto prob = mpEllipsold->prob;
-    // return mpEllipsold;
 }
 
 pcl::PointCloud<PointType>::Ptr MapObject::GetDepthPointCloudPCL()

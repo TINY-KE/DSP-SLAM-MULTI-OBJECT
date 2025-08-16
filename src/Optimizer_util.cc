@@ -854,6 +854,18 @@ void Optimizer::LocalJointBundleAdjustment_forLocalMapping(KeyFrame *pKF, bool *
             pMO->SetObjectPoseSE3(SE3Two);
         }
     }
+
+    //ellipsoid-version SLAM 回填
+    if(optimize_ellipsoid)
+    for (auto pMO : lLocalMapObjects)
+    {
+        if (!pMO->isDynamic() && !pMO->isBad())
+        {
+            g2o::VertexEllipsoidXYZABCYaw* vEllipsoid = static_cast<g2o::VertexEllipsoidXYZABCYaw*>(optimizer.vertex(pMO->mnId + maxKFid+1 + maxMPid+1 + maxMOid+1));
+            pMO->SetEllipsoid(vEllipsoid->estimate());
+        }
+    }
+
     Optimizer::nBAdone++;
 
 }

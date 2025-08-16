@@ -166,7 +166,7 @@ private:
 
 public:
 
-    void SetPoseByEllipsold(g2o::ellipsoid* e);
+    void SetPoseByEllipsoid(g2o::ellipsoid* e);
 
     // 获取椭球体
     g2o::ellipsoid* GetEllipsold();
@@ -183,6 +183,8 @@ public:
 // 用于g2o优化：
 public:
     // std::vector<int> measurementIDs;
+    void SetEllipsoid(g2o::ellipsoid e);
+
 };
 
 }
