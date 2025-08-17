@@ -167,7 +167,7 @@ private:
     // 处理完检测到的物体之后，要把它们更新到地图中
     void UpdateObjectsToMap();
     
-
+    bool mb_add_depth_pcd_to_map_object;
 
 };
 

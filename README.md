@@ -133,7 +133,7 @@ pybind11::handle::dec_ref() is being called while the GIL is either not held or 
     
 + 既然dsp本身就有物体与相机之间的优化，那么只需要做好两件事
     + 数据关联：数据关联用李建的椭球体projection
-        + 利用原本的assoication by projection
+        + 利用原本的AssociateObjectsByProjection
         + 单帧观测的存储形式为 pLocalEllipsoidOneFrame
     + 存储数据关联：
         + 还是存储在ObjectDetection中
@@ -144,9 +144,13 @@ pybind11::handle::dec_ref() is being called while the GIL is either not held or 
 
 + 使用椭球体筛选点云，并生成dsp物体
     + 先不使用联合优化，
-    + 
-
-
+        + addEllipsoidVisual和AddMapObject不同
+        + 问题就在于，利用椭球体投影进行数据关联，有问题。debug
+        + AssociateObjectWithEllipsold 失效的原因，在于没有椭球体的话，则无法使用椭球体尽心关联，因此物体内点的数量，就不够
+        + SetPoseByEllipsoid失败的原因是track和localmapping不同步，这也是为什么lj要将两者强行同步的原因
+            + 在点云融合之后，将之前的点云变换到当前坐标系，再直接利用EstimateLocalEllipsoidUsingMultiPlanes生成一个椭球体
+            + 同时这些点云还能用于生辰dsp物体
+            + 而且要关闭前端的椭球体提取，tracker中只做数据关联
 # 第五阶段  实现椭球体的二维椭圆投影和隐式形状的二维掩码投影
     + 
 

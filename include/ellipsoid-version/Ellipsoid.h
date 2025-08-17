@@ -7,6 +7,9 @@
 #include <Eigen/Geometry>
 #include <Eigen/Dense>
 
+#include <opencv2/core/core.hpp>
+#include <opencv2/opencv.hpp>
+
 #include "include/utils/matrix_utils.h"
  
 typedef Eigen::Matrix<double, 9, 1> Vector9d;
@@ -167,6 +170,8 @@ public:
     // Visualization function: project axises on image
     Matrix3d projectAxisOnImage(const g2o::SE3Quat& campose_cw, const Matrix3d& calib, int length_scale = 1) const;
     Vector2d projectPointIntoImagePoint(const Vector3d& point, const SE3Quat& campose_cw, const Matrix3d& Kalib) const;
+
+    void drawEllipseOnImage(const Vector5d& ellipse, cv::Mat& im, const cv::Scalar& color = cv::Scalar(0,0,255));
 
 private:
     bool mbColor;

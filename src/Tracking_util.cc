@@ -356,7 +356,7 @@ void Tracking::AssociateObjectsByProjection(ORB_SLAM2::KeyFrame *pKF)
                 auto label_obj = pMO->label;
                 auto campose_cw = mCurrentFrame.cam_pose_Tcw;
                 auto ellipse = e->projectOntoImageEllipse(campose_cw, mCalib);
-                // e->drawEllipseOnImage(ellipse, img_show);
+                e->drawEllipseOnImage(ellipse, img_show);
                 
                 // draw bbox of object
                 Vector4d rect = e->getBoundingBoxFromProjection(campose_cw, mCalib); 
@@ -387,7 +387,7 @@ void Tracking::AssociateObjectsByProjection(ORB_SLAM2::KeyFrame *pKF)
                     std::cout << "class(bbox/obj)/IoU: " << label_bbox << "/" \
                             << label_obj << "/" << iou << std::endl;
 
-                    cv::imshow("Ellipse Projection", img_show);
+                    cv::imshow("[Debug] Global Ellipse Projection in Current Frame", img_show);
                     cv::waitKey(10);
 
                     std::cout << "Press any key to continue" << endl;
@@ -395,7 +395,7 @@ void Tracking::AssociateObjectsByProjection(ORB_SLAM2::KeyFrame *pKF)
                 }
 
                 if (iou > mf_associate_IoU_thresold && label_bbox==label_obj){
-                    // cout << "Associate" << std::endl;
+                    cout << "[debug] Associate" << std::endl;
                     // 这里有一个问题，被关联过的物体可能在下一个det再次被遍历到
                     has_associate = true;
                     associateDetWithObject(pKF, pMO, d_i, detKF1, mvpMapPoints);

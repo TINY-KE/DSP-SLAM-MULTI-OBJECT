@@ -557,8 +557,7 @@ void LocalMapping::Process_Multi_DetectedObjects_byPythonReconstruct()
         int numKFsPassedSinceInit = int(mpCurrentKeyFrame->mnId - pMO->mpRefKF->mnId);
 
         // 把深度点云加到地图物体中
-        bool add_depth_pcd_to_map_object;
-        if (add_depth_pcd_to_map_object) {
+        if (mb_add_depth_pcd_to_map_object) {
             pMO->AddDepthPointCloudFromObjectDetection(det->pcd_ptr);
         }
 
@@ -573,14 +572,14 @@ void LocalMapping::Process_Multi_DetectedObjects_byPythonReconstruct()
             else if(mnComputeCuboidType==3)
             {
                 if (mvpGlobalEllipsolds[det_i] == NULL) {
-                    cout << "[zhjd-debug] Process_Multi_DetectedObjects : mvpGlobalEllipsolds[" << det_i << "] 为空，无法SetPoseByEllipsold" << endl;
+                    cout << "[zhjd-debug] Process_Multi_DetectedObjects ComputeCuboid: mvpGlobalEllipsolds[" << det_i << "] 为空，无法SetPoseByEllipsold" << endl;
                     continue;
-                    pMO->SetBadFlag();
+                    // pMO->SetBadFlag();
                     // continue;
                 }
                 else{
                     // Method 2: 使用来自椭球体的位姿信息
-                    std::cout << "[zhjd-debug] Process_Multi_DetectedObjects : 利用椭球体SetPoseByEllipsold" << std::endl;
+                    std::cout << "[zhjd-debug] Process_Multi_DetectedObjects ComputeCuboid: 利用椭球体SetPoseByEllipsold" << std::endl;
                     pMO->SetPoseByEllipsoid(mvpGlobalEllipsolds[det_i]);
                 }
             }

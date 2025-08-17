@@ -90,7 +90,8 @@ void Viewer::Run()
     pangolin::Var<bool> menuReset("menu.Reset",false,false);
 
     // ellipsoid-version
-    pangolin::Var<bool> menuShowEllipsoids("menu.Show Ellipsoids Visual", true, true);
+    pangolin::Var<bool> menuShowEllipsoids("menu.Show Ellipsoids One Frame Visual", false, true);
+    pangolin::Var<bool> menuShowGlobalEllipsoids("menu.Show Global Ellipsoids", true, true);
     pangolin::Var<double> SliderEllipsoidProbThresh("menu.Ellipsoid Prob", 0.3, 0.0, 1.0);
     pangolin::Var<bool> menuShowSdfObjects("menu.Show SDF Objects",true,true);
     // 深度点云
@@ -191,7 +192,10 @@ void Viewer::Run()
             if(menuShowSdfObjects){
                 mpObjectDrawer->DrawObjects(bFollow, Tec);
             }
-
+            if(menuShowGlobalEllipsoids){
+                double ellipsoidProbThresh = SliderEllipsoidProbThresh;
+                mpMapDrawer->drawGlobalEllipsoids(ellipsoidProbThresh);
+            }
             if(menuShowDepthPoints)
             {
                 float pointcloudSize = SliderPointCloudListSize;

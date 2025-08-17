@@ -879,9 +879,7 @@ void MapObject::SetPoseByEllipsoid(g2o::ellipsoid* e)
     unique_lock<mutex> lock(mMutexObject);
 
     mbValidEllipsoldFlag = true;
-    // else  
-    cout << "[debug] MapObject::SetPoseByEllipsoid, Object_id = " << mnId << endl;
-    cout << "[debug] MapObject::SetPoseByEllipsoid, mpEllipsold->prob = " << mpEllipsold->prob << endl;
+    cout << "[debug] MapObject::SetPoseByEllipsoid, Object_id = " << mnId << ", mpEllipsold->prob = " << mpEllipsold->prob << ", scale = " << mpEllipsold->scale.transpose() << std::endl;
 
     // SE3Quat pose;  // rigid body transformation, object in world coordinate
     // Vector3d scale; // a,b,c : half length of axis x,y,z
@@ -911,6 +909,8 @@ void MapObject::SetPoseByEllipsoid(g2o::ellipsoid* e)
     // cout << "in setPoseByEllipsold: Two = \n" << Two.matrix() << endl;
     }
     SetObjectPoseSim3(Two); // Two
+
+    SetEllipsoid(*e);
 }
 
 

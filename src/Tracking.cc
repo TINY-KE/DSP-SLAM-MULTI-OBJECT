@@ -182,7 +182,6 @@ Tracking::Tracking(System *pSys, ORBVocabulary* pVoc, FrameDrawer *pFrameDrawer,
 
     // 椭球体数据关联
     mb_associate_object_with_ellipsold = Config::Get<int>("Tracking.AssociateObjectWithEllipsold");
-    // add_depth_pcd_to_map_object = Config::Get<int>("Tracking.AddDepthPcdToMapObject");
     mf_associate_IoU_thresold = Config::Get<double>("Tracking.AssociateIoUThresold");
     mb_associate_debug = Config::Get<int>("Tracking.AssociateDebug");
     

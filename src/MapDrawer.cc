@@ -395,7 +395,36 @@ bool MapDrawer::drawEllipsoidsVisual(double prob_thresh) {
     return true;
 }
 
-// ellipsoid-version
+
+bool MapDrawer::drawGlobalEllipsoids(double prob_thresh) {
+
+    auto mvpMapObjects = mpMap->GetAllMapObjects();
+    std::vector<ellipsoid*> ellipsoids_prob;
+
+    for (MapObject *pMO : mvpMapObjects)
+    {
+        if (!pMO)
+            continue;
+        if (pMO->isBad())
+            continue;
+
+        auto pE = pMO->GetEllipsold();
+
+        if(pE->prob > prob_thresh ){
+            ellipsoids_prob.push_back(pE);
+            std::cout<<"[debug] drawGlobalEllipsoids 3 Ellipsoid with prob: " << pE->prob << ", scale:" << pE->scale.transpose() << std::endl;
+        }
+        else{
+            // std::cout<<"[debug] drawGlobalEllipsoids 3 Ellipsoid with prob: " << pE->prob << " is filtered out."  << ", scale:" << pE->scale.transpose()<< std::endl;
+        }
+    }
+    
+    drawAllEllipsoidsInVector(ellipsoids_prob, 1);
+
+    return true;
+}
+
+
 // 加入了 transform
 void MapDrawer::drawAllEllipsoidsInVector(std::vector<ellipsoid*>& ellipsoids, int color_mode)
 {    

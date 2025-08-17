@@ -49,6 +49,9 @@ LocalMapping::LocalMapping(System *pSys, Map *pMap, ObjectDrawer* pObjectDrawer,
     mnComputeCuboidType = pSys->mnComputeCuboidType;
     mnNumKFsPassedSinceLastRecon_thresh = pSys->mnNumKFsPassedSinceLastRecon_thresh;
     mnNumKFsPassedSinceInit_thresh = pSys->mnNumKFsPassedSinceInit_thresh;
+
+    mb_add_depth_pcd_to_map_object = Config::Get<int>("Mapping.AddDepthPcdToMapObject") > 0;  
+
     // 多物体dsp模型导入
     auto& pyDecoders = pSys->mmPyDecoders;
     for (auto it = pyDecoders.begin(); it != pyDecoders.end(); ++it) {
