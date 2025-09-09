@@ -477,7 +477,134 @@ void MapObject::RemoveOutliersModel()
 
 void MapObject::ComputeCuboidPCA_ellipsoid(bool updatePose)
 {
-    // TODO:
+    // 1: 移除异常点
+    RemoveOutliersSimple();
+    auto mvpMapPoints = GetMapPointsOnObject();
+    int N = mvpMapPoints.size();
+
+    if (N == 0)
+    {
+        this->SetBadFlag();
+        return;
+    }
+
+    //  2: 计算点云的均值和协方差矩阵
+    Eigen::Vector3f x3D_mean = Eigen::Vector3f::Zero();
+    Eigen::MatrixXf Xpts = Eigen::MatrixXf::Zero(N, 3);
+    Eigen::MatrixXf Xpts_shifted = Eigen::MatrixXf::Zero(N, 3);
+    for (int i = 0; i < N; i++)
+    {
+        auto pMP = mvpMapPoints[i];
+        cv::Mat x3Dw = pMP->GetWorldPos();
+        Xpts(i, 0) = x3Dw.at<float>(0);
+        Xpts(i, 1) = x3Dw.at<float>(1);
+        Xpts(i, 2) = x3Dw.at<float>(2);
+        x3D_mean += Converter::toVector3f(pMP->GetWorldPos());
+    }
+
+    x3D_mean /= N;
+    for (int i = 0; i < N; i++)
+    {
+        Xpts_shifted.row(i) = Xpts.row(i) - x3D_mean.transpose();
+    }
+
+    // 3：执行主成分分析 (PCA)
+    auto covX = Xpts_shifted.transpose() * Xpts_shifted;
+    // cout << covX << endl;
+    Eigen::SelfAdjointEigenSolver<Eigen::Matrix3f> eigensolver(covX);
+
+    auto eigenvectors = eigensolver.eigenvectors();
+
+    // 4: 生成旋转矩阵
+    // Get rotation matrix, following ShapeNet definition
+    // x : right, y: up, z: back
+    Eigen::Matrix3f R;
+    // Assume the order of principal axis: y, x, -z
+    R.col(0) = eigenvectors.col(1);
+    R.col(1) = eigenvectors.col(0);
+    R.col(2) = -eigenvectors.col(2);
+
+    // Check if det(R) = -1
+    if (R.determinant() < 0)
+        R.col(0) = -R.col(0);
+
+    // Check if y direction is pointing upward by comparing its angle between camera
+    auto neg_y = Eigen::Vector3f(0.f, -1.f, 0.f);
+    if (neg_y.dot(R.col(1)) < 0)
+    {
+        R.col(0) = -R.col(0);
+        R.col(1) = -R.col(1);
+    }
+
+    // 5: 计算包围盒尺寸
+    int lo = int (0.05 * N);  // percentile threshold
+    int hi = int (0.95 * N);
+    auto Xpts_o = R.inverse() * Xpts.transpose(); // 3 x N
+    Eigen::VectorXf x, y, z;
+    x = Xpts_o.row(0);  // x corresponds to w
+    y = Xpts_o.row(1);  // y corresponds to h
+    z = Xpts_o.row(2);  // z corresponds to l
+    // Sort the vectors
+    std::sort(x.data(),x.data() + x.size());
+    std::sort(y.data(),y.data() + y.size());
+    std::sort(z.data(),z.data() + z.size());
+
+    // PCA box dims
+    w = (x(hi) - x(lo));
+    h = (y(hi) - y(lo));
+    l = (z(hi) - z(lo));
+    Eigen::Vector3f cuboid_centre_o((x(hi) + x(lo)) / 2., (y(hi) + y(lo)) / 2., (z(hi) + z(lo)) / 2.);
+    Eigen::Vector3f cuboid_centre_w = R * cuboid_centre_o;
+
+    //  6: 移除异常点
+    // Remove outliers using computed PCA box
+    int num_outliers = 0;
+    float s = 1.2;
+    for (auto pMP : mvpMapPoints)
+    {
+        if (!pMP)
+            continue;
+
+        if (pMP->isBad())
+        {
+            this->EraseMapPoint(pMP);
+        }
+        else
+        {
+            auto x3Dw = Converter::toVector3f(pMP->GetWorldPos());
+            auto x3Do = R.inverse() * x3Dw - R.inverse() * cuboid_centre_w;
+            if (x3Do(0) > s * w / 2 || x3Do(0) < -s * w / 2 ||
+                x3Do(1) > s * h / 2 || x3Do(1) < -s * h / 2 ||
+                x3Do(2) > s * l / 2 || x3Do(2) < -s * l / 2)
+            {
+                pMP->SetOutlierFlag();
+                num_outliers++;
+            }
+        }
+    }
+
+    // 7: 更新物体位姿
+    // Update object pose with pose computed by PCA, only for the very first few frames
+    if (updatePose)
+    {
+        Eigen::Matrix4f T = Eigen::Matrix4f::Identity();
+        T.topLeftCorner(3, 3) = 0.40 * l * R;
+        // cout << R.determinant() << " " << endl;
+        // cout << pow(T.topLeftCorner(3, 3).determinant(), 1./3) << endl;
+        T.topRightCorner(3, 1) = cuboid_centre_w;
+        SetObjectPoseSim3(T);
+
+        
+        Eigen::Vector3f tt = T.block<3,1>(0,3);  // 最后一列前3行
+        Eigen::Matrix3f RR = T.block<3,3>(0,0);
+        Eigen::Matrix3f Ron = Eigen::AngleAxisf(M_PI/2, Eigen::Vector3f(1,0,0)).matrix()
+                * Eigen::AngleAxisf(-M_PI/2, Eigen::Vector3f(0,1,0)).matrix();
+        RR = RR *  Ron.inverse();  
+        Eigen::Vector3f euler = RR.eulerAngles(2, 1, 0);  // ZYX 顺序
+        Eigen::Matrix<double, 9, 1> MinimalVector;  // 或 Eigen::VectorXd vec(9);
+        MinimalVector << tt[0],tt[1],tt[2],    euler[0],euler[1],euler[2],    w,h,l;
+        mpEllipsold->fromMinimalVector( MinimalVector );
+    }
 }
 
 void MapObject::ComputeCuboidPCA_manhattan(bool updatePose)
@@ -854,11 +981,12 @@ void MapObject::compute_corner() {
 void MapObject::SetEllipsoid(g2o::ellipsoid e){
     // 为ellipsoid赋值
     unique_lock<mutex> lock(mMutexObject);
-    if(e.scale(0) <= 0.1 || e.scale(1) <= 0.1 || e.scale(2) <= 0.1){
-        std::cerr << "[debug] SetEllipsoid() 遇到 输入椭球体 无效" << endl;
+    if(e.scale(0) <= 0.05 || e.scale(1) <= 0.05 || e.scale(2) <= 0.05){
+        std::cerr << "[debug] SetEllipsoid() 遇到 输入椭球体 无效, scale:"<< e.scale.transpose() << endl;
         std::exit(EXIT_FAILURE);  // 或者：std::abort();
     } else {
         (*mpEllipsold) = e;
+        mpEllipsold->setColor(Vector3d(128.0/255.0,0.0,128.0/255));
     }
 }
 
@@ -891,7 +1019,7 @@ void MapObject::SetPoseByEllipsoid(g2o::ellipsoid* e)
     Vector3d& scale = e->scale;
     float s = scale.norm() * 2;
 
-    // Rx(90)*Ry(-90) 
+    // Rx(90)*Ry(-90) 原本x轴从物体正面朝外，z轴朝上；变化后，z轴从物体背面朝外，y轴朝上
     Eigen::Matrix3f Ron = Eigen::AngleAxisf(M_PI/2, Eigen::Vector3f(1,0,0)).matrix()
         * Eigen::AngleAxisf(-M_PI/2, Eigen::Vector3f(0,1,0)).matrix();
     Two.topLeftCorner(3, 3) = Two.topLeftCorner(3, 3) * Ron;

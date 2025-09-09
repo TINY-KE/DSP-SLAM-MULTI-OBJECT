@@ -124,18 +124,19 @@ Plane.MinSize: 1000
 Plane.AngleThreshold: 3.0
 Plane.DistanceThreshold: 0.05
 
+# 椭球体数据关联
+Tracking.AssociateObjectWithEllipsold: 1
+Tracking.AssociateDebug: 0
+Tracking.AssociateIoUThresold: 0.52
 # Bounding box filter
 Measurement.Border.Pixels: 10
 Measurement.LengthLimit.Pixels: 0
 Measurement.Probability.Thresh: 0
 
-# 椭球体数据关联
-Tracking.AssociateObjectWithEllipsold: 1
-Tracking.AssociateDebug: 1
-Tracking.AssociateIoUThresold: 0.52
-
 # 物体建模
 Mapping.AddDepthPcdToMapObject: 1
+Mapping.LocalMappingInSameThread: 1
+
 # use_object
 useObjectConstruct: 1
 ComputeCuboidType: 3    #3：椭球体

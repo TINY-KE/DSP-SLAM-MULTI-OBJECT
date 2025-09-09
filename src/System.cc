@@ -150,7 +150,13 @@ System::System(const string &strVocFile, const string &strSettingsFile, const st
 
     //Initialize the Local Mapping thread and launch
     mpLocalMapper = new LocalMapping(this, mpMap, mpObjectDrawer, mSensor==MONOCULAR);
-    mptLocalMapping = new thread(&ORB_SLAM2::LocalMapping::Run,mpLocalMapper);
+    mbMapInSameThread = fSettings["Mapping.LocalMappingInSameThread"];
+    if (!mbMapInSameThread) {
+        mptLocalMapping = new thread(&ORB_SLAM2::LocalMapping::Run, mpLocalMapper);
+    }
+    else {
+        mpLocalMapper->InitSet();
+    }
 
 
     //Initialize the Loop Closing thread and launch
@@ -294,6 +300,11 @@ cv::Mat System::TrackRGBD(const cv::Mat &im, const cv::Mat &depthmap, const doub
     mTrackingState = mpTracker->mState;
     mTrackedMapPoints = mpTracker->mCurrentFrame.mvpMapPoints;
     mTrackedKeyPointsUn = mpTracker->mCurrentFrame.mvKeysUn;
+
+    if (mbMapInSameThread) {
+        mpLocalMapper->RunOneTime();
+    }
+
     return Tcw;
 }
 

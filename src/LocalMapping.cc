@@ -82,6 +82,160 @@ void LocalMapping::SetTracker(Tracking *pTracker)
     mpTracker=pTracker;
 }
 
+void LocalMapping::InitSet()
+{
+    mbFinished = false;
+    // nKFInserted = 0;
+}
+
+
+bool LocalMapping::RunOneTime()
+{
+
+    mbFinished = false;
+    int nKFInserted = 0;
+
+    {
+        // Tracking will see that Local Mapping is busy
+        SetAcceptKeyFrames(false);
+        // // cout << "set not accept keyframes" << endl;
+
+        // Check if there are keyframes in the queue
+        if(CheckNewKeyFrames())
+        {
+            // cout << "Process new keyframe in local mapping" << endl;
+
+            // BoW conversion and insertion in Map
+            ProcessNewKeyFrame();
+            // Check recent MapPoints
+            MapPointCulling();
+            // Triangulate new MapPoints
+            CreateNewMapPoints();
+
+            if(!CheckNewKeyFrames())
+            {
+                // Find more matches in neighbor keyframes and fuse point duplications
+                SearchInNeighbors();
+            }
+
+            mbAbortBA = false;
+
+            nKFInserted++;
+            // cout << "Number of KF inserted: " << nKFInserted << endl;
+
+            if (mpTracker->mSensor == System::STEREO)
+            {
+                // Get new observations for map objects
+                GetNewObservations();
+                // Recent MapObjects Culling
+                MapObjectCulling();
+                // Create new MapObjects
+                CreateNewMapObjects();
+            }
+            else if (mpTracker->mSensor == System::MONOCULAR)
+            {
+                if (mpTracker->mState != Tracking::NOT_INITIALIZED)
+                {
+                    if (mpMap->GetAllMapObjects().empty())  //源程序这里只能构建一个物体
+                        CreateNewObjectsFromDetections();
+                    // reconstruction
+                    ProcessDetectedObjects_byPythonReconstruct();
+                }
+            }
+            /**
+             * 首先，从观测中创建新物体: 检查观测是否正常，创建物体注册到帧/地图中，把相应的地图点加入到物体上
+             * 然后，处理已经检测到的物体，
+             * 进行3D层面的关联和剔除：
+             * 最后，对这些结果进行
+            */
+            else if (mpTracker->mSensor == System::RGBD)
+            {
+                if (mpTracker->mState != Tracking::NOT_INITIALIZED)
+                {
+                    if(mbUseObjectConstruct)
+                    {
+                        Create_Multi_NewObjectsFromDetections();
+
+                        // TODO: 在此处增加一个合并相近同类物体的操作
+                        AssociateObjects3D();
+
+                        /* FIXME，在处理已经检测到的物体时，需要考虑是否增加的新的观测
+                        * 这个函数中增加一个是否需要进行隐式位形优化的判断
+                        * 看看有无必要使用隐式位形优化结果中的Loss对物体点云进行剔除
+                        */
+                        Process_Multi_DetectedObjects_byPythonReconstruct();
+
+                        // 处理完检测到的物体之后，要把它们更新到地图中
+                        UpdateObjectsToMap();
+
+                    }
+
+                }
+            }
+
+
+            if (!stopRequested())
+                mbAbortBA = false;
+
+            // Perform BA only when no KFs waiting in the queue
+            if(!CheckNewKeyFrames() && !stopRequested())
+            {
+                // Local BA
+                if(mpMap->KeyFramesInMap()>2)
+                {
+                    // cout << "Entered Local BA Optimization!!!!!!!" << endl;
+                    if (mpTracker->mSensor == System::STEREO)
+                    {
+                        Optimizer::LocalJointBundleAdjustment_forLocalMapping(mpCurrentKeyFrame, &mbAbortBA, mpMap);
+                    }
+                    else if (mpTracker->mSensor == System::RGBD)
+                    {
+                        cout << "Local Bundle Adjustment for RGBD" << endl;
+                        Optimizer::LocalJointBundleAdjustment_forLocalMapping(mpCurrentKeyFrame, &mbAbortBA, mpMap);
+                    }
+                    else if (mpTracker->mSensor == System::MONOCULAR)
+                    {
+                        Optimizer::LocalBundleAdjustment(mpCurrentKeyFrame, &mbAbortBA, mpMap);
+                    }
+
+                    // cout << "Number of Loacl BA done: " << Optimizer::nBAdone << endl;
+                }
+
+                // Check redundant local Keyframes
+                KeyFrameCulling();
+            }
+            // CreateNewMapObjects();
+
+            if (mpLoopCloser)
+                mpLoopCloser->InsertKeyFrame(mpCurrentKeyFrame);
+
+            mpLastKeyFrame = mpCurrentKeyFrame;
+        }
+        else if(Stop())
+        {
+            // Safe area to stop
+            while(isStopped() && !CheckFinish())
+            {
+                std::this_thread::sleep_for(std::chrono::microseconds(3000));
+            }
+            if(CheckFinish())
+                return false;
+        }
+
+        ResetIfRequested();
+
+        // Tracking will see that Local Mapping is not busy
+        SetAcceptKeyFrames(true);
+        // // cout << "set accept keyframes" << endl;
+
+        if(CheckFinish())
+            return false;
+
+        // std::this_thread::sleep_for(std::chrono::microseconds(3000));
+        return true;
+    }
+}
+
 void LocalMapping::Run()
 {
 

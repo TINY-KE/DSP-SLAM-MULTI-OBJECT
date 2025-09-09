@@ -765,7 +765,7 @@ g2o::ellipsoid EllipsoidExtractor::EstimateLocalEllipsoidUsingMultiPlanes(cv::Ma
 
     //  2"<< std::endl;
 
-    std::cout<< " [debug] EstimateLocalEllipsoidUsingMultiPlanes 1" << std::endl;
+    // std::cout<< " [debug] EstimateLocalEllipsoidUsingMultiPlanes 1" << std::endl;
     if (pCloudPCL == NULL) {
         std::cerr << "pCloudPCL == NULL" << endl;
         pcd_ptr = NULL;
@@ -778,7 +778,7 @@ g2o::ellipsoid EllipsoidExtractor::EstimateLocalEllipsoidUsingMultiPlanes(cv::Ma
         // pcd_ptr = NULL;
     }
 
-    std::cout<< " [debug] EstimateLocalEllipsoidUsingMultiPlanes 2" << std::endl;
+    // std::cout<< " [debug] EstimateLocalEllipsoidUsingMultiPlanes 2" << std::endl;
     clock_t time_1_ExtractPointCloud = clock();
     if(miSystemState > 0 )
         return e;
@@ -788,7 +788,7 @@ g2o::ellipsoid EllipsoidExtractor::EstimateLocalEllipsoidUsingMultiPlanes(cv::Ma
     // gravity 系: 位于物体中心, Z轴与重力方向对齐.
     // 转化之后，点云的正方向即z轴, 即世界系重力方向.
     // get supporting plane
-    std::cout<< " [debug] EstimateLocalEllipsoidUsingMultiPlanes 2-1" << std::endl;
+    // std::cout<< " [debug] EstimateLocalEllipsoidUsingMultiPlanes 2-1" << std::endl;
     // 获取默认支撑平面（地面）；
     VectorXd sup_plane = mpDefaultSupportingPlane->param;    
     // 计算物体点云中心；
@@ -798,7 +798,7 @@ g2o::ellipsoid EllipsoidExtractor::EstimateLocalEllipsoidUsingMultiPlanes(cv::Ma
 
     // ✅ 5. 将点云转换到重力坐标系
     // 获得该系下的点云.
-    std::cout<< " [debug] EstimateLocalEllipsoidUsingMultiPlanes 2-2, 当前帧中的物体点云中心:"<< centroid << std::endl;
+    // std::cout<< " [debug] EstimateLocalEllipsoidUsingMultiPlanes 2-2, 当前帧中的物体点云中心:"<< centroid.transpose() << std::endl;
     g2o::SE3Quat SE3Tgw = Twg.inverse();
     Eigen::Matrix4d transform_gw = SE3Tgw.to_homogeneous_matrix();
     pcl::PointCloud<PointType>::Ptr pCloudPCLGravity(new pcl::PointCloud<PointType>);
@@ -812,7 +812,7 @@ g2o::ellipsoid EllipsoidExtractor::EstimateLocalEllipsoidUsingMultiPlanes(cv::Ma
     // ✅ 6. 估计物体主方向（Yaw角）
     // 开始计算朝向: 使用法向量投票器    
     // 计算该点云的 normal voters
-    std::cout<< " [debug] EstimateLocalEllipsoidUsingMultiPlanes 3" << std::endl;
+    // std::cout<< " [debug] EstimateLocalEllipsoidUsingMultiPlanes 3" << std::endl;
     double yaw = NormalVoter(pCloudPCLGravity);  // 该函数获得一个位于 XY 平面内的, 三维法向量. 可与 Z轴组完整旋转矩阵.
     // 通过yaw角度将 Gravity - > normalized 
     g2o::SE3Quat Tgn = GenerateTransformNormalToGravity(yaw); 
@@ -828,7 +828,7 @@ g2o::ellipsoid EllipsoidExtractor::EstimateLocalEllipsoidUsingMultiPlanes(cv::Ma
 
     // ✅ 8. 椭球建模（归一化坐标系下）
     // 基于PCA结果生成最小包围盒顶点. 位于相机坐标系内.
-    std::cout<< " [debug] EstimateLocalEllipsoidUsingMultiPlanes 4" << std::endl;
+    // std::cout<< " [debug] EstimateLocalEllipsoidUsingMultiPlanes 4" << std::endl;
     g2o::ellipsoid e_zero_normalized = GetEllipsoidFromNomalizedPointCloud(pObjectCloudNormalized);
     delete pObjectCloudNormalized; pObjectCloudNormalized = NULL;
 
@@ -843,7 +843,7 @@ g2o::ellipsoid EllipsoidExtractor::EstimateLocalEllipsoidUsingMultiPlanes(cv::Ma
 
     // ✅ 10. 添加bbox约束平面（提升精度）
     // 接下来添加 ConstrainPlanes.
-    std::cout<< " [debug] EstimateLocalEllipsoidUsingMultiPlanes 5" << std::endl;
+    // std::cout<< " [debug] EstimateLocalEllipsoidUsingMultiPlanes 5" << std::endl;
     Matrix3d calib = CameraToCalibMatrix(camera);
     GenerateConstrainPlanesToEllipsoid(e_local_normalized, bbox, depth, campose_wc, calib);
     VisualizeConstrainPlanes(e_local_normalized, campose_wc, mpMap); // 中点定在全局坐标系
@@ -852,7 +852,7 @@ g2o::ellipsoid EllipsoidExtractor::EstimateLocalEllipsoidUsingMultiPlanes(cv::Ma
     double prob_3d = CalculateProbability(e_local_normalized, bbox, calib);
 
     // calculate the probability of the single-frame ellipsoid estimation
-    std::cout<< " [debug] EstimateLocalEllipsoidUsingMultiPlanes 6" << std::endl;
+    // std::cout<< " [debug] EstimateLocalEllipsoidUsingMultiPlanes 6" << std::endl;
     e_local_normalized.prob_3d = prob_3d;
     e_local_normalized.prob = prob * prob_3d;    // measurement_prob * symmetry_prob
     e_local_normalized.miLabel = label;
@@ -862,9 +862,9 @@ g2o::ellipsoid EllipsoidExtractor::EstimateLocalEllipsoidUsingMultiPlanes(cv::Ma
     clock_t time_2_fullProcess = clock();
     
     // output the main running time
-    cout << " -- System Time [EllipsoidExtractor.cpp] :" << endl ;
-    cout << " ---- time_ExtractPointCloud: " <<(double)(time_1_ExtractPointCloud - time_start) / CLOCKS_PER_SEC << "s" << endl;
-    cout << " ---- total_ellipsoidExtraction: " <<(double)(time_2_fullProcess - time_start) / CLOCKS_PER_SEC << "s" << endl;
+    cout << "\t -- System Time [EllipsoidExtractor.cpp] :" << endl ;
+    cout << "\t \t ---- time_ExtractPointCloud: " <<(double)(time_1_ExtractPointCloud - time_start) / CLOCKS_PER_SEC << "s" << endl;
+    cout << "\t \t ---- total_ellipsoidExtraction: " <<(double)(time_2_fullProcess - time_start) / CLOCKS_PER_SEC << "s" << endl;
     cout << endl;
 
     // // 此处添加一个判断, 若 prob_3d < 0.5 则舍弃
@@ -1084,7 +1084,7 @@ ORB_SLAM2::PointCloud* EllipsoidExtractor::ApplyMHPlanesFilter(ORB_SLAM2::PointC
 // 传入平面: 局部坐标系下的支撑平面
 g2o::ellipsoid EllipsoidExtractor::EstimateLocalEllipsoidWithSupportingPlane(cv::Mat& depth, Eigen::Vector4d& bbox, int label, double prob, Eigen::VectorXd &pose, camera_intrinsic& camera, g2o::plane* pSupPlane)
 {
-    std::cout<< "[debug] EstimateLocalEllipsoidWithSupportingPlane 1, 支撑平面的参数" << pSupPlane->param.transpose() <<std::endl;
+    // std::cout<< "[debug] EstimateLocalEllipsoidWithSupportingPlane 1, 支撑平面的参数" << pSupPlane->param.transpose() <<std::endl;
     // 设置地平面
     g2o::plane* originGroundPlane = mpDefaultSupportingPlane;
 
@@ -1093,19 +1093,19 @@ g2o::ellipsoid EllipsoidExtractor::EstimateLocalEllipsoidWithSupportingPlane(cv:
     pSupPlaneWorld->transform(Twc);
     // mpPlane = pSupPlaneWorld;
     
-    std::cout<< "[debug] EstimateLocalEllipsoidWithSupportingPlane 2" << std::endl;
+    // std::cout<< "[debug] EstimateLocalEllipsoidWithSupportingPlane 2" << std::endl;
     SetSupportingPlane(pSupPlaneWorld, true);
 
-    std::cout<< "[debug] EstimateLocalEllipsoidWithSupportingPlane 3" << std::endl;
+    // std::cout<< "[debug] EstimateLocalEllipsoidWithSupportingPlane 3" << std::endl;
     pcl::PointCloud<PointType>::Ptr pcd_ptr_no_use(new pcl::PointCloud<PointType>);
     g2o::ellipsoid e = EstimateLocalEllipsoidUsingMultiPlanes(depth, bbox, label, prob, pose, camera, pcd_ptr_no_use);
 
     // 取消地平面
     // mpPlane = originGroundPlane;
-    std::cout<< "[debug] EstimateLocalEllipsoidWithSupportingPlane 4" << std::endl;
+    // std::cout<< "[debug] EstimateLocalEllipsoidWithSupportingPlane 4" << std::endl;
     SetSupportingPlane(originGroundPlane, false);
 
-    std::cout<< "[debug] EstimateLocalEllipsoidWithSupportingPlane 5" << std::endl;
+    // std::cout<< "[debug] EstimateLocalEllipsoidWithSupportingPlane 5" << std::endl;
     delete pSupPlaneWorld; pSupPlaneWorld = NULL;
 
     // 返回。

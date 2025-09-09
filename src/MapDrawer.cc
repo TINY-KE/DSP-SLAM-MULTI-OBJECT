@@ -412,14 +412,14 @@ bool MapDrawer::drawGlobalEllipsoids(double prob_thresh) {
 
         if(pE->prob > prob_thresh ){
             ellipsoids_prob.push_back(pE);
-            std::cout<<"[debug] drawGlobalEllipsoids 3 Ellipsoid with prob: " << pE->prob << ", scale:" << pE->scale.transpose() << std::endl;
+            // std::cout<<"[debug] drawGlobalEllipsoids 3 Ellipsoid with prob: " << pE->prob << ", scale:" << pE->scale.transpose() << std::endl;
         }
         else{
             // std::cout<<"[debug] drawGlobalEllipsoids 3 Ellipsoid with prob: " << pE->prob << " is filtered out."  << ", scale:" << pE->scale.transpose()<< std::endl;
         }
     }
     
-    drawAllEllipsoidsInVector(ellipsoids_prob, 1);
+    drawAllEllipsoidsInVector(ellipsoids_prob, 4);
 
     return true;
 }

@@ -234,7 +234,7 @@ public:
     void SetImageNames(vector<string>& vstrImageFilenamesRGB);
     
     Map* getMap();
-
+    int mbMapInSameThread;
 };
 
 }// namespace ORB_SLAM

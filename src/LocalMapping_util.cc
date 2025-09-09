@@ -536,7 +536,7 @@ void LocalMapping::Process_Multi_DetectedObjects_byPythonReconstruct()
     {
         auto det = mvpObjectDetections[det_i];
 
-        std::cout<< "[zhjd-debug] Process_Multi_DetectedObjects "<<det_i<<": isNew:"<< det->isNew<< ", isGood:"<< det->isGood<< std::endl;
+        std::cout<< "[zhjd-debug] Process_Multi_DetectedObjects, KeyFrame id: "<< mpCurrentKeyFrame->mnId <<", detection: "<<det_i<<", isNew:"<< det->isNew<< ", isGood:"<< det->isGood<< std::endl;
         // If the detection is associated with an existing map object, we consider 2 different situations:
         // 1. the object has been reconstructed: update observations 2. the object has not been reconstructed:
         // check if it's ready for reconstruction, reconstruct if it's got enough points
@@ -572,10 +572,23 @@ void LocalMapping::Process_Multi_DetectedObjects_byPythonReconstruct()
             else if(mnComputeCuboidType==3)
             {
                 if (mvpGlobalEllipsolds[det_i] == NULL) {
-                    cout << "[zhjd-debug] Process_Multi_DetectedObjects ComputeCuboid: mvpGlobalEllipsolds[" << det_i << "] 为空，无法SetPoseByEllipsold" << endl;
+                    cout << "[zhjd-debug] Process_Multi_DetectedObjects ComputeCuboid: KeyFrame id: "<< mpCurrentKeyFrame->mnId << ", => Det[" << det_i << "] 为空，无法SetPoseByEllipsold" << endl;
                     continue;
                     // pMO->SetBadFlag();
                     // continue;
+                }
+                else{
+                    // Method 2: 使用来自椭球体的位姿信息
+                    std::cout << "[zhjd-debug] Process_Multi_DetectedObjects ComputeCuboid: 利用椭球体SetPoseByEllipsold" << std::endl;
+                    pMO->SetPoseByEllipsoid(mvpGlobalEllipsolds[det_i]);
+                }
+            }
+            else if(mnComputeCuboidType==4)
+            {
+                if (mvpGlobalEllipsolds[det_i] == NULL) {
+                    cout << "[zhjd-debug] Process_Multi_DetectedObjects ComputeCuboid: KeyFrame id: "<< mpCurrentKeyFrame->mnId << ", => Det[" << det_i << "] 为空，无法SetPoseByEllipsold" << endl;
+                    bool updatePose = true;
+                    pMO->ComputeCuboidPCA_ellipsoid(updatePose); 
                 }
                 else{
                     // Method 2: 使用来自椭球体的位姿信息

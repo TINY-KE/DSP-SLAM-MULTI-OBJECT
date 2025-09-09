@@ -285,11 +285,6 @@ public:
     vector<string> mvstrImageFilenamesRGB;
     void SetImageNames(vector<string>& vstrImageFilenamesRGB);
     int mCols, mRows;
-    // 深度点云生成椭球体的筛选条件1：离边界的距离
-    int mBorderPixels = 10;
-    int mMeasurementLengthLimitPixels = 0;
-    // 深度点云生成椭球体的筛选条件5：物体识别的概率
-    double mProbThresh = 0;
 
 
     // 用于生成椭球体模型

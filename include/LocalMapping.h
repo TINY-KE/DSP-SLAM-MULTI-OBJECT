@@ -169,6 +169,9 @@ private:
     
     bool mb_add_depth_pcd_to_map_object;
 
+public:
+    void InitSet();
+    bool RunOneTime();
 };
 
 } //namespace ORB_SLAM
