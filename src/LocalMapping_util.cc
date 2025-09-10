@@ -590,6 +590,11 @@ void LocalMapping::Process_Multi_DetectedObjects_byPythonReconstruct()
                     bool updatePose = true;
                     pMO->ComputeCuboidPCA_ellipsoid(updatePose); 
                 }
+                else if (mvpGlobalEllipsolds[det_i]->scale(0) <= 0.05 || mvpGlobalEllipsolds[det_i]->scale(1) <= 0.05 || mvpGlobalEllipsolds[det_i]->scale(2) <= 0.05) {
+                    cout << "[zhjd-debug] Process_Multi_DetectedObjects ComputeCuboid: KeyFrame id: "<< mpCurrentKeyFrame->mnId << ", => Det[" << det_i << "] 尺寸过小，无法SetPoseByEllipsold" << endl;
+                    bool updatePose = true;
+                    pMO->ComputeCuboidPCA_ellipsoid(updatePose); 
+                }
                 else{
                     // Method 2: 使用来自椭球体的位姿信息
                     std::cout << "[zhjd-debug] Process_Multi_DetectedObjects ComputeCuboid: 利用椭球体SetPoseByEllipsold" << std::endl;

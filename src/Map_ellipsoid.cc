@@ -26,10 +26,13 @@ namespace ORB_SLAM2
 {
 
 bool Map::AddPointCloudList(const string &name, std::vector<pcl::PointCloud<pcl::PointXYZRGB>> &vCloudPCL, g2o::SE3Quat &Twc, int type) {
+    // std::cout<<"[debug] AddPointCloudList -- "<<name<< " 1" << std::endl;
     if (type == REPLACE_POINT_CLOUD) {
         DeletePointCloudList(name, COMPLETE_MATCHING);
     }
     srand(time(0));
+    
+    // std::cout<<"[debug] AddPointCloudList -- "<<name<< " 2" << std::endl;
     for (auto &cloud : vCloudPCL) {
         ORB_SLAM2::PointCloud cloudQuadri = pclToQuadricPointCloud(cloud);
         ORB_SLAM2::PointCloud *pCloudGlobal = new ORB_SLAM2::PointCloud(cloudQuadri);
@@ -45,6 +48,8 @@ bool Map::AddPointCloudList(const string &name, std::vector<pcl::PointCloud<pcl:
             pCloudGlobal = NULL;
         }
     }
+    
+    // std::cout<<"[debug] AddPointCloudList -- "<<name<< " 3" << std::endl;
     return true;
 }
 

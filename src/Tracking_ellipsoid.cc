@@ -421,7 +421,7 @@ namespace ORB_SLAM2 {
         std::cout << "[GroundPlane] Set groundplane mannually: " << param.transpose() << std::endl;
         miGroundPlaneState = true;
         mGroundPlane.param = param;
-        mGroundPlane.color = Vector3d(0,1,0);
+        mGroundPlane.color = Vector3d(0,0,0);
     }
 
 
@@ -763,7 +763,7 @@ namespace ORB_SLAM2 {
         std::vector<g2o::ellipsoid*>& vpEllipsoids = pFrame->mpLocalObjects;
 
         // 获得曼哈顿planes.
-        std::vector<g2o::plane*> vpPlanes = pPlaneExtractorManhattan->GetPotentialMHPlanes();
+        std::vector<g2o::plane*> vpPlanes = pPlaneExtractorManhattan->GetAllMHPlanes();
 
         // 检查曼哈顿平面与椭球体的关系
         Relations rls = mpRelationExtractor->ExtractSupporttingRelations(vpEllipsoids, vpPlanes, pFrame, QUADRIC_MODEL);
@@ -778,9 +778,20 @@ namespace ORB_SLAM2 {
         // ****************************
         //          可视化部分
         // ****************************
+        // std::cout<<"[debug] Tracking::TaskRelationship, 1"<< std::endl;
+        std::vector<PointCloudPCL> vPlanePoints = pPlaneExtractorManhattan->GetAllMHPlanesPoints();
         g2o::SE3Quat Twc = pFrame->cam_pose_Twc;
-        std::vector<PointCloudPCL> vPlanePoints = pPlaneExtractorManhattan->GetPotentialMHPlanesPoints();
-        mpMap->AddPointCloudList("Relationship.Relation Planes", vPlanePoints, Twc, REPLACE_POINT_CLOUD);
+        mpMap->AddPointCloudList("Relationship.All MH Planes", vPlanePoints, Twc, REPLACE_POINT_CLOUD);
+
+        // std::cout<<"[debug] Tracking::TaskRelationship, 2"<< std::endl;
+        // 最新椭球体的支撑平面
+        std::vector<PointCloudPCL>  vSupportingPlanePoints;
+        // std::cout<<"[debug] Tracking::TaskRelationship, 3"<< std::endl;
+        if(rls.size()>0)
+            vSupportingPlanePoints.push_back(vPlanePoints[rls[rls.size()-1].plane_id]);
+        mpMap->AddPointCloudList("Relationship.Supporting Planes", vSupportingPlanePoints, Twc, REPLACE_POINT_CLOUD);
+
+        // std::cout<<"[debug] Tracking::TaskRelationship, 4"<< std::endl;
 
         // 可视化该关系
         // VisualizeRelations(rls, mpMap, Twc, vPlanePoints); // 放到地图中去显示?
@@ -957,6 +968,7 @@ namespace ORB_SLAM2 {
             }
         }
     }
+
 
 
 }

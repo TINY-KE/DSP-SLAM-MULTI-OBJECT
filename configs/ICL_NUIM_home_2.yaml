@@ -116,13 +116,15 @@ EllipsoidExtractor.SupportingPlaneFilter.DisThresh: 0.03
 EllipsoidExtractor_DEPTH_RANGE: 7
 
 Debug.EllipsoidExtraction.UsingMultiPlanes: 2 # 最终发现，两者没区别  # 1：使用多平面函数，2：使用支撑平面（输入的平面的local plane） 
-Debug.EllipsoidExtraction.OpenRelations: 0
+Debug.EllipsoidExtraction.OpenRelations: 1
 
 
 # 地平面提取参数： Ground Plane Extraction
-Plane.MinSize: 1000
+Plane.MinSize: 100  #1000
 Plane.AngleThreshold: 3.0
 Plane.DistanceThreshold: 0.05
+Plane.MH_points_in_plane_size_scale: 0.001
+
 
 # 椭球体数据关联
 Tracking.AssociateObjectWithEllipsold: 1
@@ -139,7 +141,7 @@ Mapping.LocalMappingInSameThread: 1
 
 # use_object
 useObjectConstruct: 1
-ComputeCuboidType: 3    #3：椭球体
+ComputeCuboidType: 4    #3：椭球体
 NumKFsPassedSinceInit_thresh: 1  #一个物体被检测的次数，大于该值，才进行一次重建，从而节约运算资源
 NumKFsPassedSinceLastRecon_thresh: 4  #自上次重建后经过的最少关键帧数量，如果小于阈值，则跳过重建，从而节约运算资源
 # + 修改物体识别的物体种类

@@ -119,15 +119,34 @@ int main(int argc, char **argv)
     // Main loop
     cv::Mat imRGB, imD;
 
+    int images_numbers_to_pass_over = 1;
     bool frame_by_frame = true;
     if(frame_by_frame) {
         std::cout << "*****************************" << std::endl;
-        std::cout << "input image: Press [ENTER] to continue ... , [y] to autonomous mode, [e] to quit" << std::endl;
+        std::cout << "input image: Press [ENTER] to continue ... , [y] to autonomous mode, [e] to quit." << std::endl;
         std::cout << "*****************************" << std::endl;
         char key = getchar();
         if (key=='y')
         {
             frame_by_frame = false;
+        }
+        else if (key=='e'){
+            return 0;
+        }
+        else if (key > '0' && key <= '9') {
+            images_numbers_to_pass_over = key - '0';
+        }
+        else if (key=='a'){
+            images_numbers_to_pass_over = 10;
+        }
+        else if (key=='s'){
+            images_numbers_to_pass_over = 50;
+        }
+        else if (key=='d'){
+            images_numbers_to_pass_over = 100;
+        }
+        else if (key=='f'){
+            images_numbers_to_pass_over = 300;
         }
     }
 
@@ -192,19 +211,36 @@ int main(int argc, char **argv)
         //     std::this_thread::sleep_for(std::chrono::microseconds(static_cast<size_t>((T- ttrack)*1e6)));
         // }
 
-        if(frame_by_frame) {
-            std::cout << "*****************************" << std::endl;
-            std::cout << "Press [ENTER] to continue ... , [y] to autonomous mode, [e] to quit." << std::endl;
-            std::cout << "*****************************" << std::endl;
-            char key = getchar();
-            if (key=='y')
-            {
-                frame_by_frame = false;
+        images_numbers_to_pass_over --;
+        if(images_numbers_to_pass_over<=0)
+            if(frame_by_frame) {
+                std::cout << "*****************************" << std::endl;
+                std::cout << "Press [ENTER] to continue ... , [y] to autonomous mode, [e] to quit, [photo numbers] to pass over." << std::endl;
+                std::cout << "*****************************" << std::endl;
+                char key = getchar();
+                if (key=='y')
+                {
+                    frame_by_frame = false;
+                }
+                else if (key=='e'){
+                    break;
+                }
+                else if (key > '0' && key <= '9') {
+                    images_numbers_to_pass_over = key - '0';
+                }
+                else if (key=='a'){
+                    images_numbers_to_pass_over = 10;
+                }
+                else if (key=='s'){
+                    images_numbers_to_pass_over = 50;
+                }
+                else if (key=='d'){
+                    images_numbers_to_pass_over = 100;
+                }
+                else if (key=='f'){
+                    images_numbers_to_pass_over = 300;
+                }
             }
-            else if (key=='e'){
-                break;
-            }
-        }
     }
 
     SLAM.SaveEntireMap(save_map_dir);

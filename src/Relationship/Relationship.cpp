@@ -140,7 +140,7 @@ namespace ORB_SLAM2
                 double dis_min = planeDisVec[0].first;
                 pPlane_best = planeDisVec[0].second;
                 
-                if( dis_min < 0.1 ) success = true;
+                if( dis_min < 0.3 ) success = true;
             }
             else if( model == 0 )
             {

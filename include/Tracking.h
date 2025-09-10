@@ -307,7 +307,7 @@ private:
     bool mb_associate_debug;
     bool mb_associate_object_with_ellipsold;
     int associateDetWithObject(ORB_SLAM2::KeyFrame *pKF, MapObject* pMO, int d_i, ObjectDetection* detKF1, vector<MapPoint*>& mvpMapPoints);
-
+    
 //深度点云可视化
 public:
     void DenseBuild();

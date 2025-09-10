@@ -7,6 +7,13 @@
 namespace ORB_SLAM2
 {
 
+enum MANHATTAN_PLANE_TYPE
+{
+    OTHERS = 0,
+    PARALLEL = 1,
+    VERTICAL = 2
+};
+
 // 公有继承. 扩展该函数.
 class PlaneExtractorManhattan : public PlaneExtractor
 {
@@ -16,7 +23,7 @@ public:
     PlaneExtractorManhattan(PlaneExtractorParam& param, g2o::plane* gplane);
     
     bool extractManhattanPlanes(const cv::Mat &depth, Eigen::Vector3d& local_gt, g2o::SE3Quat &Twc);
-    std::vector<g2o::plane*> GetPotentialMHPlanes();    //  用于物体支撑关系的搜索
+    std::vector<g2o::plane*> GetAllMHPlanes();    //  用于物体支撑关系的搜索
     bool GetMHResult();     // 上一次曼哈顿提取结果
 
     bool GetTotalMHResult();    // 整体曼哈顿提取结果: 一共应该有5个平面
@@ -24,15 +31,16 @@ public:
 
     void SetGroundPlane(g2o::plane* gplane);
 
-    std::vector<PointCloudPCL> GetPotentialMHPlanesPoints();
+    std::vector<PointCloudPCL> GetAllMHPlanesPoints();
 
 private:
     void UpdateHomeDominantStructuralMHPlanes(g2o::SE3Quat &Twc);
     void AddNewDominantMHPlane(g2o::plane* vP);
 
+    double mf_MH_points_in_plane_size_scale;
 
-    std::vector<g2o::plane*> mvpPotentialStructuralMHPlanes_nouse; // 当前提取的潜在曼哈顿结构平面 ("经过大小过滤"), 只用于进一步提取mvpHomeDominantStructuralMHPlanes
-    std::vector<g2o::plane*> mvpPotentialMHPlanes; // 当前提取的所有曼哈顿平面 ("仅满足垂直平行约束")
+    std::vector<g2o::plane*> mvpStructuralMHPlanes_bigenough; // 当前提取的曼哈顿结构平面 ("经过大小过滤"), 只用于进一步提取mvpHomeDominantStructuralMHPlanes
+    std::vector<g2o::plane*> mvpAllMHPlanes; // 当前提取的所有曼哈顿平面 ("仅满足垂直平行约束")
     bool mbResult;
 
     bool mbDominantResult;
@@ -40,7 +48,7 @@ private:
 
     g2o::plane* mpGroundplane;
 
-    std::vector<PointCloudPCL> mvPotentialMHPlanesPoints;
+    std::vector<PointCloudPCL> mvAllMHPlanesPoints;
 
 };
 

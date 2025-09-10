@@ -163,7 +163,23 @@ pybind11::handle::dec_ref() is being called while the GIL is either not held or 
         + 我觉得：用深度点云生成物体，应该可以解决这个问题
     + 物体和墙面不垂直，如果可以通过墙面调整SetPoseByEllipsoid，
 
-# 第五阶段  实现椭球体的二维椭圆投影和隐式形状的二维掩码投影
+
+
+# 第五阶段 画图
+
++ 竖直的曼哈顿平面
+    + 修改extractManhattanPlanes程序
+    + 以50图片，b所有点云，c四个平面（修改extractPlanes），d挑选后的曼哈顿平面    
+    + 修改地面颜色 
+        + 改了
+    + 挑选最佳竖直平面和水平平面
+        + 
+    + 没有物体，所以无法挑选MHP
+    
++ 为什么会有scale很小的椭球体在mvpGlobalEllipsolds中
+    + 在track中过滤一下
+
+# 第六阶段 椭球体节点约束
     + 如何实现
 
 # 第六阶段  联合优化中加上relations平面（水平面和垂直面）
