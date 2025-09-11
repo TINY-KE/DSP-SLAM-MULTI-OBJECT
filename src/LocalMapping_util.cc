@@ -97,7 +97,7 @@ void LocalMapping::GetNewObservations()
     //     auto det = mvpObjectDetections[i];
     //     if (det->isNew)
     //         continue;
-    //     if (!det->isGood)
+    //     if (!det->isGood_OrbPointsEnough)
     //         continue;
 
     //     auto pMO = mvpAssociatedObjects[i];
@@ -224,7 +224,7 @@ void LocalMapping::CreateNewObjectsFromDetections()   // 用于单目模式
         // If the detection is a new object, create a new map object.
         if (!det->isNew)
             continue;
-        if (!det->isGood)
+        if (!det->isGood_OrbPointsEnough)
             continue;
         
         // Create object with associated feature points
@@ -265,13 +265,13 @@ void LocalMapping::ProcessDetectedObjects_byPythonReconstruct()
     {
         auto det = mvpObjectDetections[det_i];
 
-        std::cout<< "[zhjd-debug] Detection "<<det_i<<": isNew:"<< det->isNew<< ", isGood:"<< det->isGood<< std::endl;
+        std::cout<< "[zhjd-debug] Detection "<<det_i<<": isNew:"<< det->isNew<< ", isGood_OrbPointsEnough:"<< det->isGood_OrbPointsEnough<< std::endl;
         // If the detection is associated with an existing map object, we consider 2 different situations:
         // 1. the object has been reconstructed: update observations 2. the object has not been reconstructed:
         // check if it's ready for reconstruction, reconstruct if it's got enough points
         if (det->isNew)   //疑问：如果是一个新的检测，为什么不创建物体？？
             continue;
-        if (!det->isGood)
+        if (!det->isGood_OrbPointsEnough)
             continue;
 
         MapObject *pMO = mvpAssociatedObjects[det_i];
@@ -483,7 +483,8 @@ void LocalMapping::Create_Multi_NewObjectsFromDetections()  // 用于RGBD模式
     cv::Mat Rcw = mpCurrentKeyFrame->GetRotation();
     cv::Mat tcw = mpCurrentKeyFrame->GetTranslation();
     auto mvpObjectDetections = mpCurrentKeyFrame->GetObjectDetections();
-
+    auto mvpGlobalEllipsolds = mpCurrentKeyFrame->GetEllipsoldsGlobal();
+    
     // Create new objects first, otherwise data association might fail
     for (int det_i = 0; det_i < mvpObjectDetections.size(); det_i++)
     {
@@ -492,7 +493,9 @@ void LocalMapping::Create_Multi_NewObjectsFromDetections()  // 用于RGBD模式
         // If the detection is a new object, create a new map object.
         if (!det->isNew)
             continue;
-        if (!det->isGood)
+        if (!det->isGood_OrbPointsEnough)
+            continue;
+        if (mvpGlobalEllipsolds[det_i] == NULL) 
             continue;
 
         // Create object with associated feature points
@@ -518,7 +521,8 @@ void LocalMapping::Create_Multi_NewObjectsFromDetections()  // 用于RGBD模式
         }
         // pNewObj->GetMapPointsWithinBoundingCubeToGround();
         // std::cout<<"[GetMapPointsWithinBoundingCubeToGround] end"<<std::endl;
-        
+
+        pNewObj->SetPoseByEllipsoid(mvpGlobalEllipsolds[det_i]);
     }
 }
 
@@ -536,13 +540,13 @@ void LocalMapping::Process_Multi_DetectedObjects_byPythonReconstruct()
     {
         auto det = mvpObjectDetections[det_i];
 
-        std::cout<< "[zhjd-debug] Process_Multi_DetectedObjects, KeyFrame id: "<< mpCurrentKeyFrame->mnId <<", detection: "<<det_i<<", isNew:"<< det->isNew<< ", isGood:"<< det->isGood<< std::endl;
+        std::cout<< "[zhjd-debug] Process_Multi_DetectedObjects, KeyFrame id: "<< mpCurrentKeyFrame->mnId <<", detection: "<<det_i<<", isNew:"<< det->isNew<< ", isGood_OrbPointsEnough:"<< det->isGood_OrbPointsEnough<< std::endl;
         // If the detection is associated with an existing map object, we consider 2 different situations:
         // 1. the object has been reconstructed: update observations 2. the object has not been reconstructed:
         // check if it's ready for reconstruction, reconstruct if it's got enough points
         if (det->isNew)   //只有track中数据关联上的物体才会被重建
             continue;
-        if (!det->isGood)
+        if (!det->isGood_OrbPointsEnough)
             continue;
 
         MapObject *pMO = mvpAssociatedObjects[det_i];  
@@ -561,64 +565,75 @@ void LocalMapping::Process_Multi_DetectedObjects_byPythonReconstruct()
             pMO->AddDepthPointCloudFromObjectDetection(det->pcd_ptr);
         }
 
-        //更新物体的Sim3Two
-        if (numKFsPassedSinceInit < 50 && !pMO->reconstructed ){
-            if(mnComputeCuboidType==0)
-                pMO->ComputeCuboidPCA(numKFsPassedSinceInit < 15);   
-            else if(mnComputeCuboidType==1)
-                pMO->ComputeCuboidPCA_manhattan(numKFsPassedSinceInit < 15);   
-            else if(mnComputeCuboidType==2)
-                pMO->ComputeCuboidPCA_ellipsoid(numKFsPassedSinceInit < 15);   
-            else if(mnComputeCuboidType==3)
-            {
-                if (mvpGlobalEllipsolds[det_i] == NULL) {
-                    cout << "[zhjd-debug] Process_Multi_DetectedObjects ComputeCuboid: KeyFrame id: "<< mpCurrentKeyFrame->mnId << ", => Det[" << det_i << "] 为空，无法SetPoseByEllipsold" << endl;
-                    continue;
-                    // pMO->SetBadFlag();
-                    // continue;
-                }
-                else{
-                    // Method 2: 使用来自椭球体的位姿信息
-                    std::cout << "[zhjd-debug] Process_Multi_DetectedObjects ComputeCuboid: 利用椭球体SetPoseByEllipsold" << std::endl;
-                    pMO->SetPoseByEllipsoid(mvpGlobalEllipsolds[det_i]);
-                }
-            }
-            else if(mnComputeCuboidType==4)
-            {
-                if (mvpGlobalEllipsolds[det_i] == NULL) {
-                    cout << "[zhjd-debug] Process_Multi_DetectedObjects ComputeCuboid: KeyFrame id: "<< mpCurrentKeyFrame->mnId << ", => Det[" << det_i << "] 为空，无法SetPoseByEllipsold" << endl;
-                    bool updatePose = true;
-                    pMO->ComputeCuboidPCA_ellipsoid(updatePose); 
-                }
-                else if (mvpGlobalEllipsolds[det_i]->scale(0) <= 0.05 || mvpGlobalEllipsolds[det_i]->scale(1) <= 0.05 || mvpGlobalEllipsolds[det_i]->scale(2) <= 0.05) {
-                    cout << "[zhjd-debug] Process_Multi_DetectedObjects ComputeCuboid: KeyFrame id: "<< mpCurrentKeyFrame->mnId << ", => Det[" << det_i << "] 尺寸过小，无法SetPoseByEllipsold" << endl;
-                    bool updatePose = true;
-                    pMO->ComputeCuboidPCA_ellipsoid(updatePose); 
-                }
-                else{
-                    // Method 2: 使用来自椭球体的位姿信息
-                    std::cout << "[zhjd-debug] Process_Multi_DetectedObjects ComputeCuboid: 利用椭球体SetPoseByEllipsold" << std::endl;
-                    pMO->SetPoseByEllipsoid(mvpGlobalEllipsolds[det_i]);
-                }
-            }
-        }
-        else  // when we have relative good object shape
-            pMO->RemoveOutliersModel();
-        // // only begin to reconstruct the object if it is observed for enough amoubt of time (15 KFs)
-        // 修改：原程序中只有在观测到15帧之后才开始重建，我感觉没必要，因此注释掉
-        // if(numKFsPassedSinceInit < 15)
-        //     continue;
+        // //更新物体的Sim3Two
+        // if(mnComputeCuboidType==0)
+        //     pMO->ComputeCuboidPCA(numKFsPassedSinceInit < 15);   
+        // else if(mnComputeCuboidType==1)
+        //     pMO->ComputeCuboidPCA_manhattan(numKFsPassedSinceInit < 15);   
+        // else if(mnComputeCuboidType==2)
+        //     pMO->ComputeCuboidPCA_ellipsoid(numKFsPassedSinceInit < 15);   
+        // else if(mnComputeCuboidType==3)
+        // {
+        //     if (mvpGlobalEllipsolds[det_i] == NULL) {
+        //         cout << "[zhjd-debug] Process_Multi_DetectedObjects ComputeCuboid: KeyFrame id: "<< mpCurrentKeyFrame->mnId << ", => Det[" << det_i << "] 为空，无法SetPoseByEllipsold" << endl;
+        //         continue;
+        //         // pMO->SetBadFlag();
+        //         // continue;
+        //     }
+        //     else{
+        //         // Method 2: 使用来自椭球体的位姿信息
+        //         std::cout << "[zhjd-debug] Process_Multi_DetectedObjects ComputeCuboid: 利用椭球体SetPoseByEllipsold" << std::endl;
+        //         pMO->SetPoseByEllipsoid(mvpGlobalEllipsolds[det_i]);
+        //     }
+        // }
+        // else if(mnComputeCuboidType==4)
+        // {
+        //     if (mvpGlobalEllipsolds[det_i] == NULL) {
+        //         cout << "[zhjd-debug] Process_Multi_DetectedObjects ComputeCuboid: KeyFrame id: "<< mpCurrentKeyFrame->mnId << ", => Det[" << det_i << "] 为空，无法SetPoseByEllipsold" << endl;
+        //         bool updatePose = true;
+        //         pMO->ComputeCuboidPCA_ellipsoid(updatePose); 
+        //     }
+        //     else if (mvpGlobalEllipsolds[det_i]->scale(0) <= 0.05 || mvpGlobalEllipsolds[det_i]->scale(1) <= 0.05 || mvpGlobalEllipsolds[det_i]->scale(2) <= 0.05) {
+        //         cout << "[zhjd-debug] Process_Multi_DetectedObjects ComputeCuboid: KeyFrame id: "<< mpCurrentKeyFrame->mnId << ", => Det[" << det_i << "] 尺寸过小，无法SetPoseByEllipsold" << endl;
+        //         bool updatePose = true;
+        //         pMO->ComputeCuboidPCA_ellipsoid(updatePose); 
+        //     }
+        //     else{
+        //         // Method 2: 使用来自椭球体的位姿信息
+        //         std::cout << "[zhjd-debug] Process_Multi_DetectedObjects ComputeCuboid: 利用椭球体SetPoseByEllipsold" << std::endl;
+        //         pMO->SetPoseByEllipsoid(mvpGlobalEllipsolds[det_i]);
+        //     }
+        // }
+    
+
+
+        pMO->AddObjectObservation(mpCurrentKeyFrame, det_i);
+        mpCurrentKeyFrame->AddMapObject(pMO, det_i);
+        mlpRecentAddedMapObjects.push_back(pMO);
+
+        nLastReconKFID = int(mpCurrentKeyFrame->mnId);
+    }
+}
+
+
+bool LocalMapping::DeepSDFObjectConstruction(ObjectDetection *det, MapObject *pMO, int det_i){
+        
+        auto SE3Twc = Converter::toMatrix4f(mpCurrentKeyFrame->GetPoseInverse());
+        auto SE3Tcw = Converter::toMatrix4f(mpCurrentKeyFrame->GetPose());
+        cv::Mat Rcw = mpCurrentKeyFrame->GetRotation();
+        cv::Mat tcw = mpCurrentKeyFrame->GetTranslation();
+        int numKFsPassedSinceInit = int(mpCurrentKeyFrame->mnId - pMO->mpRefKF->mnId);
 
         // 一个物体被检测到五次，才进行一次重建，从而节约运算资源
         if ((numKFsPassedSinceInit - 15) % mnNumKFsPassedSinceInit_thresh != 0) {
             std::cout << "  Conitinue because (numKFsPassedSinceInit - 15) % 5 != 0" << std::endl;
-            continue;
+            return false;
         }
 
         // 如果自上次重建后经过的关键帧数量少于8个，则跳过重建，从而节约运算资源
         int numKFsPassedSinceLastRecon = int(mpCurrentKeyFrame->mnId) - nLastReconKFID;
         if (numKFsPassedSinceLastRecon  < mnNumKFsPassedSinceLastRecon_thresh)
-            continue;
+            return false;
         
         // 1. 统计物体 pMO 上有效（三维）地图点的数量，存储在变量 n_valid_points 中。
         std::vector<MapPoint*> points_on_object = pMO->GetMapPointsOnObject();
@@ -838,6 +853,9 @@ void LocalMapping::Process_Multi_DetectedObjects_byPythonReconstruct()
             pMO->vertices = pyMesh.attr("vertices").cast<Eigen::MatrixXf>();
             pMO->faces = pyMesh.attr("faces").cast<Eigen::MatrixXi>();
             pMO->reconstructed = true;
+
+
+            
             pMO->AddObjectObservation(mpCurrentKeyFrame, det_i);
             mpCurrentKeyFrame->AddMapObject(pMO, det_i);
             mpObjectDrawer->AddObject(pMO);
@@ -845,10 +863,8 @@ void LocalMapping::Process_Multi_DetectedObjects_byPythonReconstruct()
 
             nLastReconKFID = int(mpCurrentKeyFrame->mnId);
         }
-    }
 }
-
-
+ 
 // 根据已有point的min和max xy，将0~maxz的点都加入pMO->GetMapPointsOnObject()中。
 std::vector<MapPoint*> LocalMapping::AddCubePointsToMapObject(std::vector<MapPoint*> points){
     // 计算points的float minX, float maxX, float minY, float maxY, float maxZ

@@ -121,7 +121,7 @@ void Tracking::ObjectDataAssociation_onlyforStereo(KeyFrame *pKF)
         {
             det->isNew = false;
             if (det->nPts < 25)
-                det->isGood = false;
+                det->isGood_OrbPointsEnough = false;
 
             int idx = min_element(dist.begin(), dist.end()) - dist.begin();
             MapObject *pMO = vpLocalMapObjects[idx];
@@ -146,7 +146,7 @@ void Tracking::ObjectDataAssociation_onlyforStereo(KeyFrame *pKF)
         {
             det->isNew = true;
             if (det->nPts < 50)
-                det->isGood = false;
+                det->isGood_OrbPointsEnough = false;
         }
     }
 }
@@ -230,7 +230,7 @@ void Tracking::GetObjectDetectionsRGBD(KeyFrame *pKF)
         if (det->NumberOfPoints() < mMinimux_Points_To_Judge_Good)
         {
             std::cout << "\033[31m" << "     物体class为"<< det->label<<"的Detection包含point较少，设置为bad。" << "\033[0m" << std::endl;
-            det->isGood = false;
+            det->isGood_OrbPointsEnough = false;
         }
         pKF->mvpDetectedObjects.push_back(det);
 
@@ -308,7 +308,7 @@ void Tracking::GetObjectDetectionsMono(KeyFrame *pKF)
         // Reject the detection if too few keypoints are extracted
         if (det->NumberOfPoints() < 20)
         {
-            det->isGood = false;
+            det->isGood_OrbPointsEnough = false;
         }
         pKF->mvpDetectedObjects.push_back(det);
     }
@@ -343,6 +343,7 @@ void Tracking::AssociateObjectsByProjection(ORB_SLAM2::KeyFrame *pKF)
             // 与global椭球体的投影IoU评分
             vector<double> iou_stats;
             bool has_associate = false;
+            std::vector<std::pair<double, MapObject*>> objIoUVec;
 
             for (auto pMO: mapObjects){
                 // FIXME：这里暂时对于 e 为 NULL 的情况跳过处理
@@ -363,17 +364,30 @@ void Tracking::AssociateObjectsByProjection(ORB_SLAM2::KeyFrame *pKF)
 
                 // 与bbox求IoU
                 cv::Rect r1_proj(cv::Point(rect[0], rect[1]), cv::Point(rect[2], rect[3]));
+                // 红色是椭球体投影
                 cv::rectangle(img_show, r1_proj, cv::Scalar(0, 0, 255), 2);
 
                 // draw bbox of det
                 // cv::rectangle(img_show, cv::Point(x1, y1), cv::Point(x2, y2), cv::Scalar(255, 0, 0), 2);  // Scalar(255, 0, 0) is for blue color, 2 is the thickness
+                // 蓝色是当前检测框
                 cv::rectangle(img_show, r2_bbox, cv::Scalar(255, 0, 0), 2);  // Scalar(255, 0, 0) is for blue color, 2 is the thickness
 
-                cv::Rect r_and = r1_proj | r2_bbox;
-                cv::Rect r_U = r1_proj & r2_bbox;
-                double iou = r_U.area()*1.0/r_and.area();
+                // LZW版本
+                // cv::Rect r_and = r1_proj | r2_bbox;
+                // cv::Rect r_U = r1_proj & r2_bbox;
+                // double iou = r_U.area()*1.0/r_and.area();
 
+                // zhjd版本
+                cv::Rect inter = r1_proj & r2_bbox;
+                int interArea = inter.area();
+                int area1 = r1_proj.area();
+                int area2 = r2_bbox.area();
+                int unionArea = area1 + area2 - interArea;
+                double iou = unionArea > 0 ? (double)interArea / unionArea : 0.0;
                 iou_stats.push_back(iou);
+                // iou_stats.push_back(make_pair(dis, pPlane));
+                if (iou > mf_associate_IoU_thresold && label_bbox==label_obj)
+                    objIoUVec.push_back(make_pair(iou, pMO));
 
                 //TODO: 没关联上可能是因为椭球体的参数没有及时更新
                 if (mb_associate_debug)
@@ -394,15 +408,26 @@ void Tracking::AssociateObjectsByProjection(ORB_SLAM2::KeyFrame *pKF)
                     char key = getchar();
                 }
 
-                if (iou > mf_associate_IoU_thresold && label_bbox==label_obj){
+            }
+                
+            // 找出最大IoU的物体
+            std::sort(objIoUVec.begin(), objIoUVec.end(),
+                [](const std::pair<double, MapObject*>& a, const std::pair<double, MapObject*>& b) {
+                    return a.first > b.first; // 降序排序，IOU 最大的在前面
+                });
+            if (!objIoUVec.empty()) {
+                MapObject* bestObject = objIoUVec.front().second;
+                double maxIou = objIoUVec.front().first;
+                // 使用 bestObject 和 maxIou
+                if (maxIou > mf_associate_IoU_thresold){
                     cout << "[debug] Associate" << std::endl;
                     // 这里有一个问题，被关联过的物体可能在下一个det再次被遍历到
                     has_associate = true;
-                    associateDetWithObject(pKF, pMO, d_i, detKF1, mvpMapPoints);
+                    associateDetWithObject(pKF, bestObject, d_i, detKF1, mvpMapPoints);
                     break;
                 }
             }
-            
+
             std::cout << "Detection " << d_i << ", class " << label_bbox ;
             
             if (has_associate) std::cout << ", associated successfully: ";

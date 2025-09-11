@@ -42,10 +42,10 @@ ObjectDetection::ObjectDetection(const Eigen::Matrix4f &T, const Eigen::MatrixXf
     nPts = (int) SurfacePoints.size() / 3;
     nRays = (int) RayDirections.size() / 3;
     isNew = true;
-    isGood = true;
+    isGood_OrbPointsEnough = true;
 }
 
-ObjectDetection::ObjectDetection() : isNew(true), isGood(true)
+ObjectDetection::ObjectDetection() : isNew(true), isGood_OrbPointsEnough(true)
 {
     Sim3Tco = Eigen::Matrix4f::Identity();
     Rco = Sim3Tco.topLeftCorner<3, 3>();
@@ -107,7 +107,7 @@ void ObjectDetection::setPcdPtr(pcl::PointCloud<PointType>::Ptr& pcd_ptr_)
     // 这里有待考虑是否单独设置锁更合理
     if (pcd_ptr_ == NULL){
         pcd_ptr==nullptr;
-        // isGood = true;
+        // isGood_OrbPointsEnough = true;
         isValidPcd = false;
         return;
     }

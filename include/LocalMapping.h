@@ -166,6 +166,7 @@ private:
 
     // 处理完检测到的物体之后，要把它们更新到地图中
     void UpdateObjectsToMap();
+    bool DeepSDFObjectConstruction(ObjectDetection *det, MapObject *pMO, int det_i);
     
     bool mb_add_depth_pcd_to_map_object;
 

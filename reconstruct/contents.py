@@ -49,5 +49,6 @@ object_classes_freiburg = ["car"]
 object_classes_icl_nuim = ["bench", "chair", "bed", "dining table", "refrigerator", \
                            "vase", "cup", "bowl", "monitor"]
 
-object_classes_on_ground = ["bench", "chair", "potted plant", "bed", "dining table", "refrigerator"]
+# object_classes_on_ground = ["bench", "chair", "potted plant", "bed", "dining table", "refrigerator"]
+object_classes_on_ground = ["bench", "chair", "potted plant", "bed", "refrigerator"]
 object_classes_on_table = [c for c in object_classes if c not in object_classes_on_ground ]

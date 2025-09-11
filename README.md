@@ -175,10 +175,12 @@ pybind11::handle::dec_ref() is being called while the GIL is either not held or 
     + 挑选最佳竖直平面和水平平面
         + 
     + 没有物体，所以无法挑选MHP
-    
+    + 为什么前100帧，生成了两个椭球体，但是却没有加入到global中
+    + 在数据关联中加上，椭球体在三维空间中的距离判断
 + 为什么会有scale很小的椭球体在mvpGlobalEllipsolds中
     + 在track中过滤一下
-
+    + 加上距离的数据关联
+    
 # 第六阶段 椭球体节点约束
     + 如何实现
 

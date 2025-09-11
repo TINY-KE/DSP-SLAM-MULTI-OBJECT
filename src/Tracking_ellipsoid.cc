@@ -618,10 +618,11 @@ namespace ORB_SLAM2 {
 
             if(viIgnoreLabelLists.find(label) != viIgnoreLabelLists.end())
                 c4_not_human = false;
+            
 
             // cout << "[Tracking::UpdateDepthEllipsoid Estimation]  - prob|NotBorder|HasGround|NotAssociation|NotFiltered:" \
             //     << c5_prob_check << "," << c1_not_on_border << "," << c2 << "," << !c3 << "," << c4_not_human << std::endl;
-
+            
             // 对观测进行椭球体提取的几大条件
             if( c5_prob_check && c1_not_on_border /* && c2 && !c3 */ && c4_not_human ){
                 
@@ -682,11 +683,11 @@ namespace ORB_SLAM2 {
                     pObjByFitting = new g2o::ellipsoid(e_extractByFitting_newSym.transform_from(pFrame->cam_pose_Twc));
                     
                     if(pObjByFitting->prob_3d > 0.5)
-                        pObjByFitting->setColor(Vector3d(0.8,0.0,0.0), 1); // Set green color
+                        pObjByFitting->setColor(Vector3d(0.0,0.0,0.8), 1); // Set green color
                     else{
                         // prob_3d
                         // FIXME： 如果 prob_3d < 0.5, 使用bbox边界对ellipsold进行再次refine
-                        pObjByFitting->setColor(Vector3d(0.8,0,0), 0.5); // 透明颜色
+                        pObjByFitting->setColor(Vector3d(0,0,0.8), 0.5); // 透明颜色
                     }
 
                     // 临时更新： 此处显示的是 3d prob
@@ -713,11 +714,7 @@ namespace ORB_SLAM2 {
                     // getchar();
                     // 添加debug, 测试筛选图像平面内的bbox平面
                     // VisualizeCuboidsPlanesInImages(e_extractByFitting_newSym, pFrame->cam_pose_Twc, mCalib, mRows, mCols, mpMap);
-                }   // successful estimation.
 
-                // // 存储条件1: 该检测 3d_prob > 0.5
-                // // 最终决定使用的估计结果
-                if( c0 ){
                     g2o::ellipsoid *pE_extractByFitting = new g2o::ellipsoid(e_extractByFitting_newSym);
                     pLocalEllipsoidThisObservation = pE_extractByFitting;   // Store result to pE_extracted.
 

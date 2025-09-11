@@ -867,13 +867,13 @@ g2o::ellipsoid EllipsoidExtractor::EstimateLocalEllipsoidUsingMultiPlanes(cv::Ma
     cout << "\t \t ---- total_ellipsoidExtraction: " <<(double)(time_2_fullProcess - time_start) / CLOCKS_PER_SEC << "s" << endl;
     cout << endl;
 
-    // // 此处添加一个判断, 若 prob_3d < 0.5 则舍弃
-    // if(prob_3d < 0.5)
-    // {
-    //     mResult = false;
-    // }
-    // else 
-    //     mResult = true;
+    // 此处添加一个判断, 若 尺寸过小 则舍弃
+    if(e_local_normalized.scale(0) <= 0.05 || e_local_normalized.scale(1) <= 0.05 || e_local_normalized.scale(2) <= 0.05)
+    {
+        mResult = false;
+    }
+    else 
+        mResult = true;
 
     return e_local_normalized;
 }

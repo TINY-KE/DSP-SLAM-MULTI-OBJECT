@@ -395,6 +395,32 @@ bool MapDrawer::drawEllipsoidsVisual(double prob_thresh) {
     return true;
 }
 
+bool MapDrawer::drawLastestEllipsoidsVisual(double prob_thresh) {
+    // std::vector<ellipsoid*> ellipsoids = mpMap->GetAllEllipsoids();
+    // int num_origin = ellipsoids.size();
+
+    std::vector<ellipsoid*> ellipsoidsVisual = mpMap->GetAllEllipsoidsVisual();
+
+    // std::cout<<"[MapDrawer::drawEllipsoidsVisual] Number of visual ellipsoids: " << ellipsoidsVisual.size() << std::endl;
+    // ellipsoids.insert(ellipsoids.end(), ellipsoidsVisual.begin(), ellipsoidsVisual.end());
+
+    // filter those ellipsoids with prob
+    // std::vector<ellipsoid*> ellipsoids_prob;
+    std::vector<ellipsoid*> ellipsoids_prob;
+    if(ellipsoidsVisual.size() < 1) return false;
+    auto pE = ellipsoidsVisual.back();
+    if(pE->prob > prob_thresh ){
+        ellipsoids_prob.push_back(pE);
+        // std::cout << "[MapDrawer::drawEllipsoidsVisual] Ellipsoid with prob: " << pE->prob << std::endl;
+    }
+    else{
+        // std::cout << "[MapDrawer::drawEllipsoidsVisual] Ellipsoid with prob: " << pE->prob << " is filtered out." << std::endl;
+    }
+    
+    drawAllEllipsoidsInVector(ellipsoids_prob, 2);
+
+    return true;
+}
 
 bool MapDrawer::drawGlobalEllipsoids(double prob_thresh) {
 
@@ -403,6 +429,9 @@ bool MapDrawer::drawGlobalEllipsoids(double prob_thresh) {
 
     for (MapObject *pMO : mvpMapObjects)
     {
+        bool not_exist = !pMO ? true : false;
+        // std::cout<<"not exist:"<< not_exist << ", bad:" << pMO->isBad()<< std::endl;
+
         if (!pMO)
             continue;
         if (pMO->isBad())
@@ -411,15 +440,19 @@ bool MapDrawer::drawGlobalEllipsoids(double prob_thresh) {
         auto pE = pMO->GetEllipsold();
 
         if(pE->prob > prob_thresh ){
+            // std::cout << std::endl;
             ellipsoids_prob.push_back(pE);
             // std::cout<<"[debug] drawGlobalEllipsoids 3 Ellipsoid with prob: " << pE->prob << ", scale:" << pE->scale.transpose() << std::endl;
         }
         else{
+            // std::cout << ", low prob:" << pE->prob << std::endl;
             // std::cout<<"[debug] drawGlobalEllipsoids 3 Ellipsoid with prob: " << pE->prob << " is filtered out."  << ", scale:" << pE->scale.transpose()<< std::endl;
         }
     }
     
-    drawAllEllipsoidsInVector(ellipsoids_prob, 4);
+    // std::cout<<"[debug] MapDrawer::drawGlobalEllipsoids, Number of success objects / ALL map objects: " << ellipsoids_prob.size() << "/" << mvpMapObjects.size() << std::endl;
+
+    drawAllEllipsoidsInVector(ellipsoids_prob, 0);
 
     return true;
 }
@@ -458,11 +491,13 @@ void MapDrawer::drawEllipsoidInVector(ellipsoid* e, int color_mode)
             glColor4d(color(0),color(1),color(2),color(3));
         }
         else
-            glColor3f(0.2f, 0.7f, 0.5f);
+            // glColor3f(0.2f, 0.7f, 0.5f);
+            glColor3f(1.0f, 0.0f, 0.0f);
     }
     else {
         if (color_mode == 0)
-            glColor3f(1.0f,0.0f,0.0f);  // BGR
+            // 红色
+            glColor3f(1.0f,0.0f,0.0f);  
         else if (color_mode == 1)
             glColor3f(0.0f,1.0f,0.0f);
         else if(color_mode == 2)

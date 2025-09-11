@@ -70,6 +70,7 @@ private:
 public:
     bool drawEllipsoidsVisual(double prob_thresh);
     bool drawGlobalEllipsoids(double prob_thresh);
+    bool drawLastestEllipsoidsVisual(double prob_thresh);
     void drawAllEllipsoidsInVector(std::vector<ellipsoid*>& ellipsoids, int color_mode = 0);
     void drawEllipsoidInVector(ellipsoid* e, int color_mode = 0); // 0: Red, 1: Green, 2:Blue
     void SE3ToOpenGLCameraMatrix(g2o::SE3Quat &matIn, pangolin::OpenGlMatrix &M); // inverse matIn
