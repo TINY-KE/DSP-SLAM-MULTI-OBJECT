@@ -994,9 +994,7 @@ void MapObject::SetPoseByEllipsoid(g2o::ellipsoid* e)
 {
     Eigen::Matrix4f Two;
 
-    {
-    // cout << "In SetPoseByEllipsoid, e->prob = " << e->prob << endl;
-    if(mpEllipsold == NULL) {
+    if(mpEllipsold != NULL) {
         {
             // 这里遇到了一个死锁的问题
             unique_lock<mutex> lock(mMutexObject);
@@ -1035,7 +1033,7 @@ void MapObject::SetPoseByEllipsoid(g2o::ellipsoid* e)
 
     // std::cout << "Setting scale = " << e->scale.transpose().matrix() << std::endl;
     // cout << "in setPoseByEllipsold: Two = \n" << Two.matrix() << endl;
-    }
+    
     SetObjectPoseSim3(Two); // Two
 
     SetEllipsoid(*e);
