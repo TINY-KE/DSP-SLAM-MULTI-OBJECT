@@ -7,12 +7,7 @@
 namespace ORB_SLAM2
 {
 
-enum MANHATTAN_PLANE_TYPE
-{
-    OTHERS = 0,
-    PARALLEL = 1,
-    VERTICAL = 2
-};
+
 
 // 公有继承. 扩展该函数.
 class PlaneExtractorManhattan : public PlaneExtractor
@@ -46,7 +41,7 @@ private:
     bool mbDominantResult;
     std::vector<g2o::plane*> mvpHomeDominantStructuralMHPlanes;   // 房间内的Dominant曼哈顿平面, 最多只保留5个，用于在Ellipsoid Extractor中过滤物体内点云
 
-    g2o::plane* mpGroundplane;
+    g2o::plane* mpGroundplane;  //world坐标系下的地面
 
     std::vector<PointCloudPCL> mvAllMHPlanesPoints;
 

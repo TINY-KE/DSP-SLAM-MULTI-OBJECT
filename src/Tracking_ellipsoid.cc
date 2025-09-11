@@ -27,392 +27,75 @@ using namespace std;
 
 namespace ORB_SLAM2 {
 
-    // // ZHJD 移植
-    // Matrix3Xd generateProjectionMatrix(const SE3Quat &campose_cw, const Matrix3d &Kalib) {
-    //     Matrix3Xd identity_lefttop;
-    //     identity_lefttop.resize(3, 4);
-    //     identity_lefttop.col(3) = Vector3d(0, 0, 0);
-    //     identity_lefttop.topLeftCorner<3, 3>() = Matrix3d::Identity(3, 3);
 
-    //     Matrix3Xd proj_mat = Kalib * identity_lefttop;
+    void VisualizeRelations(Relations& rls, Map* pMap, g2o::SE3Quat &Twc, std::vector<PointCloudPCL>& vPlanePoints)
+    {
+        int num = rls.size();
+        // std::cout << "Relation Num: " << num << std::endl;
+        
+        int mode = 0;   //clear
 
-    //     proj_mat = proj_mat * campose_cw.to_homogeneous_matrix();
+        pMap->clearArrows();
+        for(int i=0;i<num;i++)
+        {
+            Relation &rl = rls[i];
+            g2o::ellipsoid* pEllip = rl.pEllipsoid;
+            g2o::plane* pPlane = rl.pPlane;
+            if(pEllip==NULL || pPlane==NULL) {
+                std::cout << "[Relation] NULL relation : " << rl.obj_id << ", " << rl.plane_id << std::endl;
+                continue;
+            }
+            g2o::ellipsoid e_world = pEllip->transform_from(Twc);
+            g2o::plane* plane_world = new g2o::plane(*pPlane); plane_world->transform(Twc);
+            Vector3d obj_center = e_world.pose.translation();
+            Vector3d norm = plane_world->param.head(3); norm.normalize();
+            double length = 0.5; norm = norm * length;
 
-    //     return proj_mat;
-    // }
+            if(rl.type == 1)    // 支撑
+            {
+                // 即在物体底端产生一个向上大竖直箭头.
+                // 以物体为中心.
+                // 以平面法向量为方向.
+                pMap->addArrow(obj_center, norm, Vector3d(0,1.0,0));
+            }
+            else if(rl.type == 2) // 倚靠
+            {
+                // 同上
+                pMap->addArrow(obj_center, norm, Vector3d(0,0,1.0));
+            }
 
-    // MatrixXd fromDetectionsToLines(Vector4d &detections) {
-    //     bool flag_openFilter = false; // filter those lines lying on the image boundary
+            // 同时高亮平面.
+            plane_world->InitFinitePlane(obj_center, 0.7);
+            plane_world->color = Vector3d(0, 1, 1);    // 黄色显示关系面
+            pMap->addPlane(plane_world);
 
-    //     double x1 = detections(0);
-    //     double y1 = detections(1);
-    //     double x2 = detections(2);
-    //     double y2 = detections(3);
-
-    //     Vector3d line1(1, 0, -x1);
-    //     Vector3d line2(0, 1, -y1);
-    //     Vector3d line3(1, 0, -x2);
-    //     Vector3d line4(0, 1, -y2);
-
-    //     // those lying on the image boundary have been marked -1
-    //     MatrixXd line_selected(3, 0);
-    //     MatrixXd line_selected_none(3, 0);
-
-    //     int config_border_pixel = 10;
-    //     int miImageCols = Config::Get<int>("Camera.width");
-    //     int miImageRows = Config::Get<int>("Camera.height");
-    //     if (!flag_openFilter || (x1 > config_border_pixel && x1 < miImageCols - config_border_pixel)) {
-    //         line_selected.conservativeResize(3, line_selected.cols() + 1);
-    //         line_selected.col(line_selected.cols() - 1) = line1;
-    //     }
-    //     if (!flag_openFilter || (y1 > config_border_pixel && y1 < miImageRows - config_border_pixel)) {
-    //         line_selected.conservativeResize(3, line_selected.cols() + 1);
-    //         line_selected.col(line_selected.cols() - 1) = line2;
-    //     }
-    //     if (!flag_openFilter || (x2 > config_border_pixel && x2 < miImageCols - config_border_pixel)) {
-    //         line_selected.conservativeResize(3, line_selected.cols() + 1);
-    //         line_selected.col(line_selected.cols() - 1) = line3;
-    //     }
-    //     if (!flag_openFilter || (y2 > config_border_pixel && y2 < miImageRows - config_border_pixel)) {
-    //         line_selected.conservativeResize(3, line_selected.cols() + 1);
-    //         line_selected.col(line_selected.cols() - 1) = line4;
-    //     }
-
-    //     return line_selected;
-    // }
-
-    // MatrixXd GenerateBboxPlanes(g2o::SE3Quat &campose_wc, Eigen::Vector4d &bbox, Matrix3d &calib) {
-    //     MatrixXd planes_all(4, 0);
-    //     // std::cout << " [debug] calib : \n " << calib << std::endl;
-    //     // get projection matrix
-    //     MatrixXd P = generateProjectionMatrix(campose_wc.inverse(), calib);
-
-    //     MatrixXd lines = fromDetectionsToLines(bbox);
-    //     MatrixXd planes = P.transpose() * lines;
-
-    //     // add to matrix
-    //     for (int m = 0; m < planes.cols(); m++) {
-    //         planes_all.conservativeResize(planes_all.rows(), planes_all.cols() + 1);
-    //         planes_all.col(planes_all.cols() - 1) = planes.col(m);
-    //     }
-
-    //     return planes_all;
-    // }
-
-    // // 新版本则基于bbox生成，不再与RGBD版本有任何关联
-    // // replace_detection: 是否将推测物体放入 pFrame 中生效。
-    // void Tracking::InferObjectsWithSemanticPrior(Frame* pFrame, bool use_input_pri = true, bool replace_detection = false)
-    // {
-    //     // 要求有地平面估计再启动
-    //     if(miGroundPlaneState != 2)
-    //     {
-    //         std::cout << "Close Infering, as the groundplane is not set." << std::endl;
-    //         return;
-    //     }
-
-    //     Pri pri = Pri(1,1);
-    //     pri.print();
-
-    //     // ********* 测试1： 所有先验都是 1:1:1 *********
-    //     // // 读取 pri;  调试模式从全局 Config 中读取
-    //     double weight = Config::ReadValue<double>("SemanticPrior.Weight");
-    //     std::cout << "weight:"<<weight << std::endl;
-    //     std::cout << "Begin infering ... " << std::endl;
-
-    //     // 对于帧内每个物体，做推断，并可视化新的物体
-    //     auto& meas = pFrame->meas;
-    //     int meas_num = meas.size();
-
-    //     if(replace_detection) {
-    //         pFrame->mpLocalObjects.clear();
-    //         pFrame->mpLocalObjects.resize(meas_num);
-    //     }
-    //     for(int i=0;i<meas_num;i++)
-    //     {
-    //         Measurement& m = meas[i];
-    //         Vector4d bbox = m.ob_2d.bbox;
-    //         // 检测bbox是否正确
-    //         // int x1 = (int)(bbox(0)), y1 = (int)(bbox(1)), \
-    //         // x2 = (int)(bbox(2)), y2 = (int)(bbox(3));
-    //         // std::cout<< " [zhjd-debug] bbox: " << "x1:"<<x1 
-    //         // << ", y1:" << y1 << ", x2:" << x2 << ", y2:" << y2
-    //         // << std::endl;
-
-    //         // Check : 确保该物体类型是在地面之上的
-    //         // if(!CheckLabelOnGround(m.ob_2d.label)) continue;
-
-    //         // Check : 该 bbox 不在边缘
-    //         // bool is_border = calibrateMeasurement(bbox, mRows, mCols, Config::Get<int>("Measurement.Border.Pixels"), Config::Get<int>("Measurement.LengthLimit.Pixels"));
-    //         // if(is_border) continue;
-
-    //         // 生成Pri
-    //         Pri pri = Pri(1,1);
-
-    //         std::cout << "Pri for label : " << m.ob_2d.label << std::endl;
-    //         pri.print();
-
-    //         // RGB_D + Prior
-    //         g2o::plane ground_pl_local = mGroundPlane;   //世界坐标系下的
-    //         ground_pl_local.transform(pFrame->cam_pose_Tcw);  // 相机坐标系下的
-    //         std:;cout<<"[InferObjectsWithSemanticPrior] 0 地平面： world参数:"<< mGroundPlane.param.transpose()
-    //         << " local参数:" << ground_pl_local.param.transpose() <<std::endl;
-            
-    //         priorInfer pi(mRows, mCols, mCalib);
-
-    //         // *********************************
-    //         // 生成一个新的 Initguess
-    //         // *********************************
-    //         std::cout<<"[InferObjectsWithSemanticPrior] 1 准备 初始化一个椭球体"<<std::endl;
-    //         std::cout << "LastCost: " << pi.GetLastCost() << std::endl;
-            
-    //         // pi.GenerateInitGuess(bbox, ground_pl_local.param);
-    //         // g2o::ellipsoid e_init_guess = pi.GenerateInitGuess(bbox, ground_pl_local.param);
-    //         int debug_init_guess = Config::ReadValue<double>("OptimizeEllipsoidWithMultiPlanes.debug_init_guess");
-
-    //         if(debug_init_guess==5){
+            // 高亮对应平面的点云
+            int plane_id = rl.plane_id;
+            if(plane_id >= 0 && plane_id < vPlanePoints.size())
+            {
+                PointCloudPCL::Ptr pCloudPCL(new PointCloudPCL(vPlanePoints[rl.plane_id]));
+                ORB_SLAM2::PointCloud cloudQuadri = pclToQuadricPointCloud(pCloudPCL);
+                ORB_SLAM2::PointCloud* pCloudGlobal = transformPointCloud(&cloudQuadri, &Twc);
                 
-    //             g2o::ellipsoid e_init_guess = pi.GenerateInitGuess(bbox, ground_pl_local.param);
-              
-    //             // 如果已经有了椭球体，则从e_init_guess中获取plane in camera， 转为plane in world后，添加到map中的物体中
-    //             auto MapObjects = mpMap->GetAllEllipsoidsVisual();
-    //             if( ! MapObjects.empty()){
-    //                 // 还需要传入 bbox. x4
-    //                 int bbox_planes_num = e_init_guess.mvCPlanesInCamera.size();
-    //                 // std::vector<g2o::plane> planes_bbox; planes_bbox.resize(bbox_planes_num);
-    //                 // 只存储左右两面，也就是i=0,i=2
-    //                 for(int i=0;i<bbox_planes_num;i+=2){
-    //                     auto pCP = e_init_guess.mvCPlanesInCamera[i];
-    //                     if (pCP && pCP->pPlane) {
-    //                             g2o::plane* pl = new g2o::plane(pCP->pPlane->param);
-    //                             pl->transform(pFrame->cam_pose_Twc);
+                int r = 0;
+                int g = 255;
+                int b = 255;
+                SetPointCloudProperty(pCloudGlobal, r, g, b, 4);
+                pMap->AddPointCloudList(string("Relationship.Activiate Sup-Planes"), pCloudGlobal, mode);
+                if(mode == 1){
+                    delete pCloudGlobal;    // 该指针对应的点云已被拷贝到另一个指针点云,清除多余的一个
+                    pCloudGlobal = NULL;
+                }
 
-    //                             // 与所有平面比较，如果有相似的，则不添加
-    //                             Vector3d normVec = pl->param.head(3);  // 当前平面的法向量
-    //                             bool similar_found = false;  // 标记是否找到相似的平面
-
-    //                             // 与 MapObjects[0] 中现有的平面比较法向量
-    //                             double angle_thresh = M_PI / 180 * 20; // 10 deg
-    //                             for (auto& existingPlane : MapObjects[0]->GetPlanes()) {
-    //                                 Vector3d existingNormVec = existingPlane->param.head(3);  // 现有平面的法向量
-                                    
-    //                                 // 计算法向量之间的夹角
-    //                                 double cos_angle = normVec.dot(existingNormVec) / (normVec.norm() * existingNormVec.norm());
-    //                                 double angle = acos(cos_angle);  // 夹角
-
-    //                                 if (std::abs(angle) < angle_thresh || std::abs(M_PI - angle) < angle_thresh) {
-    //                                     similar_found = true;
-    //                                     break;  // 找到相似平面，跳出循环
-    //                                 }
-    //                             }
-
-    //                             // 如果没有找到相似的平面，则添加到 mpPlanes 中
-    //                             if (!similar_found) {
-    //                                 MapObjects[0]->addFilteredPlanesInWorld(pl);
-    //                             }
-    //                     }
-    //                 }
-
-    //                 std::cout<< "[MultiPlanes Add] Num of planes for first ellipsoid:  " <<MapObjects[0]->GetPlanes().size()<<std::endl;
-    //                 if(MapObjects[0]->GetPlanes().size()>=7){
-    //                     // 原始的 vector 容器，存储指向 g2o::plane 的指针
-    //                     std::vector<g2o::plane*> mpPlanes =  MapObjects[0]->GetPlanes();
-    //                     // 新的 vector 容器，存储 g2o::plane 对象
-    //                     std::vector<g2o::plane> mPlanes;
-    //                     // 遍历 mpPlanes，将每个指针指向的 g2o::plane 对象复制到新的容器中
-    //                     for (g2o::plane* planePtr : mpPlanes) {
-    //                         if (planePtr) {  // 检查指针是否为空
-    //                             mPlanes.push_back(*planePtr);  // 解引用并复制到新的容器
-    //                         }
-    //                     }
-    //                     g2o::ellipsoid e_new = pi.optimizeEllipsoidWithMultiPlanes(*MapObjects[0], mPlanes, pri);
-    //                     MapObjects[0]->fromVector(e_new.toVector());
-    //                 }
-
-    //                 break;
-    //             }
-
-
-    //             std::vector<g2o::plane*> planes_world;
-    //             // 1.生成 远近平面 in world
-    //             double dis_thresh_near = Config::ReadValue<double>("OptimizeEllipsoidWithMultiPlanes.dis_thresh_near");
-    //             double dis_thresh_far = Config::ReadValue<double>("OptimizeEllipsoidWithMultiPlanes.dis_thresh_far");
-    //             Eigen::Vector3d farest, nearest;
-    //             Eigen::Vector3d normal_far, normal_near;
-    //             double dis_far=0, dis_near=1000;
-    //             cv::Mat Ow = pFrame->GetCameraCenter();
-    //             std::cout<<"[生成远近平面] 1 begin"<<std::endl;
-    //             for(auto pMP:m.mvpObjectPoints){
-    //                 if (!pMP)
-    //                     continue;
-    //                 if (pMP->isBad())
-    //                     continue;
-    //                 if (pMP->isOutlier())
-    //                     continue;
-
-    //                 auto p_pose = pMP->GetWorldPos();
-    //                 // 计算p和相机的距离
-    //                 cv::Mat normal = p_pose - Ow;
-    //                 // 计算normal的长度
-    //                 double dis = cv::norm(normal);
-    //                 if(dis>dis_thresh_far)
-    //                     continue;
-    //                 if(dis>dis_far){
-    //                     dis_far = dis;
-    //                     farest[0] = p_pose.at<float>(0, 0);  
-    //                     farest[1] = p_pose.at<float>(1, 0);  
-    //                     farest[2] = p_pose.at<float>(2, 0);  
-    //                     normal_far[0] = -1*normal.at<float>(0, 0);
-    //                     normal_far[1] = -1*normal.at<float>(1, 0);
-    //                     normal_far[2] = -1*normal.at<float>(2, 0);
-    //                 }
-    //                 if(dis<dis_thresh_near)
-    //                     continue;
-    //                 if(dis<dis_near){
-    //                     dis_near = dis;
-    //                     nearest[0] = p_pose.at<float>(0, 0);  
-    //                     nearest[1] = p_pose.at<float>(1, 0);  
-    //                     nearest[2] = p_pose.at<float>(2, 0);  
-    //                     normal_near[0] = normal.at<float>(0, 0);
-    //                     normal_near[1] = normal.at<float>(1, 0);
-    //                     normal_near[2] = normal.at<float>(2, 0);
-    //                 }
-    //             }
-    //             std::cout<<"[生成远近平面] 5";
-    //             cerr << "  dis_near:"<<dis_near <<", dis_far:"<<dis_far<< endl;
-
-    //             if(dis_near<dis_thresh_near || dis_far>dis_thresh_far)
-    //             {
-    //                 cerr << " [Error] 近平面过近，或 远平面过远。"<<dis_far<< endl;
-    //                 exit(-1);
-    //             }
-                
-    //             g2o::plane* plane_far = new g2o::plane();
-    //             bool useFar_vertical = Config::ReadValue<double>("SemanticPrior.useFar_vertical");
-    //             if(useFar_vertical){
-    //                 farest[0] = 0;  
-    //                 farest[1] = 0;  
-    //                 farest[2] = dis_far;  
-    //                 normal_far[0] = 0;
-    //                 normal_far[1] = 0;
-    //                 normal_far[2] = -1;
-    //             }
-    //             plane_far->fromPointAndNormal(farest, normal_far);
-    //             plane_far->mvPlaneCenter = farest;
-    //             plane_far->color = Vector3d(0,0,1.0);
-    //             plane_far->transform(pFrame->cam_pose_Twc); 
-    //             bool useFar = Config::ReadValue<double>("SemanticPrior.useFar");
-    //             if(useFar)
-    //                 planes_world.push_back(plane_far);
-    //             g2o::plane* plane_near = new g2o::plane();
-    //             bool useNear_vertical = Config::ReadValue<double>("SemanticPrior.useNear_vertical");
-    //             if(useNear_vertical){
-    //                 nearest[0] = 0;  
-    //                 nearest[1] = 0;  
-    //                 nearest[2] = dis_near;  
-    //                 normal_near[0] = 0;
-    //                 normal_near[1] = 0;
-    //                 normal_near[2] = 1;
-    //             }
-    //             plane_near->fromPointAndNormal(nearest, normal_near);
-    //             plane_near->mvPlaneCenter = nearest; 
-    //             plane_near->color = Vector3d(0,0,1.0);
-    //             plane_near->transform(pFrame->cam_pose_Twc); 
-    //             bool useNear = Config::ReadValue<double>("SemanticPrior.useNear");
-    //             if(useNear)
-    //                 planes_world.push_back(plane_near);
-
-    //             // mpMap->clearPlanes();
-    //             // mpMap->addPlane(&mGroundPlane);
-    //             // for(auto p:planes_world){
-    //             //     double plane_size=0.5;
-    //             //     p->InitFinitePlane(p->mvPlaneCenter, plane_size);
-    //             //     mpMap->addPlane(p);
-    //             // }
-
-    //             bool optimizeEllipsoidWithMultiPlanes = Config::ReadValue<double>("optimizeEllipsoidWithMultiPlanes.optimizeEllipsoidWithMultiPlanes");
-    //             std::vector<g2o::plane> planesNearFar;
-    //             if(optimizeEllipsoidWithMultiPlanes) 
-    //             {
-    //                 // 将bbox planes_world 和 远近平面， 转为planes_in_current_camera
-    //                 for(auto p:planes_world){
-    //                     g2o::plane* plane_new = new g2o::plane(p->param);
-    //                     plane_new->transform(pFrame->cam_pose_Tcw);    //转到当前相机坐标系
-    //                     planesNearFar.push_back(*plane_new);
-    //                 }
-    //                 // 将 远近平面 转为planes_in_current_camera
-
-    //                 g2o::ellipsoid e_infer_mono_guess;
-    //                 double ground_weight = Config::ReadValue<double>("SemanticPrior.GroundWeight");
-    //                 e_infer_mono_guess = pi.MonocularInferWithNearFarPlane(e_init_guess, pri, weight, ground_pl_local, planesNearFar);
-    //                 // 设置椭球体label, prob
-    //                 e_infer_mono_guess.miLabel = m.ob_2d.label;
-    //                 e_infer_mono_guess.prob = m.ob_2d.rate; // 暂时设置为 bbox 检测的概率吧
-    //                 e_infer_mono_guess.bbox = m.ob_2d.bbox;
-    //                 e_infer_mono_guess.prob_3d =  1.0; // 暂定!
-    //                 g2o::ellipsoid* pEInfer_mono_guess = new g2o::ellipsoid(e_infer_mono_guess.transform_from(pFrame->cam_pose_Twc));
-
-    //                 Vector3d color_rgb(144,238,144); color_rgb/=255.0;
-    //                 if(!use_input_pri) color_rgb = Vector3d(1,0,0); // 默认版本为红色
-    //                 pEInfer_mono_guess->setColor(color_rgb);
-    //                 // mpMap->addEllipsoidObservation(pEInfer_mono_guess); // 可视化
-    //                 mpMap->addEllipsoidVisual(pEInfer_mono_guess); // 可视化
-
-    //                 // TODO:
-    //                 // 需在地图中椭球体 传入地面和bbox的四个面
-    //                 pEInfer_mono_guess->addFilteredPlanesInWorld(new g2o::plane(mGroundPlane.param));
-    //                 int bbox_planes_num = e_init_guess.mvCPlanesInCamera.size();
-    //                 for(int i=0;i<bbox_planes_num;i++){
-    //                     auto pCP = e_init_guess.mvCPlanesInCamera[i];
-    //                     if (pCP && pCP->pPlane) {
-    //                             g2o::plane* pl = new g2o::plane(pCP->pPlane->param);
-    //                             pl->transform(pFrame->cam_pose_Twc);
-    //                             pEInfer_mono_guess->addFilteredPlanesInWorld(pl);
-    //                     }
-    //                 }
-
-    //                 std::cout << " Before Monocular Infer: " << e_init_guess.toMinimalVector().transpose() << std::endl;
-    //                 std::cout << " After Monocular Infer: " << e_infer_mono_guess.toMinimalVector().transpose() << std::endl;
-
-
-    //                 // --------- 将结果放到frame中存储
-    //                 if(replace_detection)
-    //                     pFrame->mpLocalObjects[i] = new g2o::ellipsoid(e_infer_mono_guess);
-                
-    //                 // DEBUGING: 调试为何Z轴会发生变化， 先输出在局部坐标系下的两个rotMat
-    //                 std::cout << "InitGuess RotMat in Camera: " << std::endl << e_init_guess.pose.rotation().toRotationMatrix() << std::endl;
-    //                 std::cout << "Infered RotMat in Camera: " << std::endl << e_infer_mono_guess.pose.rotation().toRotationMatrix() << std::endl;
-    //                 std::cout << "GroundPlaneNorma in Camera: " << std::endl << ground_pl_local.normal().head(3).normalized() << std::endl;
-
-    //                 // 可视化bbox的约束平面
-    //                 mpMap->clearPlanes();
-    //                 mpMap->addPlane(&mGroundPlane);
-    //                 VisualizeConstrainPlanes(e_infer_mono_guess, pFrame->cam_pose_Twc, mpMap); // 中点定在全局坐标系
-    //             }
-
-    //             // debug
-    //             int frame_by_frame = Config::ReadValue<double>("frame_by_frame_zhjd");
-    //             if(frame_by_frame) {
-    //                 std::cout << "*****************************" << std::endl;
-    //                 std::cout << "Press [ENTER] to continue ... , [y] to autonomous mode" << std::endl;
-    //                 std::cout << "*****************************" << std::endl;
-    //                 char key = getchar();
-    //                 if (key=='y')
-    //                 {
-    //                     frame_by_frame = false;
-    //                 }
-    //                 else if (key=='e'){
-    //                     break;
-    //                 }
-    //             }
+                mode = 1;   // 仅仅第一次清除.
+            }
+            else 
+            {
+                std::cout << "Invalid plane_id : " << plane_id << std::endl;
+            }
             
-    //        }
-    //     }       
-
-    //     std::cout << "Finish infering for " << meas_num << " objects..." << std::endl;
-    //     return;
-    // }
-
-
+        }
+    }
 
 
     // [改进]
@@ -501,11 +184,12 @@ namespace ORB_SLAM2 {
 
         // [3] 使用曼哈顿平面（当前只有地面和桌面）优化椭球体  //重要：其实没有用，因为椭球体生成中地面只是提供重力方向。
         int type = Config::Get<int>("Debug.EllipsoidExtraction.OpenRelations");
-        if(type){
+
             // // [3] Extract Relationship
             // 构建椭球体与曼哈顿平面之间的关联关系
             TaskRelationship(pFrame);
 
+        if(type){
             // [4] Use Relationship To Refine Ellipsoids
             // 注意: Refine时必然在第一步可以初始化出有效的物体.
             RefineObjectsWithRelations(pFrame, pKF);
@@ -784,18 +468,17 @@ namespace ORB_SLAM2 {
         // 最新椭球体的支撑平面
         std::vector<PointCloudPCL>  vSupportingPlanePoints;
         // std::cout<<"[debug] Tracking::TaskRelationship, 3"<< std::endl;
-        if(rls.size()>0)
-            vSupportingPlanePoints.push_back(vPlanePoints[rls[rls.size()-1].plane_id]);
-        mpMap->AddPointCloudList("Relationship.Supporting Planes", vSupportingPlanePoints, Twc, REPLACE_POINT_CLOUD);
+        // for(auto rl: rls){
+        //     if(rl.type == 1){   // 支撑关系
+        //         vSupportingPlanePoints.push_back(vPlanePoints[rl.plane_id]);
+        //     }
+        // }
+        // mpMap->AddPointCloudList("Relationship.Supporting Planes", vSupportingPlanePoints, Twc, REPLACE_POINT_CLOUD);
 
         // std::cout<<"[debug] Tracking::TaskRelationship, 4"<< std::endl;
 
         // 可视化该关系
         // VisualizeRelations(rls, mpMap, Twc, vPlanePoints); // 放到地图中去显示?
-
-        // std::cout << "EllipObjects: " << vpEllipsoids.size() << std::endl;
-        // std::cout << "Relation Planes : " << vpPlanes.size() << std::endl;
-        // std::cout << "Relations : " << rls.size() <Measurement< std::endl;
     }
 
     // *******

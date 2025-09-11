@@ -8,9 +8,65 @@ namespace ORB_SLAM2
 
 void PlaneExtractorManhattan::SetGroundPlane(g2o::plane* gplane)
 {
-    mpGroundplane = gplane;
+    mpGroundplane = gplane;  //world坐标系下的地面
 }
 
+pcl::PointCloud<pcl::PointXYZRGB>::Ptr samplePointsOnPlane(const Eigen::Vector4d& plane_param, int M) {
+    double A = plane_param[0];
+    double B = plane_param[1];
+    double C = plane_param[2];
+    double D = plane_param[3];
+
+    // 单位法向量
+    Eigen::Vector3d normal(A, B, C);
+    normal.normalize();
+
+    // 找平面上的一个点：令 x = y = 0, 计算 z
+    Eigen::Vector3d P0;
+    if (std::abs(C) > 1e-6) {
+        P0 = Eigen::Vector3d(0, 0, -D / C);
+    } else if (std::abs(B) > 1e-6) {
+        P0 = Eigen::Vector3d(0, -D / B, 0);
+    } else {
+        P0 = Eigen::Vector3d(-D / A, 0, 0);
+    }
+
+    // 构造两个在平面上的正交向量 u 和 v（用 Gram-Schmidt）
+    Eigen::Vector3d u = normal.unitOrthogonal();         // 与 normal 垂直
+    Eigen::Vector3d v = normal.cross(u).normalized();    // 与 normal 和 u 同时垂直
+
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr cloud(new pcl::PointCloud<pcl::PointXYZRGB>);
+
+    // 采样范围 [-r, r]
+    const double r = 50.0; // 控制平面大小
+    int N = std::sqrt(M);
+    if (N < 1) N = 1;
+
+    for (int i = 0; i < N; ++i) {
+        for (int j = 0; j < N; ++j) {
+            double alpha = -r + 2 * r * i / (N - 1);
+            double beta  = -r + 2 * r * j / (N - 1);
+            Eigen::Vector3d point = P0 + alpha * u + beta * v;
+
+            pcl::PointXYZRGB pcl_point;
+            pcl_point.x = point.x();
+            pcl_point.y = point.y();
+            pcl_point.z = point.z();
+
+            pcl_point.r = 0;
+            pcl_point.g = 255;
+            pcl_point.b = 0;
+
+            cloud->points.push_back(pcl_point);
+        }
+    }
+
+    cloud->width = cloud->points.size();
+    cloud->height = 1;
+    cloud->is_dense = true;
+
+    return cloud;
+}
 
 bool PlaneExtractorManhattan::extractManhattanPlanes(const cv::Mat &depth, Eigen::Vector3d& local_gt, g2o::SE3Quat &Twc)
 {
@@ -19,8 +75,17 @@ bool PlaneExtractorManhattan::extractManhattanPlanes(const cv::Mat &depth, Eigen
     // ************************
     mParam.RangeOpen = false;
     mvPotentialGroundPlanePoints.clear();
+
     mvAllMHPlanesPoints.clear();
     mvpAllMHPlanes.clear();   // 当前提取的所有曼哈顿平面 ("仅满足垂直平行约束")
+    // // 把地面和地面上随机生成的点云放进去
+    // g2o::plane* pGroundplane_local = new g2o::plane(*mpGroundplane);
+    // pGroundplane_local->transform(Twc.inverse());
+    // mvpAllMHPlanes.push_back(pGroundplane_local);
+    // PointCloudPCL::Ptr pGroundplanePoints_local  = samplePointsOnPlane(pGroundplane_local->param, 100);
+    // pGroundplane_local->miMHType = g2o::MANHATTAN_PLANE_TYPE::GROUND; // 地面是平行的
+    // mvAllMHPlanesPoints.push_back(*pGroundplanePoints_local); 
+
     mvpStructuralMHPlanes_bigenough.clear();     // 当前提取的潜在曼哈顿结构平面 ("经过大小过滤")
     mbResult = false;
 
@@ -65,27 +130,27 @@ bool PlaneExtractorManhattan::extractManhattanPlanes(const cv::Mat &depth, Eigen
         // 角度接近 0° 或 180°：水平平面（如地面、桌面）；
         // 角度接近 90°：垂直平面（如墙面）；
         // 否则不是曼哈顿平面，忽略。
-        int iMHType = 0;
+        int iMHType = g2o::MANHATTAN_PLANE_TYPE::OTHERS;
         if( std::abs(angle - 0)<config_angle_delta || 
                 std::abs(angle- M_PI) < config_angle_delta ) 
         {
-            iMHType = 1;    // parallel
+            iMHType = g2o::MANHATTAN_PLANE_TYPE::PARALLEL;    // parallel
         }
         // ---- DEBUG: 暂时取消垂直倚靠关系. 只考虑普遍存在的支撑关系
         else if( std::abs(angle - M_PI/2.0)<config_angle_delta )
         {
-            iMHType = 2; // Vertical
+            iMHType = g2o::MANHATTAN_PLANE_TYPE::VERTICAL; // Vertical
         }
 
         // 若是曼哈顿平面（与地面平行或垂直），则保存进 mvpAllMHPlanes 中
-        if( iMHType > 0 )
+        if( iMHType != g2o::MANHATTAN_PLANE_TYPE::OTHERS )
         {
             g2o::plane* pPlane = new g2o::plane();
             pPlane->param= vec;
             pPlane->miMHType = iMHType;
 
-            mvpAllMHPlanes.push_back(pPlane);   // 满足了曼哈顿假设的都放进去
-            mvAllMHPlanesPoints.push_back(mvPlanePoints[i]);
+            // mvpAllMHPlanes.push_back(pPlane);   // 满足了曼哈顿假设的都放进去
+            // mvAllMHPlanesPoints.push_back(mvPlanePoints[i]);
 
             // 如果满足曼哈顿平面大小要求，则加入到 mvpStructuralMHPlanes_bigenough 中
             int num_size = mvPlanePoints[i].size();

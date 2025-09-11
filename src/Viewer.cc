@@ -102,6 +102,9 @@ void Viewer::Run()
     pangolin::Var<bool> menuShowGroundPlane("menu.Show GroundPlane",true,true);
     // 最新帧中的bbox平面
     pangolin::Var<bool> menuShowBboxPlane("menu.Show Bbox Plane",true,true);
+    // Relations
+    pangolin::Var<bool> menuShowRelationArrow("menu.Relation Arrow",false,true);
+    
     // 图片
     pangolin::Var<bool> menuShowFrameImg("menu.Show FrameImg", false, true);
     pangolin::GlTexture imageTexture(mImageWidth,mImageHeight,GL_RGB,false,0,GL_BGR,GL_UNSIGNED_BYTE);
@@ -239,6 +242,10 @@ void Viewer::Run()
             // 最新帧中的观测切面
             if(menuShowBboxPlane)
                 mpMapDrawer->drawPlanes(0); 
+
+            // relations
+            if(menuShowRelationArrow)
+                mpMapDrawer->drawArrows();
 
             // 展示Tracking::DenseBuild()中生成的点云
             RefreshMenuForDepthPointCloud();

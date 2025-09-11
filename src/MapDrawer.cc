@@ -759,4 +759,19 @@ Eigen::Matrix3d MapDrawer::calibRotMatAccordingToAxis(Matrix3d& rotMat, const Ve
     return rotMat_calibrated;
 }
 
+
+void MapDrawer::drawArrows()
+{
+    std::vector<Arrow> vArs = mpMap->GetArrows();
+
+    for(int i=0;i<vArs.size();i++)
+    {
+        Arrow& ar = vArs[i];
+        Vector3d norm = ar.norm; 
+        Vector3d end = ar.center + norm;
+
+        drawLine(ar.center, end, ar.color, mCameraLineWidth * 10, 0.8);
+    }
+}
+
 } //namespace ORB_SLAM

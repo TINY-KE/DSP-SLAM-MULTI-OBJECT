@@ -8,7 +8,7 @@ namespace g2o
         mdDualDis = 0;
 
         mbLimited = false;
-        miMHType = 0;
+        miMHType = g2o::MANHATTAN_PLANE_TYPE::OTHERS;
     }
 
     plane::plane(Vector4d param_, Eigen::Vector3d color_) {
@@ -17,7 +17,7 @@ namespace g2o
         mdDualDis = 0;
 
         mbLimited = false;
-        miMHType = 0;
+        miMHType = g2o::MANHATTAN_PLANE_TYPE::OTHERS;
     }
 
     plane plane::exp_update(const Vector3d& update)

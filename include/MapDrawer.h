@@ -84,6 +84,8 @@ public:
     bool drawPlanes(int visual_group=0);
     void drawPlaneWithEquation(plane* p);
 
+    //relations
+    void drawArrows();
 };
 
 } //namespace ORB_SLAM

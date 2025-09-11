@@ -10,6 +10,14 @@
 
 namespace g2o
 {
+enum MANHATTAN_PLANE_TYPE
+{
+    OTHERS = 0,
+    PARALLEL = 1,
+    VERTICAL = 2,
+    GROUND = 3
+};
+
 class plane {
 
 public:
@@ -150,6 +158,7 @@ public:
     Vector3d mvPlaneCenter; // the center of the square. roughly defined.    
 
     int miMHType; // 0: not set; 1: Parallel ; 2: Vertical
+    
     int miVisualGroup; // For Visualization only
 private:
 

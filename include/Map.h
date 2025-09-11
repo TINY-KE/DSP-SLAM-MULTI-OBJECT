@@ -54,6 +54,16 @@ enum DELETE_POINT_CLOUD_TYPE
     COMPLETE_MATCHING = 0,
     PARTIAL_MATCHING = 1
 };
+
+class Arrow
+{
+public:
+    EIGEN_MAKE_ALIGNED_OPERATOR_NEW
+    Vector3d center;
+    Vector3d norm;
+    Vector3d color;    
+};
+
 class Map
 {
 public:
@@ -151,6 +161,14 @@ public:
     std::map<string, PointCloud *>  GetPointCloudList();  //用户提取椭球体的深度点云，用于可视化debug
     PointCloud GetPointCloudInList(const string& name);
 
+    // Relations
+public:
+    void addArrow(const Vector3d& center, const Vector3d& norm, const Vector3d& color);
+    std::vector<Arrow> GetArrows();
+    void clearArrows();
+protected:
+    std::vector<Arrow> mvArrows;
+    
 };
 
 } //namespace ORB_SLAM

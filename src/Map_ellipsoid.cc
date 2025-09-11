@@ -24,6 +24,27 @@
 
 namespace ORB_SLAM2
 {
+void Map::addArrow(const Vector3d &center, const Vector3d &norm, const Vector3d &color) {
+    unique_lock<mutex> lock(mMutexMap);
+    Arrow ar;
+    ar.center = center;
+    ar.norm = norm;
+    ar.color = color;
+    mvArrows.push_back(ar);
+
+    return;
+}
+
+std::vector<Arrow> Map::GetArrows() {
+    unique_lock<mutex> lock(mMutexMap);
+    return mvArrows;
+}
+
+void Map::clearArrows() {
+    unique_lock<mutex> lock(mMutexMap);
+    mvArrows.clear();
+    return;
+}
 
 bool Map::AddPointCloudList(const string &name, std::vector<pcl::PointCloud<pcl::PointXYZRGB>> &vCloudPCL, g2o::SE3Quat &Twc, int type) {
     // std::cout<<"[debug] AddPointCloudList -- "<<name<< " 1" << std::endl;

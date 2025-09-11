@@ -14,7 +14,7 @@ namespace ORB_SLAM2
     {
         // 判断平面类别.
         int relationType = 0;
-        if (pPlane->miMHType == 1) // parallel
+        if (pPlane->miMHType == g2o::MANHATTAN_PLANE_TYPE::PARALLEL) // parallel
         {
             // 判断支撑关系.
 
@@ -127,7 +127,7 @@ namespace ORB_SLAM2
                 for (int plane_id = 0; plane_id < plane_num; plane_id++)
                 {
                     g2o::plane *pPlane = vpPlanes[plane_id];
-                    if(pPlane->miMHType==1){
+                    if(pPlane->miMHType==g2o::MANHATTAN_PLANE_TYPE::PARALLEL){
                         double dis = pObj_bottom_plane->distanceToPlane(*pPlane);
                         if(dis>0)   // 有效dis. 即属于平行平面
                             planeDisVec.push_back(make_pair(dis, pPlane));
@@ -159,7 +159,7 @@ namespace ORB_SLAM2
                 for (int plane_id = 0; plane_id < plane_num; plane_id++)
                 {
                     g2o::plane *pPlane = vpPlanes[plane_id];
-                    if(pPlane->miMHType==1){
+                    if(pPlane->miMHType==g2o::MANHATTAN_PLANE_TYPE::PARALLEL){
                         double dis = pPlane->distanceToPoint(center, true);
                         if(dis>0 && dis < config_pointmodel_dis_thresh)   // 位于平面上方
                             planeDisVec.push_back(make_pair(dis, pPlane));
