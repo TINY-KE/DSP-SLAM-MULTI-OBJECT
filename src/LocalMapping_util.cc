@@ -493,7 +493,7 @@ void LocalMapping::Create_Multi_NewObjectsFromDetections()  // 用于RGBD模式
         // If the detection is a new object, create a new map object.
         if (!det->isNew)
             continue;
-        if (!det->isGood_OrbPointsEnough)
+        if (!det->isGood_OrbPointsEnough && !mb_add_depth_pcd_to_map_object)
             continue;
         if (mvpGlobalEllipsolds[det_i] == NULL) 
             continue;
@@ -546,7 +546,7 @@ void LocalMapping::Process_Multi_DetectedObjects_byPythonReconstruct()
         // check if it's ready for reconstruction, reconstruct if it's got enough points
         if (det->isNew)   //只有track中数据关联上的物体才会被重建
             continue;
-        if (!det->isGood_OrbPointsEnough)
+        if (!det->isGood_OrbPointsEnough && !mb_add_depth_pcd_to_map_object)
             continue;
 
         MapObject *pMO = mvpAssociatedObjects[det_i];  

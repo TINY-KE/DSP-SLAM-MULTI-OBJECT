@@ -130,6 +130,8 @@ Plane.MH_points_in_plane_size_scale: 0.001
 Tracking.AssociateObjectWithEllipsold: 1
 Tracking.AssociateDebug: 0
 Tracking.AssociateIoUThresold: 0.42
+Tracking.AssociateDisThresold: 0.3
+
 # Bounding box filter
 Measurement.Border.Pixels: 10
 Measurement.LengthLimit.Pixels: 0
