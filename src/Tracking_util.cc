@@ -514,4 +514,74 @@ void Tracking::AssociateObjectsByProjection(ORB_SLAM2::KeyFrame *pKF)
 }
 
 
+
+
+void Tracking::AssociateObjectsByDistance(ORB_SLAM2::KeyFrame *pKF)
+{
+    // 获取地图中的物体和点
+    auto mapObjects = mpMap->GetAllMapObjects();
+    auto mvpMapPoints = pKF->GetMapPointMatches();
+    // Try to match and triangulate key-points with last key-frame
+    auto detectionsKF1 = pKF->mvpDetectedObjects;
+    auto mvpGlobalEllipsolds = pKF->GetEllipsoldsGlobal();
+
+    for (int d_i = 0; d_i < detectionsKF1.size(); d_i++)
+    {
+        // cout << "Detection: " << d_i + 1 << endl;
+        auto detKF1 = detectionsKF1[d_i];
+        g2o::ellipsoid* local_e = mvpGlobalEllipsolds[d_i];
+        if (local_e==NULL){
+            continue;
+        }
+
+        cout << "[debug] Tracking::AssociateObjectsByDistance" << endl;
+        bool has_associate = false;
+
+        // 当前观测的label
+        auto local_label = detKF1->label;
+
+        // 与global椭球体的投影IoU评分
+        std::vector<std::pair<double, MapObject*>> objDisVec;
+
+
+        for (auto pMO: mapObjects){
+            
+            auto global_e = pMO->GetEllipsold();
+
+            if (global_e==NULL){
+                continue;
+            }
+
+            auto global_label = pMO->label;
+            
+            Eigen::Vector3d global_center = global_e->pose.translation();
+            Eigen::Vector3d local_center = local_e->pose.translation();
+            // 计算两者的距离
+            double dis = (global_center - local_center).norm();
+
+            if (dis < mf_associate_Dis_thresold && local_label==global_label)
+                objDisVec.push_back(make_pair(dis, pMO));
+
+        }
+        
+        std::cout << "[debug] Associate Detection " << d_i << ", class " << local_label ;
+        if (!objDisVec.empty()) {
+            std::sort(objDisVec.begin(), objDisVec.end(),
+                [](const std::pair<double, MapObject*>& a, const std::pair<double, MapObject*>& b) {
+                    return a.first < b.first; 
+                });
+            
+            MapObject* bestObject = objDisVec.front().second;
+            double minDis = objDisVec.front().first;
+
+            associateDetWithObject(pKF, bestObject, d_i, detKF1, mvpMapPoints);
+    
+            std::cout << ", associated successfully, minDis: "<< minDis << endl;
+
+        }
+        else 
+            std::cout << ", associated failed " << endl;
+    }
+}
+
 }

@@ -114,6 +114,7 @@ public:
     void GetObjectDetectionsMono(KeyFrame *pKF);
     void GetObjectDetectionsRGBD(KeyFrame *pKF);
     void AssociateObjectsByProjection(KeyFrame *pKF);  // assocating detection to object by projecting map points
+    void AssociateObjectsByDistance(KeyFrame *pKF);  // assocating detection to object by projecting map points
 
 
 public:
@@ -304,6 +305,8 @@ private:
 // 用于椭球体数据关联
 private:
     double mf_associate_IoU_thresold;
+    double mf_associate_Dis_thresold;
+
     bool mb_associate_debug;
     bool mb_associate_object_with_ellipsold;
     int associateDetWithObject(ORB_SLAM2::KeyFrame *pKF, MapObject* pMO, int d_i, ObjectDetection* detKF1, vector<MapPoint*>& mvpMapPoints);

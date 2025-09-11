@@ -183,6 +183,7 @@ Tracking::Tracking(System *pSys, ORBVocabulary* pVoc, FrameDrawer *pFrameDrawer,
     // 椭球体数据关联
     mb_associate_object_with_ellipsold = Config::Get<int>("Tracking.AssociateObjectWithEllipsold");
     mf_associate_IoU_thresold = Config::Get<double>("Tracking.AssociateIoUThresold");
+    mf_associate_Dis_thresold = Config::Get<double>("Tracking.AssociateDisThresold");
     mb_associate_debug = Config::Get<int>("Tracking.AssociateDebug");
     
     // 曼哈顿平面
@@ -1206,7 +1207,8 @@ void Tracking::CreateNewKeyFrame()
         if (!mpMap->GetAllMapObjects().empty())
         {
             // AssociateObjects(pKF);
-            AssociateObjectsByProjection(pKF);
+            // AssociateObjectsByProjection(pKF);
+            AssociateObjectsByDistance (pKF);
         }
         
         std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();

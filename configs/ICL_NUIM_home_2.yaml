@@ -124,12 +124,14 @@ Plane.MinSize: 100  #1000
 Plane.AngleThreshold: 3.0
 Plane.DistanceThreshold: 0.05
 Plane.MH_points_in_plane_size_scale: 0.001
-
+Plane.MHP_min_distance: 0.2
+Plane.Supporting_Plane_min_distance: 0.2
 
 # 椭球体数据关联
 Tracking.AssociateObjectWithEllipsold: 1
 Tracking.AssociateDebug: 0
 Tracking.AssociateIoUThresold: 0.42
+Tracking.AssociateDisThresold: 0.4
 # Bounding box filter
 Measurement.Border.Pixels: 10
 Measurement.LengthLimit.Pixels: 0

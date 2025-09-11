@@ -124,8 +124,8 @@ namespace ORB_SLAM2
         return mvPlanePoints;
     }
 
-    std::vector<PointCloudPCL> PlaneExtractor::GetPotentialGroundPlanePoints(){
-        return mvPotentialGroundPlanePoints;
+    std::vector<PointCloudPCL> PlaneExtractor::GetPotentialMHPlane_BigEnough_Points(){
+        return mvPotentialMHPlane_BigEnough_Points;
     }
 
     std::vector<cv::Mat> PlaneExtractor::GetCoefficients(){
@@ -138,7 +138,7 @@ namespace ORB_SLAM2
         mParam.RangeOpen = true;
         mParam.RangeHeight = depth.rows/2;
 
-        mvPotentialGroundPlanePoints.clear();
+        mvPotentialMHPlane_BigEnough_Points.clear();
         // ************************************
         extractPlanes(depth);   // first extract all the potential planes
         
@@ -176,7 +176,7 @@ namespace ORB_SLAM2
             g2o::plane* pPlane = new g2o::plane();
             pPlane->param= vec;
             vpPlanes.push_back(pPlane);
-            mvPotentialGroundPlanePoints.push_back(mvPlanePoints[i]);
+            mvPotentialMHPlane_BigEnough_Points.push_back(mvPlanePoints[i]);
             if(sort_type == 0)
                 mapPlaneSorter.push_back(make_pair(pPlane, double(mvPlanePoints[i].size())));
             else if(sort_type == 1){

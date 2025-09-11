@@ -53,7 +53,7 @@ public:
     void SetParam(PlaneExtractorParam& param);
 
     std::vector<PointCloudPCL> GetPoints();
-    std::vector<PointCloudPCL> GetPotentialGroundPlanePoints();
+    std::vector<PointCloudPCL> GetPotentialMHPlane_BigEnough_Points();
 
     std::vector<cv::Mat> GetCoefficients();
     PointCloudPCL::Ptr GetCloudDense();
@@ -64,7 +64,7 @@ protected:
     PlaneExtractorParam mParam;
 
     std::vector<PointCloudPCL> mvPlanePoints;
-    std::vector<PointCloudPCL> mvPotentialGroundPlanePoints;
+    std::vector<PointCloudPCL> mvPotentialMHPlane_BigEnough_Points;
     std::vector<cv::Mat> mvPlaneCoefficients;
 
     PointCloudPCL::Ptr mpCloudDense;

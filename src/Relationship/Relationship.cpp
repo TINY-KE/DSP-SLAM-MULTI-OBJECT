@@ -116,6 +116,12 @@ namespace ORB_SLAM2
             bool success = false;
             int sup_plane_id=-1;
             g2o::plane* pPlane_best = NULL;
+
+            // enum OBJECT_MODEL
+            // {
+            //     POINT_MODEL = 0,
+            //     QUADRIC_MODEL = 1
+            // };
             if(model == 1){
                 std::vector<g2o::plane*> obj_planes = pEllip->GetCubePlanes();  // 椭球体所在的坐标系
                 g2o::plane* pObj_bottom_plane = obj_planes[0];

@@ -38,6 +38,7 @@ private:
     void AddNewDominantMHPlane(g2o::plane* vP);
 
     double mf_MH_points_in_plane_size_scale;
+    double mf_MHP_min_distance;
 
     std::vector<g2o::plane*> mvpStructuralMHPlanes_bigenough; // 当前提取的曼哈顿结构平面 ("经过大小过滤"), 只用于进一步提取mvpHomeDominantStructuralMHPlanes
     std::vector<g2o::plane*> mvpAllMHPlanes; // 当前提取的所有曼哈顿平面 ("仅满足垂直平行约束")
@@ -46,7 +47,8 @@ private:
     bool mbDominantResult;
     std::vector<g2o::plane*> mvpHomeDominantStructuralMHPlanes;   // 房间内的Dominant曼哈顿平面, 最多只保留5个，用于在Ellipsoid Extractor中过滤物体内点云
 
-    g2o::plane* mpGroundplane;
+    g2o::plane* mpGroundplane_global;
+    g2o::plane* mpGroundplane_local;
 
     std::vector<PointCloudPCL> mvAllMHPlanesPoints;
 
