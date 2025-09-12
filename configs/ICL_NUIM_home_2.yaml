@@ -53,7 +53,7 @@ Viewer.KeyFrameLineWidth: 2
 Viewer.GraphLineWidth: 4
 Viewer.PointSize: 2
 Viewer.CameraSize: 0.15  # originally 0.7
-Viewer.CameraLineWidth: 6
+Viewer.CameraLineWidth:  10 #6
 Viewer.ViewpointX: 0
 Viewer.ViewpointY: -10   # originally -10
 Viewer.ViewpointZ: -0.1
@@ -168,4 +168,4 @@ Tworld_camera.qz: -0.5
 Tworld_camera.qw: 0.5
 Tworld_camera.tx: 0.0
 Tworld_camera.ty: 0.0
-Tworld_camera.tz: 1
+Tworld_camera.tz: 1.17

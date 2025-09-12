@@ -102,7 +102,7 @@ void Viewer::Run()
     pangolin::Var<bool> menuShowGroundPlane("menu.Show GroundPlane",true,true);
     // 最新帧中的bbox平面
     pangolin::Var<bool> menuShowBboxPlane("menu.Show Bbox Plane",true,true);
-    // Relations
+    // relations
     pangolin::Var<bool> menuShowRelationArrow("menu.Relation Arrow",false,true);
     
     // 图片

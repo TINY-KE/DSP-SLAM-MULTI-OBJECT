@@ -27,7 +27,7 @@ using namespace std;
 
 namespace ORB_SLAM2 {
 
-
+// relations
     void VisualizeRelations(Relations& rls, Map* pMap, g2o::SE3Quat &Twc, std::vector<PointCloudPCL>& vPlanePoints)
     {
         int num = rls.size();
@@ -49,25 +49,33 @@ namespace ORB_SLAM2 {
             g2o::plane* plane_world = new g2o::plane(*pPlane); plane_world->transform(Twc);
             Vector3d obj_center = e_world.pose.translation();
             Vector3d norm = plane_world->param.head(3); norm.normalize();
-            double length = 0.5; norm = norm * length;
 
-            if(rl.type == 1)    // 支撑
+            if(rl.type == g2o::MANHATTAN_PLANE_TYPE::SUPPORTING)    // 支撑
             {
                 // 即在物体底端产生一个向上大竖直箭头.
                 // 以物体为中心.
                 // 以平面法向量为方向.
-                pMap->addArrow(obj_center, norm, Vector3d(0,1.0,0));
+                double z_aix_half_length = e_world.scale(2); 
+                norm = norm * z_aix_half_length;
+                pMap->addArrow(obj_center, norm, Vector3d(0, 1, 1));
+                // 同时高亮平面.
+                plane_world->InitFinitePlane(obj_center, 1);
+                plane_world->color = Vector3d(0, 1, 1);    // 青色显示supporting关系面
+                pMap->addPlane(plane_world);
             }
-            else if(rl.type == 2) // 倚靠
+            else if(rl.type == g2o::MANHATTAN_PLANE_TYPE::BACKING) // 倚靠
             {
                 // 同上
-                pMap->addArrow(obj_center, norm, Vector3d(0,0,1.0));
+                double z_aix_half_length = e_world.scale(1); 
+                norm = norm * z_aix_half_length;
+                pMap->addArrow(obj_center, norm, Vector3d(1, 0, 1));
+                // 同时高亮平面.
+                plane_world->InitFinitePlane(obj_center, 1);
+                plane_world->color = Vector3d(1, 0, 1);    // 使用品红色显示backing关系面
+                pMap->addPlane(plane_world);
             }
 
-            // 同时高亮平面.
-            plane_world->InitFinitePlane(obj_center, 0.7);
-            plane_world->color = Vector3d(0, 1, 1);    // 黄色显示关系面
-            pMap->addPlane(plane_world);
+            
 
             // 高亮对应平面的点云
             int plane_id = rl.plane_id;
@@ -77,11 +85,22 @@ namespace ORB_SLAM2 {
                 ORB_SLAM2::PointCloud cloudQuadri = pclToQuadricPointCloud(pCloudPCL);
                 ORB_SLAM2::PointCloud* pCloudGlobal = transformPointCloud(&cloudQuadri, &Twc);
                 
-                int r = 0;
-                int g = 255;
-                int b = 255;
-                SetPointCloudProperty(pCloudGlobal, r, g, b, 4);
-                pMap->AddPointCloudList(string("Relationship.Activiate Sup-Planes"), pCloudGlobal, mode);
+
+                if(rl.type == g2o::MANHATTAN_PLANE_TYPE::SUPPORTING){    // 支撑
+                    int r = 0;
+                    int g = 255;
+                    int b = 255;
+                    SetPointCloudProperty(pCloudGlobal, r, g, b, 4);
+                    pMap->AddPointCloudList(string("Relationship.Activiate Sup-Planes"), pCloudGlobal, mode);
+                }
+                else if(rl.type == g2o::MANHATTAN_PLANE_TYPE::BACKING){ // 倚靠
+                    int r = 255;
+                    int g = 0;
+                    int b = 255;
+                    SetPointCloudProperty(pCloudGlobal, r, g, b, 4);
+                    pMap->AddPointCloudList(string("Relationship.Activiate Back-Planes"), pCloudGlobal, mode);
+                }
+
                 if(mode == 1){
                     delete pCloudGlobal;    // 该指针对应的点云已被拷贝到另一个指针点云,清除多余的一个
                     pCloudGlobal = NULL;
@@ -464,21 +483,10 @@ namespace ORB_SLAM2 {
         g2o::SE3Quat Twc = pFrame->cam_pose_Twc;
         mpMap->AddPointCloudList("Relationship.All MH Planes", vPlanePoints, Twc, REPLACE_POINT_CLOUD);
 
-        // std::cout<<"[debug] Tracking::TaskRelationship, 2"<< std::endl;
-        // 最新椭球体的支撑平面
         std::vector<PointCloudPCL>  vSupportingPlanePoints;
-        // std::cout<<"[debug] Tracking::TaskRelationship, 3"<< std::endl;
-        // for(auto rl: rls){
-        //     if(rl.type == 1){   // 支撑关系
-        //         vSupportingPlanePoints.push_back(vPlanePoints[rl.plane_id]);
-        //     }
-        // }
-        // mpMap->AddPointCloudList("Relationship.Supporting Planes", vSupportingPlanePoints, Twc, REPLACE_POINT_CLOUD);
-
-        // std::cout<<"[debug] Tracking::TaskRelationship, 4"<< std::endl;
 
         // 可视化该关系
-        // VisualizeRelations(rls, mpMap, Twc, vPlanePoints); // 放到地图中去显示?
+        VisualizeRelations(rls, mpMap, Twc, vPlanePoints); // 放到地图中去显示?
     }
 
     // *******

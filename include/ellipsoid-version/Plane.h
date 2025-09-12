@@ -13,8 +13,8 @@ namespace g2o
 enum MANHATTAN_PLANE_TYPE
 {
     OTHERS = 0,
-    PARALLEL = 1,
-    VERTICAL = 2,
+    SUPPORTING = 1,
+    BACKING = 2,
     GROUND = 3
 };
 

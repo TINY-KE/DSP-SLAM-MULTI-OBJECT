@@ -161,7 +161,7 @@ public:
     std::map<string, PointCloud *>  GetPointCloudList();  //用户提取椭球体的深度点云，用于可视化debug
     PointCloud GetPointCloudInList(const string& name);
 
-    // Relations
+    // relations
 public:
     void addArrow(const Vector3d& center, const Vector3d& norm, const Vector3d& color);
     std::vector<Arrow> GetArrows();

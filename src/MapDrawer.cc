@@ -768,9 +768,10 @@ void MapDrawer::drawArrows()
     {
         Arrow& ar = vArs[i];
         Vector3d norm = ar.norm; 
-        Vector3d end = ar.center + norm;
+        Vector3d start = ar.center - norm;
+        Vector3d end = ar.center;
 
-        drawLine(ar.center, end, ar.color, mCameraLineWidth * 10, 0.8);
+        drawLine(start, end, ar.color, mCameraLineWidth * 1000, 0.8);
     }
 }
 
