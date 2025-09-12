@@ -993,7 +993,7 @@ void MapObject::SetEllipsoid(g2o::ellipsoid e){
 void MapObject::SetPoseByEllipsoid(g2o::ellipsoid* e)
 {
     Eigen::Matrix4f Two;
-
+    {
     if(mpEllipsold != NULL) {
         {
             // 这里遇到了一个死锁的问题
@@ -1033,7 +1033,7 @@ void MapObject::SetPoseByEllipsoid(g2o::ellipsoid* e)
 
     // std::cout << "Setting scale = " << e->scale.transpose().matrix() << std::endl;
     // cout << "in setPoseByEllipsold: Two = \n" << Two.matrix() << endl;
-    
+    } //这个括号是为了让上面的lock先释放，万万不可删
     SetObjectPoseSim3(Two); // Two
 
     SetEllipsoid(*e);
