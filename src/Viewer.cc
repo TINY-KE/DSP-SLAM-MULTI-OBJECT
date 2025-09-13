@@ -94,11 +94,13 @@ void Viewer::Run()
     pangolin::Var<bool> menuShowLastestEllipsoids("menu.Show Newest Ellipsoids One Frame Visual", true, true);
     pangolin::Var<bool> menuShowGlobalEllipsoids("menu.Show Global Ellipsoids", true, true);
     pangolin::Var<double> SliderEllipsoidProbThresh("menu.Ellipsoid Prob", 0.3, 0.0, 1.0);
+    pangolin::Var<double> SliderEllipsoidLineWidth("menu.EllipsoidLine Width", 1.0, 0.5, 3.0);
     pangolin::Var<bool> menuShowSdfObjects("menu.Show SDF Objects",true,true);
     // 深度点云
-    pangolin::Var<float> SliderPointCloudListSize("menu.Pointcloud Size", 1.0, 0.5, 5.0);
+    pangolin::Var<float> SliderPointCloudListSize("menu.Pointcloud Size", 3.0, 0.5, 5.0);
     pangolin::Var<bool> menuShowDepthPoints("menu.Show Depth Points",false,true);
     // 地面
+    pangolin::Var<float> SlidermPlaneLineWidth("menu.PlaneLine Width", 1.0, 0.5, 3.0);
     pangolin::Var<bool> menuShowGroundPlane("menu.Show GroundPlane",true,true);
     pangolin::Var<bool> menuShowBackingPlane("menu.Show BackingPlane",true,true);
     pangolin::Var<bool> menuShowSupportingPlane("menu.Show SupportingPlane",true,true);
@@ -192,11 +194,13 @@ void Viewer::Run()
             
             if(menuShowEllipsoids){
                 double ellipsoidProbThresh = SliderEllipsoidProbThresh;
-                mpMapDrawer->drawEllipsoidsVisual(ellipsoidProbThresh);
+                double ellipsoidLineWidth = SliderEllipsoidLineWidth;
+                mpMapDrawer->drawEllipsoidsVisual(ellipsoidProbThresh,ellipsoidLineWidth);
             }
             if(menuShowLastestEllipsoids){
                 double ellipsoidProbThresh = SliderEllipsoidProbThresh;
-                mpMapDrawer->drawLastestEllipsoidsVisual(ellipsoidProbThresh);
+                double ellipsoidLineWidth = SliderEllipsoidLineWidth;
+                mpMapDrawer->drawLastestEllipsoidsVisual(ellipsoidProbThresh,ellipsoidLineWidth);
             }
             mpObjectDrawer->ProcessNewObjects();
             if(menuShowSdfObjects){
@@ -204,7 +208,8 @@ void Viewer::Run()
             }
             if(menuShowGlobalEllipsoids){
                 double ellipsoidProbThresh = SliderEllipsoidProbThresh;
-                mpMapDrawer->drawGlobalEllipsoids(ellipsoidProbThresh);
+                double ellipsoidLineWidth = SliderEllipsoidLineWidth;
+                mpMapDrawer->drawGlobalEllipsoids(ellipsoidProbThresh,ellipsoidLineWidth);
             }
             if(menuShowDepthPoints)
             {
@@ -240,15 +245,17 @@ void Viewer::Run()
             // 地面
             if(menuShowGroundPlane)
                 mpMapDrawer->drawPlanes(g2o::MANHATTAN_PLANE_TYPE::GROUND); 
-            // 地面
+
+            float PlaneLineWidth = SlidermPlaneLineWidth;
+            // 倚靠面
             if(menuShowBackingPlane)
-                mpMapDrawer->drawPlanes(g2o::MANHATTAN_PLANE_TYPE::VERTICAL); 
-            // 地面
+                mpMapDrawer->drawPlanes(g2o::MANHATTAN_PLANE_TYPE::VERTICAL, PlaneLineWidth); 
+            // 支撑面
             if(menuShowSupportingPlane)
-                mpMapDrawer->drawPlanes(g2o::MANHATTAN_PLANE_TYPE::HORIZONTAL); 
+                mpMapDrawer->drawPlanes(g2o::MANHATTAN_PLANE_TYPE::HORIZONTAL, PlaneLineWidth); 
             // 最新帧中的观测切面
             if(menuShowBboxPlane)
-                mpMapDrawer->drawPlanes(g2o::MANHATTAN_PLANE_TYPE::BBOX); 
+                mpMapDrawer->drawPlanes(g2o::MANHATTAN_PLANE_TYPE::BBOX, PlaneLineWidth); 
 
             // relations
             if(menuShowRelationArrow)

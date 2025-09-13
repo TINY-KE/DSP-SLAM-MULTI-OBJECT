@@ -124,6 +124,7 @@ namespace ORB_SLAM2 {
         miGroundPlaneState = true;
         mGroundPlane.param = param;
         mGroundPlane.color = Vector3d(0,0,0);
+        mGroundPlane.miMHType = g2o::MANHATTAN_PLANE_TYPE::GROUND;
     }
 
 

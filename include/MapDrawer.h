@@ -68,11 +68,11 @@ private:
 
 // ellipsoid-version
 public:
-    bool drawEllipsoidsVisual(double prob_thresh);
-    bool drawGlobalEllipsoids(double prob_thresh);
-    bool drawLastestEllipsoidsVisual(double prob_thresh);
-    void drawAllEllipsoidsInVector(std::vector<ellipsoid*>& ellipsoids, int color_mode = 0);
-    void drawEllipsoidInVector(ellipsoid* e, int color_mode = 0); // 0: Red, 1: Green, 2:Blue
+    bool drawEllipsoidsVisual(double prob_thresh, double ellipsoidLineWidth=1.0);
+    bool drawGlobalEllipsoids(double prob_thresh, double ellipsoidLineWidth=1.0);
+    bool drawLastestEllipsoidsVisual(double prob_thresh, double ellipsoidLineWidth=1.0);
+    void drawAllEllipsoidsInVector(std::vector<ellipsoid*>& ellipsoids, int color_mode = 0, double ellipsoidLineWidth=1.0);
+    void drawEllipsoidInVector(ellipsoid* e, int color_mode = 0, double ellipsoidLineWidth=1.0); // 0: Red, 1: Green, 2:Blue
     void SE3ToOpenGLCameraMatrix(g2o::SE3Quat &matIn, pangolin::OpenGlMatrix &M); // inverse matIn
     void drawAxisNormal();
     void drawPointCloudLists(float pointSize);
@@ -81,8 +81,8 @@ public:
     // 绘制平面
     Eigen::Matrix3d calibRotMatAccordingToAxis(Matrix3d& rotMat, const Vector3d& normal);
     void drawLine(const Vector3d& start, const Vector3d& end, const Vector3d& color, double width, double alpha = 1.0);
-    bool drawPlanes(g2o::MANHATTAN_PLANE_TYPE visual_group);
-    void drawPlaneWithEquation(plane* p);
+    bool drawPlanes(g2o::MANHATTAN_PLANE_TYPE visual_group, float PlaneLineWidth = 1.0);
+    void drawPlaneWithEquation(plane* p, float PlaneLineWidth);
 
     // relations
     void drawArrows();

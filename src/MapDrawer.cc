@@ -367,17 +367,10 @@ void MapDrawer::drawPointCloudWithOptions(const std::map<std::string,bool> &opti
 }
 
 
-bool MapDrawer::drawEllipsoidsVisual(double prob_thresh) {
-    // std::vector<ellipsoid*> ellipsoids = mpMap->GetAllEllipsoids();
-    // int num_origin = ellipsoids.size();
+bool MapDrawer::drawEllipsoidsVisual(double prob_thresh, double ellipsoidLineWidth) {
 
     std::vector<ellipsoid*> ellipsoidsVisual = mpMap->GetAllEllipsoidsVisual();
 
-    // std::cout<<"[MapDrawer::drawEllipsoidsVisual] Number of visual ellipsoids: " << ellipsoidsVisual.size() << std::endl;
-    // ellipsoids.insert(ellipsoids.end(), ellipsoidsVisual.begin(), ellipsoidsVisual.end());
-
-    // filter those ellipsoids with prob
-    // std::vector<ellipsoid*> ellipsoids_prob;
     std::vector<ellipsoid*> ellipsoids_prob;
     for(auto& pE : ellipsoidsVisual)
     {
@@ -390,22 +383,15 @@ bool MapDrawer::drawEllipsoidsVisual(double prob_thresh) {
         }
     }
     
-    drawAllEllipsoidsInVector(ellipsoids_prob, 4);
+    drawAllEllipsoidsInVector(ellipsoids_prob, 4, ellipsoidLineWidth);
 
     return true;
 }
 
-bool MapDrawer::drawLastestEllipsoidsVisual(double prob_thresh) {
-    // std::vector<ellipsoid*> ellipsoids = mpMap->GetAllEllipsoids();
-    // int num_origin = ellipsoids.size();
+bool MapDrawer::drawLastestEllipsoidsVisual(double prob_thresh, double ellipsoidLineWidth) {
 
     std::vector<ellipsoid*> ellipsoidsVisual = mpMap->GetAllEllipsoidsVisual();
 
-    // std::cout<<"[MapDrawer::drawEllipsoidsVisual] Number of visual ellipsoids: " << ellipsoidsVisual.size() << std::endl;
-    // ellipsoids.insert(ellipsoids.end(), ellipsoidsVisual.begin(), ellipsoidsVisual.end());
-
-    // filter those ellipsoids with prob
-    // std::vector<ellipsoid*> ellipsoids_prob;
     std::vector<ellipsoid*> ellipsoids_prob;
     if(ellipsoidsVisual.size() < 1) return false;
     auto pE = ellipsoidsVisual.back();
@@ -417,12 +403,12 @@ bool MapDrawer::drawLastestEllipsoidsVisual(double prob_thresh) {
         // std::cout << "[MapDrawer::drawEllipsoidsVisual] Ellipsoid with prob: " << pE->prob << " is filtered out." << std::endl;
     }
     
-    drawAllEllipsoidsInVector(ellipsoids_prob, 2);
+    drawAllEllipsoidsInVector(ellipsoids_prob, 2, ellipsoidLineWidth);
 
     return true;
 }
 
-bool MapDrawer::drawGlobalEllipsoids(double prob_thresh) {
+bool MapDrawer::drawGlobalEllipsoids(double prob_thresh, double ellipsoidLineWidth) {
 
     auto mvpMapObjects = mpMap->GetAllMapObjects();
     std::vector<ellipsoid*> ellipsoids_prob;
@@ -452,24 +438,24 @@ bool MapDrawer::drawGlobalEllipsoids(double prob_thresh) {
     
     // std::cout<<"[debug] MapDrawer::drawGlobalEllipsoids, Number of success objects / ALL map objects: " << ellipsoids_prob.size() << "/" << mvpMapObjects.size() << std::endl;
 
-    drawAllEllipsoidsInVector(ellipsoids_prob, 0);
+    drawAllEllipsoidsInVector(ellipsoids_prob, 0, ellipsoidLineWidth);
 
     return true;
 }
 
 
 // 加入了 transform
-void MapDrawer::drawAllEllipsoidsInVector(std::vector<ellipsoid*>& ellipsoids, int color_mode)
+void MapDrawer::drawAllEllipsoidsInVector(std::vector<ellipsoid*>& ellipsoids, int color_mode, double ellipsoidLineWidth)
 {    
     for( size_t i=0; i<ellipsoids.size(); i++)
     {
-        drawEllipsoidInVector(ellipsoids[i], color_mode);
+        drawEllipsoidInVector(ellipsoids[i], color_mode, ellipsoidLineWidth);
     }
     return;
 }
 
 
-void MapDrawer::drawEllipsoidInVector(ellipsoid* e, int color_mode)
+void MapDrawer::drawEllipsoidInVector(ellipsoid* e, int color_mode, double ellipsoidLineWidth)
 {
     
     SE3Quat TmwSE3 = e->pose.inverse();
@@ -481,7 +467,7 @@ void MapDrawer::drawEllipsoidInVector(ellipsoid* e, int color_mode)
 
     glPushMatrix();
 
-    glLineWidth(mCameraLineWidth/3.0);
+    glLineWidth(mCameraLineWidth/3.0*ellipsoidLineWidth);
 
     // // glColor3f(0.0f,0.0f,1.0f);
     
@@ -610,7 +596,7 @@ void MapDrawer::drawAxisNormal()
 }
 
 // draw all the planes
-bool MapDrawer::drawPlanes(g2o::MANHATTAN_PLANE_TYPE type) {
+bool MapDrawer::drawPlanes(g2o::MANHATTAN_PLANE_TYPE type, float PlaneLineWidth) {
     std::vector<plane*> planes = mpMap->GetAllPlanes();
     // std::cout << "plane_num = " << planes.size() << std::endl;
     // bool success_debug = false;
@@ -618,7 +604,7 @@ bool MapDrawer::drawPlanes(g2o::MANHATTAN_PLANE_TYPE type) {
         g2o::plane* ppl = planes[i];
         if(ppl->miMHType == type) {
             // std::cout << "drawPlaneWithEquation : " << ppl->param.transpose().matrix() << std::endl;
-            drawPlaneWithEquation(ppl);
+            drawPlaneWithEquation(ppl, PlaneLineWidth);
             // success_debug = true;
         }
     }
@@ -627,7 +613,7 @@ bool MapDrawer::drawPlanes(g2o::MANHATTAN_PLANE_TYPE type) {
 
 
 // A sparse version.
-void MapDrawer::drawPlaneWithEquation(plane *p) {
+void MapDrawer::drawPlaneWithEquation(plane *p, float PlaneLineWidth) {
     if( p == NULL ) return;
     Vector3d center;            // 平面上一点!!
     double size;
@@ -675,7 +661,7 @@ void MapDrawer::drawPlaneWithEquation(plane *p) {
     // 绘制内部线条.
     Vector3d point_ld = center - size/2.0 * basis_x - size/2.0 * basis_y;
 
-    double line_width = 2.0;
+    double line_width = 2.0 * PlaneLineWidth;
     double alpha = 0.8;
     // int sample_num = 15; // 格子数量
     int sample_num = max(15, (int)(size/0.5)); // 格子数量
