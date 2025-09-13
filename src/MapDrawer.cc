@@ -682,6 +682,8 @@ void MapDrawer::drawPlaneWithEquation(plane *p, float PlaneLineWidth) {
     }
 
     bool bDrawDirection = true; // 绘制法向量方向
+    if(p->miMHType==g2o::MANHATTAN_PLANE_TYPE::GROUND)
+        bDrawDirection = false; // 地面不绘制法向量方向
     double direction_length = size / 3;
     if(bDrawDirection)
     {

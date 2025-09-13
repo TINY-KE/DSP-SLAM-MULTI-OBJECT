@@ -115,7 +115,7 @@ pcl::PointCloud<PointType>::Ptr EllipsoidExtractor::ExtractPointCloud(cv::Mat& d
     assert( mbSetPlane && "Please set the supporting plane first.");
 
     double depth_range = Config::ReadValue<double>("EllipsoidExtractor_DEPTH_RANGE", 6); 
-    std::cout<< "[debug]EllipsoidExtractor::ExtractPointCloud: depth_range = " << depth_range << std::endl;
+    // std::cout<< "[debug]EllipsoidExtractor::ExtractPointCloud: depth_range = " << depth_range << std::endl;
     g2o::SE3Quat campose_wc; campose_wc.fromVector(pose.head(7));
 
     PointCloud* pPoints_local = new PointCloud(getPointCloudInRect(depth, bbox, camera, depth_range));
@@ -127,7 +127,7 @@ pcl::PointCloud<PointType>::Ptr EllipsoidExtractor::ExtractPointCloud(cv::Mat& d
     // 产生两组可视化点云 world, world_downsample
     PointCloud* pPoints_world = transformPointCloud(pPoints_local, &campose_wc);
     // PointCloud* pPoints_world_downsample = transformPointCloud(pPoints_local_downsample, &campose_wc);
-    std::cout<<"[debug]EllipsoidExtractor::ExtractPointCloud 1: 可视化物体的深度点云[过滤前]"<<std::endl;
+    // std::cout<<"[debug]EllipsoidExtractor::ExtractPointCloud 1: 可视化物体的深度点云[过滤前]"<<std::endl;
     // VisualizePointCloud("Points_world", pPoints_world, Vector3d(0,0.5,0), 2);
     // VisualizePointCloud("Points_world_downsample", pPoints_world_downsample, Vector3d(0,0.8,0), 2);
 
@@ -166,7 +166,7 @@ pcl::PointCloud<PointType>::Ptr EllipsoidExtractor::ExtractPointCloud(cv::Mat& d
     // delete pPoints_local_downsample; pPoints_local_downsample = NULL;
 
     // 新添加的可视化: 滤波后
-    std::cout<<"[debug]EllipsoidExtractor::ExtractPointCloud 2: 可视化物体的深度点云[过滤后]"<<std::endl;
+    // std::cout<<"[debug]EllipsoidExtractor::ExtractPointCloud 2: 可视化物体的深度点云[过滤后]"<<std::endl;
     PointCloud* pCloudFilteredWorld = transformPointCloud(pCloudFiltered, &campose_wc);
     // VisualizePointCloud("CloudFiltered", pCloudFilteredWorld, Vector3d(0,1.0,0), 2);
     delete pCloudFiltered; pCloudFiltered = NULL;
@@ -177,18 +177,18 @@ pcl::PointCloud<PointType>::Ptr EllipsoidExtractor::ExtractPointCloud(cv::Mat& d
     PointCloud* pPoints_planeFiltered;
 
     if(!mbOpenMHPlanesFilter){   //如果当前帧中提取曼哈顿平面成功，则开启
-        std::cout << "[debug] 物体物体点云过滤，仅使用地平面进行滤波，" << std::endl;
+        // std::cout << "[debug] 物体物体点云过滤，仅使用地平面进行滤波，" << std::endl;
         pPoints_planeFiltered = ApplySupportingPlaneFilter(pPoints_global);
     }
     else 
     {
-        std::cout << "[debug] 物体物体点云过滤，使用曼哈顿支撑平面进行滤波，" ;
+        // std::cout << "[debug] 物体物体点云过滤，使用曼哈顿支撑平面进行滤波，" ;
         std::vector<g2o::plane*> vMHPlanes = mvpHomeDominantMHPlanes;
         vMHPlanes.push_back(mpDefaultSupportingPlane);
         pPoints_planeFiltered = ApplyMHPlanesFilter(pPoints_global, vMHPlanes);
     }
     clock_t time_3_SupportingPlaneFilter = clock();
-    std::cout<<"[debug]EllipsoidExtractor::ExtractPointCloud 3: 可视化物体所处的水平面"<<std::endl;
+    // std::cout<<"[debug]EllipsoidExtractor::ExtractPointCloud 3: 可视化物体所处的水平面"<<std::endl;
 
 
     VisualizePointCloud("planeFiltered", pPoints_planeFiltered, Vector3d(1.0,0,0), 2);
@@ -252,7 +252,7 @@ pcl::PointCloud<PointType>::Ptr EllipsoidExtractor::ExtractPointCloud(cv::Mat& d
 
     mpPoints = pPointsEuFiltered;
 
-    std::cout<<"[debug]EllipsoidExtractor::ExtractPointCloud 4: 可视化欧几里得聚类后的结果"<<std::endl;
+    // std::cout<<"[debug]EllipsoidExtractor::ExtractPointCloud 4: 可视化欧几里得聚类后的结果"<<std::endl;
     VisualizePointCloud("EuclideanFiltered", mpPoints, Vector3d(0.4,0,1.0), 2);;
     clock_t time_7_VisualizePointCloud = clock();
 

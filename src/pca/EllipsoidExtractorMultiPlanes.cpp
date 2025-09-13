@@ -349,9 +349,11 @@ void VisualizeNormals(std::vector<cv::Point2d> &vps)
 
 }
 
+// 功能是​​通过点云的法向量分布，计算物体在水平面（XY平面）上的主要朝向角度（yaw角）
 // please make sure groundplane has been set.
 double EllipsoidExtractor::NormalVoter(pcl::PointCloud<PointType>::Ptr& pCloudPCL)
 {
+    // (1) 计算所有点的法向量估计
     // pCloudPCL 重力坐标系 ( Z 轴为重力方向, 物体为正 )
     // Create the normal estimation class, and pass the input dataset to it
     pcl::NormalEstimation<PointType, pcl::Normal> ne;
@@ -375,6 +377,7 @@ double EllipsoidExtractor::NormalVoter(pcl::PointCloud<PointType>::Ptr& pCloudPC
     // Compute the features
     ne.compute (*cloud_normals);
 
+    // (2) 法向量投影到XY平面
     // 开始计算一张二值图.
     int normal_num = cloud_normals->size();
     std::vector<cv::Point2d> vps; vps.resize(normal_num);
@@ -391,6 +394,7 @@ double EllipsoidExtractor::NormalVoter(pcl::PointCloud<PointType>::Ptr& pCloudPC
     }
     // VisualizeNormals(vps);
 
+    // （3) 方向直方图统计
     // 从vps中获得直方图.
     int bin_size = 360;
     std::vector<int> bins_num; bins_num.resize(bin_size);    // 1 deg 1 bin
@@ -407,17 +411,20 @@ double EllipsoidExtractor::NormalVoter(pcl::PointCloud<PointType>::Ptr& pCloudPC
         bins_num[bin_id] ++ ;
     }
 
+    // (4) 可视化直方图​
     // 绘制直方图.
-    cv::Mat dstImage(360,360,CV_8U,cv::Scalar(0));
+    cv::Mat dstImage(360,360,CV_8UC3,cv::Scalar(255, 255, 255));
     int minValue = *min_element(bins_num.begin(),bins_num.end()); 
     int maxValue = *max_element(bins_num.begin(),bins_num.end()); 
     int hpt = int(0.9 * bin_size);
+    
     for(int i = 0; i < bin_size; i++)
 	{
 		int binValue = bins_num[i];           //   注意hist中是float类型   
 		//拉伸到0-max
 		int realValue = int(binValue * hpt/maxValue);
-		cv::line(dstImage,cv::Point(i, bin_size - 1),cv::Point(i, bin_size - realValue),cv::Scalar(255));
+        cv::Scalar lineColor(255, 0, 0);  // B=255, G=0, R=0 → 深蓝色
+		cv::line(dstImage,cv::Point(i, bin_size - 1),cv::Point(i, bin_size - realValue),lineColor,1);
 	}
 	cv::imshow("Hist", dstImage);
     cv::waitKey(1);
@@ -805,10 +812,10 @@ g2o::ellipsoid EllipsoidExtractor::EstimateLocalEllipsoidUsingMultiPlanes(cv::Ma
     pcl::PointCloud<PointType>::Ptr pCloudPCLGravity(new pcl::PointCloud<PointType>);
     pcl::transformPointCloud (*pCloudPCL, *pCloudPCLGravity, transform_gw);
 
-    // // 可视化: 重力系下的物体
-    // ORB_SLAM2::PointCloud* pObjectCloudGravity = pclXYZToQuadricPointCloudPtr(pCloudPCLGravity); // normalized coordinate
-    // mpMap->AddPointCloudList("cloud_gravity", pObjectCloudGravity, 0);
-    // // delete pObjectCloudGravity; pObjectCloudGravity = NULL;
+    // 可视化: 重力系下的物体
+    ORB_SLAM2::PointCloud* pObjectCloudGravity = pclXYZToQuadricPointCloudPtr(pCloudPCLGravity); // normalized coordinate
+    mpMap->AddPointCloudList("cloud_gravity", pObjectCloudGravity, 0);
+    // delete pObjectCloudGravity; pObjectCloudGravity = NULL;
 
     // ✅ 6. 估计物体主方向（Yaw角）
     // 开始计算朝向: 使用法向量投票器    

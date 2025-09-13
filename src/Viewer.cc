@@ -84,6 +84,7 @@ void Viewer::Run()
     pangolin::CreatePanel("menu").SetBounds(0.0,1.0,0.0,pangolin::Attach::Pix(175));
     pangolin::Var<bool> menuFollowCamera("menu.Follow Camera",false,true);
     pangolin::Var<bool> menuShowPoints("menu.Show Points",true,true);
+    pangolin::Var<bool> menuShowCurrentFrame("menu.Show CurrentFrame",true,true);
     pangolin::Var<bool> menuShowKeyFrames("menu.Show KeyFrames",true,true);
     pangolin::Var<bool> menuShowGraph("menu.Show Graph",true,true);
     pangolin::Var<bool> menuLocalizationMode("menu.Localization Mode",false,true);
@@ -97,7 +98,7 @@ void Viewer::Run()
     pangolin::Var<double> SliderEllipsoidLineWidth("menu.EllipsoidLine Width", 1.0, 0.5, 3.0);
     pangolin::Var<bool> menuShowSdfObjects("menu.Show SDF Objects",true,true);
     // 深度点云
-    pangolin::Var<float> SliderPointCloudListSize("menu.Pointcloud Size", 3.0, 0.5, 5.0);
+    pangolin::Var<float> SliderPointCloudListSize("menu.Pointcloud Size", 3.0, 0.5, 10.0);
     pangolin::Var<bool> menuShowDepthPoints("menu.Show Depth Points",false,true);
     // 地面
     pangolin::Var<float> SlidermPlaneLineWidth("menu.PlaneLine Width", 1.0, 0.5, 3.0);
@@ -185,7 +186,8 @@ void Viewer::Run()
             Tec.row(1) = -Tec.row(1);
             Tec.row(2) = -Tec.row(2);
             glClearColor(1.0f,1.0f,1.0f,1.0f);
-            mpMapDrawer->DrawCurrentCamera(Twc);
+            if(menuShowCurrentFrame)
+                mpMapDrawer->DrawCurrentCamera(Twc);
             if(menuShowKeyFrames || menuShowGraph)
                 mpMapDrawer->DrawKeyFrames(menuShowKeyFrames,menuShowGraph);
             if(menuShowPoints)
