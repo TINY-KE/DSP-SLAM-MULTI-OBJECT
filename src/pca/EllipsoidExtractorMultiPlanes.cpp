@@ -805,10 +805,10 @@ g2o::ellipsoid EllipsoidExtractor::EstimateLocalEllipsoidUsingMultiPlanes(cv::Ma
     pcl::PointCloud<PointType>::Ptr pCloudPCLGravity(new pcl::PointCloud<PointType>);
     pcl::transformPointCloud (*pCloudPCL, *pCloudPCLGravity, transform_gw);
 
-    // 可视化: 重力系下的物体
+    // // 可视化: 重力系下的物体
     // ORB_SLAM2::PointCloud* pObjectCloudGravity = pclXYZToQuadricPointCloudPtr(pCloudPCLGravity); // normalized coordinate
-    // // mpMap->AddPointCloudList("cloud_gravity", pObjectCloudGravity, 0);
-    // delete pObjectCloudGravity; pObjectCloudGravity = NULL;
+    // mpMap->AddPointCloudList("cloud_gravity", pObjectCloudGravity, 0);
+    // // delete pObjectCloudGravity; pObjectCloudGravity = NULL;
 
     // ✅ 6. 估计物体主方向（Yaw角）
     // 开始计算朝向: 使用法向量投票器    
@@ -825,7 +825,9 @@ g2o::ellipsoid EllipsoidExtractor::EstimateLocalEllipsoidUsingMultiPlanes(cv::Ma
     ORB_SLAM2::PointCloud* pObjectCloudNormalized = pclXYZToQuadricPointCloudPtr(pCloudPCLNormalized); // normalized coordinate
 
     // 可视化: 物体重力坐标系下，转角对齐后的点云
+    // std::cout<< " [debug] EstimateLocalEllipsoidUsingMultiPlanes 3-1, " << std::endl;
     // mpMap->AddPointCloudList("cloud_normalized", pObjectCloudNormalized, 0);
+    // std::cout<< " [debug] EstimateLocalEllipsoidUsingMultiPlanes 3-2, " << std::endl;
 
     // ✅ 8. 椭球建模（归一化坐标系下）
     // 基于PCA结果生成最小包围盒顶点. 位于相机坐标系内.

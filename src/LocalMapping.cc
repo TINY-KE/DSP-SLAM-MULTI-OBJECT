@@ -190,7 +190,7 @@ bool LocalMapping::RunOneTime()
                     }
                     else if (mpTracker->mSensor == System::RGBD)
                     {
-                        cout << "Local Bundle Adjustment for RGBD" << endl;
+                        // cout << "Local Bundle Adjustment for RGBD" << endl;
                         Optimizer::LocalJointBundleAdjustment_forLocalMapping(mpCurrentKeyFrame, &mbAbortBA, mpMap);
                     }
                     else if (mpTracker->mSensor == System::MONOCULAR)

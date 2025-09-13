@@ -996,7 +996,7 @@ void LocalMapping::MergeMapObject(MapObject* pMO_i, MapObject* pMO_j)
 
 void LocalMapping::UpdateObjectsToMap()
 {
-    cout << "\n[LocalMapping::UpdateObjectsToMap]" << endl;
+    // cout << "\n[LocalMapping::UpdateObjectsToMap]" << endl;
     
     // mpMap->ShowMapInfo();
 
@@ -1039,8 +1039,8 @@ void LocalMapping::UpdateObjectsToMap()
         }
 
     }
-    cout << " - pc_num_valid = " << pc_num_valid << endl;
-    cout << " - ellip_num_valid = " << ellip_num_valid << endl;
+    // cout << " - pc_num_valid = " << pc_num_valid << endl;
+    // cout << " - ellip_num_valid = " << ellip_num_valid << endl;
 }
 
 }

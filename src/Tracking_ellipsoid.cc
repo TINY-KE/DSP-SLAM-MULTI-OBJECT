@@ -205,9 +205,9 @@ namespace ORB_SLAM2 {
         // [3] 使用曼哈顿平面（当前只有地面和桌面）优化椭球体  //重要：其实没有用，因为椭球体生成中地面只是提供重力方向。
         int type = Config::Get<int>("Debug.EllipsoidExtraction.OpenRelations");
 
-            // // [3] Extract Relationship
-            // 构建椭球体与曼哈顿平面之间的关联关系
-            TaskRelationship(pFrame);
+        // // [3] Extract Relationship
+        // 构建椭球体与曼哈顿平面之间的关联关系
+        TaskRelationship(pFrame);
 
         if(type){
             // [4] Use Relationship To Refine Ellipsoids
@@ -358,6 +358,8 @@ namespace ORB_SLAM2 {
                     }
                     else{
                         det->isValidPcd = true;
+                        ORB_SLAM2::PointCloud* pDeepPointsInObject = pclXYZToQuadricPointCloudPtr(pcd_ptr_of_frame); // normalized coordinate
+                        mpMap->AddPointCloudList("DeepPoints in object", pDeepPointsInObject, 0);
                     }
                 }
                 else if(type == 2)
