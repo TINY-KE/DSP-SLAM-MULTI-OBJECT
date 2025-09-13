@@ -158,7 +158,7 @@ public:
     // whether the camera could see the ellipsoid
     bool CheckObservability(const SE3Quat& campose_cw);
 
-    std::vector<plane*> GetCubePlanes();
+    std::vector<plane*> GetCubePlanes(Matrix3Xd& mPoints);  // zhjd：平面的方向量指向物体外 
     std::vector<plane*> GetCubePlanesInImages(const SE3Quat& campose_cw, const Matrix3d& Kalib, int rows, int cols, int pixel_thresh);
 
     void addConstrainPlanes(std::vector<ConstrainPlane*>& vCPlanes);

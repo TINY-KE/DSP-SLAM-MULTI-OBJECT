@@ -81,7 +81,7 @@ public:
     // 绘制平面
     Eigen::Matrix3d calibRotMatAccordingToAxis(Matrix3d& rotMat, const Vector3d& normal);
     void drawLine(const Vector3d& start, const Vector3d& end, const Vector3d& color, double width, double alpha = 1.0);
-    bool drawPlanes(int visual_group=0);
+    bool drawPlanes(g2o::MANHATTAN_PLANE_TYPE visual_group);
     void drawPlaneWithEquation(plane* p);
 
     // relations

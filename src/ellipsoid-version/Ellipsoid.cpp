@@ -630,9 +630,11 @@ namespace g2o
         return Vector4d(rect_center(0),rect_center(1),widthheight(0),widthheight(1));
     }
 
-    std::vector<g2o::plane*> ellipsoid::GetCubePlanes()
+    // zhjd：平面的方向量指向物体外 
+    std::vector<g2o::plane*> ellipsoid::GetCubePlanes(Matrix3Xd& mPoints)
     {
-        Matrix3Xd mPoints = compute3D_BoxCorner();
+        mPoints.resize(3,8);
+        mPoints = compute3D_BoxCorner();
         Matrix3Xd mIds; mIds.resize(3, 6);
         // 注意： 该 id 从1开始计数！
         mIds << 1, 5, 1, 3, 6, 8,

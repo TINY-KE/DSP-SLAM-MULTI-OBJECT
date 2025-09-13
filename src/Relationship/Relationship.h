@@ -12,8 +12,28 @@
 
 #include <Eigen/Core>
 
+#include <pcl/common/transforms.h>
+#include <pcl/point_types.h>
+#include <pcl/sample_consensus/method_types.h>
+#include <pcl/sample_consensus/model_types.h>
+#include <pcl/segmentation/sac_segmentation.h>
+#include <pcl/ModelCoefficients.h>
+#include <pcl/filters/extract_indices.h>
+#include <pcl/visualization/cloud_viewer.h>
+#include <pcl/filters/voxel_grid.h>
+#include <pcl/filters/radius_outlier_removal.h>
+#include <pcl/segmentation/organized_multi_plane_segmentation.h>
+#include <pcl/features/integral_image_normal.h>
+
 namespace ORB_SLAM2
 {
+    enum RELATION_TYPE
+    {
+        INVALID = 0,
+        SUPPORTING = 1,
+        BACKING = 2
+    };
+
     // 该类在局部坐标系下计算, 匹配局部物体与局部平面之间的潜在约束关系。
     // 提取结果保存为  obj_id -> plane_id 的映射. 以及结构体.
     class Frame;
@@ -27,7 +47,7 @@ namespace ORB_SLAM2
         g2o::plane* pPlane;
         g2o::ellipsoid* pEllipsoid;
         Frame* pFrame;
-        int type; // 无效关系0, 支撑关系 1, 倚靠关系 2.
+        RELATION_TYPE type; // 无效关系0, 支撑关系 1, 倚靠关系 2.
 
         Eigen::VectorXd SaveToVec();
         void LoadFromVec(const Eigen::VectorXd& vec);
@@ -41,7 +61,7 @@ namespace ORB_SLAM2
     class RelationExtractor
     {
     public:
-        Relations ExtractRelations(std::vector<g2o::ellipsoid *> &vpEllips, std::vector<g2o::plane *> &vpPlanes);
+        Relations ExtractRelations(std::vector<g2o::ellipsoid *> &vpEllips, std::vector<g2o::plane *> &vpPlanes, Frame* pFrame, std::vector<pcl::PointCloud<pcl::PointXYZRGB>>& vpPlanesPoints);
 
         Relations ExtractSupporttingRelations(std::vector<g2o::ellipsoid *> &vpEllips, std::vector<g2o::plane *> &vpPlanes, Frame* pFrame, int model = 1);
 

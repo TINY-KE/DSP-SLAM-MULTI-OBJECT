@@ -10,59 +10,7 @@ namespace ORB_SLAM2
         return p1.first < p2.first;
     }
 
-    int JudgeRelation(std::vector<g2o::plane*> &objPlanes, g2o::plane *pPlane)
-    {
-        // 判断平面类别.
-        int relationType = 0;
-        if (pPlane->miMHType == g2o::MANHATTAN_PLANE_TYPE::SUPPORTING) // parallel
-        {
-            // 判断支撑关系.
-
-            // 取得最下方的平面
-            // 经检查 1,2,3,4点为底部点, 对应id为0
-            g2o::plane &bottom_object_plane = *(objPlanes[0]);
-
-            // 判断二者距离
-            double dis = bottom_object_plane.distanceToPlane(*pPlane);
-
-            if (dis < 0.2) // 5cm dis
-                relationType = 1;
-            else 
-                std::cout << " == dis : " << dis << std::endl;
-        }
-
-        // --------------------------
-        //   处理倚靠关系, 暂时不考虑.
-        // ---------------------------
-        // else if (pPlane->miMHType == 2) // vertical
-        // {
-        //     // 判断倚靠关系
-
-        //     // 不如直接获得周围四个平面, 计算与该平面朝向&&距离.
-        //     // 二者皆小于一定条件则认为倚靠成立.
-        //     // 经过规律检查, 2,3,4,5 id属于侧面一圈
-        //     for (int i = 2; i < 6; i++)
-        //     {
-        //         g2o::plane &side_object_plane = *(objPlanes[i]);
-
-        //         // 先判断转角
-        //         double angle_diff = side_object_plane.angleToPlane(*pPlane);
-        //         if (std::abs(angle_diff) < M_PI / 180.0 * 5) // 容忍 5 度
-        //         {
-        //             double dis = side_object_plane.distanceToPlane(*pPlane);
-        //             if (dis < 0.2)
-        //             {
-        //                 // 角度与距离皆满足要求, 认为关联成功
-        //                 relationType = 2;
-        //             }
-        //         }
-        //     }
-        // }
-
-        return relationType;
-    }
-
-    Relations RelationExtractor::ExtractRelations(std::vector<g2o::ellipsoid *> &vpEllips, std::vector<g2o::plane *> &vpPlanes)
+    Relations RelationExtractor::ExtractRelations(std::vector<g2o::ellipsoid *> &vpEllips, std::vector<g2o::plane *> &vpPlanes, Frame* pFrame, std::vector<pcl::PointCloud<pcl::PointXYZRGB>>& vpPlanesPoints)
     {
         Relations relations;
         int obj_num = vpEllips.size();
@@ -73,32 +21,139 @@ namespace ORB_SLAM2
                 // std::cout << "[Relation] NULL ellipsoid." << std::endl;
                 continue;
             }
-            std::vector<g2o::plane*> obj_planes = pEllip->GetCubePlanes();  // 椭球体所在的坐标系
 
-            int plane_num = vpPlanes.size();
-            for (int plane_id = 0; plane_id < plane_num; plane_id++)
+            // 获取物体的六个面
+            Matrix3Xd mCorners;  mCorners.resize(3,8);
+            Matrix3Xd mIds; mIds.resize(3, 6);
+            mIds << 1, 5, 1, 3, 6, 8,
+                    2, 8, 5, 7, 7, 5,
+                    3, 7, 6, 8, 3, 1;
+            
+            // 物体的六个平面，平面法向量均指向物体外侧
+            std::vector<g2o::plane*> obj_planes = pEllip->GetCubePlanes(mCorners);  // 椭球体所在的坐标系
+            g2o::plane* pObj_bottom_plane = obj_planes[0];  //物体的底面
+
+            // 寻找最佳支撑平面
+            g2o::plane* pSupportingPlane_best = NULL;
+            int sup_plane_id=-1;
+            std::vector<std::pair<double, g2o::plane*>> supprortingPlaneDisVec;
+            for (int plane_id = 0; plane_id < vpPlanes.size(); plane_id++)
             {
                 g2o::plane *pPlane = vpPlanes[plane_id];
+                
+                // 判断水平面是否是支撑平面
+                if(pPlane->miMHType==g2o::MANHATTAN_PLANE_TYPE::HORIZONTAL){
+                    double dis = pObj_bottom_plane->distanceToPlane(*pPlane);
+                    if(dis>0)   // 即平面不能在物体底面之上
+                        supprortingPlaneDisVec.push_back(make_pair(dis, pPlane));
+                }
+            }
 
-                // 0: no Relation ;  1 : Supporting ;  2 : LeanOn
-                int type = JudgeRelation(obj_planes, pPlane);
-
-                if (type > 0)
-                {
+            if(supprortingPlaneDisVec.size()!=0) {
+                sort(supprortingPlaneDisVec.begin(), supprortingPlaneDisVec.end(), sort_plane_dis);
+                double dis_min = supprortingPlaneDisVec[0].first;
+                pSupportingPlane_best = supprortingPlaneDisVec[0].second;
+                if( dis_min < 0.3 ){
+                    // 寻找 plane_id
+                    for(int i=0;i<vpPlanes.size();i++)
+                    {
+                        if(vpPlanes[i] == pSupportingPlane_best)
+                            sup_plane_id = i;
+                    }
+                    
                     // 保存该组关系
                     Relation rl;
                     rl.obj_id = obj_id;
-                    rl.plane_id = plane_id;
-                    rl.type = type;
-                    rl.pPlane = pPlane;
+                    rl.plane_id = sup_plane_id;
+                    rl.type = RELATION_TYPE::SUPPORTING;
+                    rl.pPlane = pSupportingPlane_best;
                     rl.pEllipsoid = pEllip;
+                    rl.pFrame = pFrame;
                     relations.push_back(rl);
                 }
             }
+            
+            // 寻找最佳倚靠平面
+            int back_plane_id=-1;
+            g2o::plane* pBackingPlane_best = NULL;
+            std::vector<std::pair<double, g2o::plane*>> backingPlaneAreaVec;
+            std::cout<< "[debug] RelationExtractor::ExtractRelations, obj_id: " << obj_id << ", plane_num: " << vpPlanes.size() << std::endl;
+            for (int plane_id = 0; plane_id < vpPlanes.size(); plane_id++)
+            {
+                g2o::plane *pPlane = vpPlanes[plane_id];
+                PointCloudPCL PlanePoints = vpPlanesPoints[plane_id];
+
+                if(pPlane->miMHType==g2o::MANHATTAN_PLANE_TYPE::VERTICAL){
+
+                    for(int j=2; j<6; j++){
+
+                        g2o::plane* pObj_side_plane = obj_planes[j];
+                        // 判断是否平行
+                        double angle_diff = pObj_side_plane->angleToPlane(*pPlane);
+                        if (std::abs(angle_diff) < M_PI / 180.0 * 10  ||  std::abs(angle_diff-M_PI) < M_PI / 180.0 * 10) // 容忍 10 度
+                        {
+                            g2o::plane plane_align = *pPlane;
+                            if(std::abs(angle_diff-M_PI) < M_PI / 180.0 * 10)
+                                plane_align.param = -plane_align.param; // 调转方向
+                            
+                            Vector3d sideplane_centor = (mCorners.col(mIds(0,j)-1) + mCorners.col(mIds(2,j)-1))/2;
+
+                            double dis = plane_align.distanceToPoint(sideplane_centor, true);
+
+                            if ( dis < 0.1 &&  dis > -0.5)  // 平面最多进入物体内部10cm
+                            {
+                                // 平面中点的数量
+                                backingPlaneAreaVec.push_back(make_pair(PlanePoints.size(), pPlane));
+                                std::cout << "  [success] plane_id: " << plane_id << ", area: " << PlanePoints.size() << ", angle: " << angle_diff << ", dis: " << dis << std::endl;
+                            }
+                            else{
+                                std::cout << "  [fail]    plane_id: " << plane_id << ", area: " << PlanePoints.size() << ", angle: " << angle_diff << ", dis: " << dis << std::endl;
+                            }
+                        }
+                        else{
+                                std::cout << "  [fail]    plane_id: " << plane_id << ", area: " << PlanePoints.size() << ", angle: " << angle_diff << std::endl;
+                        }
+                    }         
+                }
+            }
+
+            // std::cout<<
+
+            if(backingPlaneAreaVec.size()!=0) {
+                std::sort(backingPlaneAreaVec.begin(), backingPlaneAreaVec.end(), 
+                    [](const auto& a, const auto& b) {
+                        return a.first > b.first; 
+                    });
+                double area_max = backingPlaneAreaVec[0].first;
+                pBackingPlane_best = backingPlaneAreaVec[0].second;
+                // if(area_max>640*480/180)
+                {
+                    // 寻找 plane_id
+                    for(int i=0;i<vpPlanes.size();i++)
+                    {
+                        if(vpPlanes[i] == pBackingPlane_best)
+                            back_plane_id = i;
+                    }
+                    
+                    // 保存该组关系
+                    Relation rl;
+                    rl.obj_id = obj_id;
+                    rl.plane_id = back_plane_id;
+                    rl.type = RELATION_TYPE::BACKING;
+                    rl.pPlane = pBackingPlane_best;
+                    rl.pEllipsoid = pEllip;
+                    rl.pFrame = pFrame;
+                    relations.push_back(rl);
+                }
+            }
+            
         }
-        return relations;
+        
+        return relations;        
     }
 
+
+    
     // 新函数，仅仅提取支撑关系
     // 要求传入平面: 满足曼哈顿假设, 且与地平面平行.
     Relations RelationExtractor::ExtractSupporttingRelations(std::vector<g2o::ellipsoid *> &vpEllips, std::vector<g2o::plane *> &vpPlanes, Frame* pFrame, int model)
@@ -117,7 +172,9 @@ namespace ORB_SLAM2
             int sup_plane_id=-1;
             g2o::plane* pPlane_best = NULL;
             if(model == 1){
-                std::vector<g2o::plane*> obj_planes = pEllip->GetCubePlanes();  // 椭球体所在的坐标系
+                Matrix3Xd mCorners;  mCorners.resize(3,8);
+                Matrix3Xd mIds; mIds.resize(3, 6);
+                std::vector<g2o::plane*> obj_planes = pEllip->GetCubePlanes(mCorners);  // 椭球体所在的坐标系
                 g2o::plane* pObj_bottom_plane = obj_planes[0];
 
                 int plane_num = vpPlanes.size();
@@ -127,7 +184,7 @@ namespace ORB_SLAM2
                 for (int plane_id = 0; plane_id < plane_num; plane_id++)
                 {
                     g2o::plane *pPlane = vpPlanes[plane_id];
-                    if(pPlane->miMHType==g2o::MANHATTAN_PLANE_TYPE::SUPPORTING){
+                    if(pPlane->miMHType==g2o::MANHATTAN_PLANE_TYPE::HORIZONTAL){
                         double dis = pObj_bottom_plane->distanceToPlane(*pPlane);
                         if(dis>0)   // 即平面不能在物体底面之上
                             planeDisVec.push_back(make_pair(dis, pPlane));
@@ -159,7 +216,7 @@ namespace ORB_SLAM2
                 for (int plane_id = 0; plane_id < plane_num; plane_id++)
                 {
                     g2o::plane *pPlane = vpPlanes[plane_id];
-                    if(pPlane->miMHType==g2o::MANHATTAN_PLANE_TYPE::SUPPORTING){
+                    if(pPlane->miMHType==g2o::MANHATTAN_PLANE_TYPE::HORIZONTAL){
                         double dis = pPlane->distanceToPoint(center, true);
                         if(dis>0 && dis < config_pointmodel_dis_thresh)   // 位于平面上方
                             planeDisVec.push_back(make_pair(dis, pPlane));
@@ -187,7 +244,7 @@ namespace ORB_SLAM2
                 Relation rl;
                 rl.obj_id = obj_id;
                 rl.plane_id = sup_plane_id;
-                rl.type = 1;     // Type id : {0: no Relation ;  1 : Supporting ;  2 : LeanOn}
+                rl.type = RELATION_TYPE::SUPPORTING;     // Type id : {0: no Relation ;  1 : Supporting ;  2 : LeanOn}
                 rl.pPlane = pPlane_best;
                 rl.pEllipsoid = pEllip;
                 rl.pFrame = pFrame;
@@ -242,17 +299,17 @@ namespace ORB_SLAM2
 
     void Relation::LoadFromVec(const Eigen::VectorXd& vec)
     {
-        if(vec.size()!=GetDataNum()){
-            std::cerr << "Wrong size of vec to load." << std::endl;
-        }
-        obj_id = round(vec[0]);
-        plane_instance_id = round(vec[1]);
-        plane_id = round(vec[2]);
-        type = round(vec[3]);
+        // if(vec.size()!=GetDataNum()){
+        //     std::cerr << "Wrong size of vec to load." << std::endl;
+        // }
+        // obj_id = round(vec[0]);
+        // plane_instance_id = round(vec[1]);
+        // plane_id = round(vec[2]);
+        // type = round(vec[3]);
 
-        Vector4d planeVec = vec.head(8).tail(4);    // 4-8
-        g2o::plane* pPlaneConstruct = new g2o::plane(planeVec);
-        pPlane = pPlaneConstruct;
+        // Vector4d planeVec = vec.head(8).tail(4);    // 4-8
+        // g2o::plane* pPlaneConstruct = new g2o::plane(planeVec);
+        // pPlane = pPlaneConstruct;
 
         return;
     }

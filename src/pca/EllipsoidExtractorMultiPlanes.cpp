@@ -12,7 +12,7 @@
 
 namespace ORB_SLAM2
 {
-void VisualizeConstrainPlanes(g2o::ellipsoid& e_local, g2o::SE3Quat& Twc, Map* pMap, int visual_group)
+void VisualizeConstrainPlanes(g2o::ellipsoid& e_local, g2o::SE3Quat& Twc, Map* pMap)
 {
     std::vector<g2o::ConstrainPlane*> &vCPlanes = e_local.mvCPlanes;
     g2o::ellipsoid e_global = e_local.transform_from(Twc);
@@ -41,7 +41,8 @@ void VisualizeConstrainPlanes(g2o::ellipsoid& e_local, g2o::SE3Quat& Twc, Map* p
         g2o::plane *pPlane = new g2o::plane(planeVec, color);
         pPlane->transform(Twc);
         pPlane->InitFinitePlane(center, plane_size);
-        pMap->addPlane(pPlane, visual_group);
+        pPlane->miMHType = g2o::MANHATTAN_PLANE_TYPE::BBOX;
+        pMap->addPlane(pPlane);
     }
 
     return;

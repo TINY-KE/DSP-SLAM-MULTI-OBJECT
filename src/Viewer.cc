@@ -100,8 +100,10 @@ void Viewer::Run()
     pangolin::Var<bool> menuShowDepthPoints("menu.Show Depth Points",false,true);
     // 地面
     pangolin::Var<bool> menuShowGroundPlane("menu.Show GroundPlane",true,true);
+    pangolin::Var<bool> menuShowBackingPlane("menu.Show BackingPlane",true,true);
+    pangolin::Var<bool> menuShowSupportingPlane("menu.Show SupportingPlane",true,true);
     // 最新帧中的bbox平面
-    pangolin::Var<bool> menuShowBboxPlane("menu.Show Bbox Plane",true,true);
+    pangolin::Var<bool> menuShowBboxPlane("menu.Show Bbox Plane",false,true);
     // relations
     pangolin::Var<bool> menuShowRelationArrow("menu.Relation Arrow",false,true);
     
@@ -237,11 +239,16 @@ void Viewer::Run()
 
             // 地面
             if(menuShowGroundPlane)
-                mpMapDrawer->drawPlanes(-1); // -1 是地面的默认值
-
+                mpMapDrawer->drawPlanes(g2o::MANHATTAN_PLANE_TYPE::GROUND); 
+            // 地面
+            if(menuShowBackingPlane)
+                mpMapDrawer->drawPlanes(g2o::MANHATTAN_PLANE_TYPE::VERTICAL); 
+            // 地面
+            if(menuShowSupportingPlane)
+                mpMapDrawer->drawPlanes(g2o::MANHATTAN_PLANE_TYPE::HORIZONTAL); 
             // 最新帧中的观测切面
             if(menuShowBboxPlane)
-                mpMapDrawer->drawPlanes(0); 
+                mpMapDrawer->drawPlanes(g2o::MANHATTAN_PLANE_TYPE::BBOX); 
 
             // relations
             if(menuShowRelationArrow)

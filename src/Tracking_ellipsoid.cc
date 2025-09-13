@@ -50,7 +50,7 @@ namespace ORB_SLAM2 {
             Vector3d obj_center = e_world.pose.translation();
             Vector3d norm = plane_world->param.head(3); norm.normalize();
 
-            if(rl.type == g2o::MANHATTAN_PLANE_TYPE::SUPPORTING)    // 支撑
+            if(rl.type == g2o::MANHATTAN_PLANE_TYPE::HORIZONTAL)    // 支撑
             {
                 // 即在物体底端产生一个向上大竖直箭头.
                 // 以物体为中心.
@@ -63,7 +63,7 @@ namespace ORB_SLAM2 {
                 plane_world->color = Vector3d(0, 1, 1);    // 青色显示supporting关系面
                 pMap->addPlane(plane_world);
             }
-            else if(rl.type == g2o::MANHATTAN_PLANE_TYPE::BACKING) // 倚靠
+            else if(rl.type == g2o::MANHATTAN_PLANE_TYPE::VERTICAL) // 倚靠
             {
                 // 同上
                 double z_aix_half_length = e_world.scale(1); 
@@ -86,14 +86,14 @@ namespace ORB_SLAM2 {
                 ORB_SLAM2::PointCloud* pCloudGlobal = transformPointCloud(&cloudQuadri, &Twc);
                 
 
-                if(rl.type == g2o::MANHATTAN_PLANE_TYPE::SUPPORTING){    // 支撑
+                if(rl.type == RELATION_TYPE::SUPPORTING){    // 支撑
                     int r = 0;
                     int g = 255;
                     int b = 255;
                     SetPointCloudProperty(pCloudGlobal, r, g, b, 4);
                     pMap->AddPointCloudList(string("Relationship.Activiate Sup-Planes"), pCloudGlobal, mode);
                 }
-                else if(rl.type == g2o::MANHATTAN_PLANE_TYPE::BACKING){ // 倚靠
+                else if(rl.type == RELATION_TYPE::BACKING){ // 倚靠
                     int r = 255;
                     int g = 0;
                     int b = 255;
@@ -464,9 +464,11 @@ namespace ORB_SLAM2 {
 
         // 获得曼哈顿planes.
         std::vector<g2o::plane*> vpPlanes = pPlaneExtractorManhattan->GetAllMHPlanes();
+        std::vector<PointCloudPCL> vPlanePoints = pPlaneExtractorManhattan->GetAllMHPlanesPoints();
 
         // 检查曼哈顿平面与椭球体的关系
-        Relations rls = mpRelationExtractor->ExtractSupporttingRelations(vpEllipsoids, vpPlanes, pFrame, QUADRIC_MODEL);
+        // Relations rls = mpRelationExtractor->ExtractSupporttingRelations(vpEllipsoids, vpPlanes, pFrame, QUADRIC_MODEL);
+        Relations rls = mpRelationExtractor->ExtractRelations(vpEllipsoids, vpPlanes, pFrame, vPlanePoints);
 
         if(rls.size()>0)
         {
@@ -479,7 +481,6 @@ namespace ORB_SLAM2 {
         //          可视化部分
         // ****************************
         // std::cout<<"[debug] Tracking::TaskRelationship, 1"<< std::endl;
-        std::vector<PointCloudPCL> vPlanePoints = pPlaneExtractorManhattan->GetAllMHPlanesPoints();
         g2o::SE3Quat Twc = pFrame->cam_pose_Twc;
         mpMap->AddPointCloudList("Relationship.All MH Planes", vPlanePoints, Twc, REPLACE_POINT_CLOUD);
 

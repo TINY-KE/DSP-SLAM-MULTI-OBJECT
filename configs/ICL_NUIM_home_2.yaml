@@ -123,7 +123,7 @@ Debug.EllipsoidExtraction.OpenRelations: 0
 Plane.MinSize: 100  #1000
 Plane.AngleThreshold: 3.0
 Plane.DistanceThreshold: 0.05
-Plane.MH_points_in_plane_size_scale: 0.001
+Plane.MH_points_in_plane_size_scale: 0.25
 
 
 # 椭球体数据关联

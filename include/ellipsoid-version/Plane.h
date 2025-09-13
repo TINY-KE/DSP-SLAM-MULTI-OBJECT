@@ -13,9 +13,10 @@ namespace g2o
 enum MANHATTAN_PLANE_TYPE
 {
     OTHERS = 0,
-    SUPPORTING = 1,
-    BACKING = 2,
-    GROUND = 3
+    HORIZONTAL = 1,
+    VERTICAL = 2,
+    GROUND = 3,
+    BBOX = 4
 };
 
 class plane {
@@ -157,7 +158,7 @@ public:
     Vector3d color; // r g b , [0,1.0]
     Vector3d mvPlaneCenter; // the center of the square. roughly defined.    
 
-    int miMHType; // 0: not set; 1: Parallel ; 2: Vertical
+    g2o::MANHATTAN_PLANE_TYPE miMHType; // 0: not set; 1: Parallel ; 2: Vertical
     
     int miVisualGroup; // For Visualization only
 private:

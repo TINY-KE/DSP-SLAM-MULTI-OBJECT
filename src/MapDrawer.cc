@@ -610,23 +610,18 @@ void MapDrawer::drawAxisNormal()
 }
 
 // draw all the planes
-bool MapDrawer::drawPlanes(int visual_group) {
+bool MapDrawer::drawPlanes(g2o::MANHATTAN_PLANE_TYPE type) {
     std::vector<plane*> planes = mpMap->GetAllPlanes();
     // std::cout << "plane_num = " << planes.size() << std::endl;
     // bool success_debug = false;
     for( size_t i=0; i<planes.size(); i++) {
         g2o::plane* ppl = planes[i];
-        if(ppl->miVisualGroup == visual_group) {
+        if(ppl->miMHType == type) {
             // std::cout << "drawPlaneWithEquation : " << ppl->param.transpose().matrix() << std::endl;
             drawPlaneWithEquation(ppl);
             // success_debug = true;
         }
     }
-    // if(success_debug)
-    //     std::cout << "[debug MapDrawer::drawPlanes] draw " << planes.size() << " planes in visual group " << visual_group << std::endl;
-    // else
-    //     std::cout << "[debug MapDrawer::drawPlanes] no planes in visual group " << visual_group << std::endl;
-
     return true;
 }
 
@@ -771,7 +766,7 @@ void MapDrawer::drawArrows()
         Vector3d start = ar.center - norm;
         Vector3d end = ar.center;
 
-        drawLine(start, end, ar.color, mCameraLineWidth * 1000, 0.8);
+        drawLine(start, end, ar.color, mCameraLineWidth * 100000, 0.8);
     }
 }
 

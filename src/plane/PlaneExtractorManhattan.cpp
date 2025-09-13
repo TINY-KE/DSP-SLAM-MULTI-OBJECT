@@ -130,16 +130,16 @@ bool PlaneExtractorManhattan::extractManhattanPlanes(const cv::Mat &depth, Eigen
         // 角度接近 0° 或 180°：水平平面（如地面、桌面）；
         // 角度接近 90°：垂直平面（如墙面）；
         // 否则不是曼哈顿平面，忽略。
-        int iMHType = g2o::MANHATTAN_PLANE_TYPE::OTHERS;
+        g2o::MANHATTAN_PLANE_TYPE iMHType = g2o::MANHATTAN_PLANE_TYPE::OTHERS;
         if( std::abs(angle - 0)<config_angle_delta || 
                 std::abs(angle- M_PI) < config_angle_delta ) 
         {
-            iMHType = g2o::MANHATTAN_PLANE_TYPE::SUPPORTING;    // parallel
+            iMHType = g2o::MANHATTAN_PLANE_TYPE::HORIZONTAL;    // parallel
         }
         // ---- DEBUG: 暂时取消垂直倚靠关系. 只考虑普遍存在的支撑关系
         else if( std::abs(angle - M_PI/2.0)<config_angle_delta )
         {
-            iMHType = g2o::MANHATTAN_PLANE_TYPE::BACKING; // Vertical
+            iMHType = g2o::MANHATTAN_PLANE_TYPE::VERTICAL; // Vertical
         }
 
         // 若是曼哈顿平面（与地面平行或垂直），则保存进 mvpAllMHPlanes 中

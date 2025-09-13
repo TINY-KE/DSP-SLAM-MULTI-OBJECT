@@ -185,6 +185,16 @@ pybind11::handle::dec_ref() is being called while the GIL is either not held or 
     + 在track中过滤一下
     + 加上距离的数据关联
     
+# relations提取
++ 当前问题:
+    + 支撑平面也得加上基于corner的判断，太远的不能留
+
+    + 倚靠平面为什么总是沙发的前面
+
+    + 地面不是手动加入到vplanes里面了吗，  为什么不生效
+
+    + 
+
 # 第六阶段 椭球体节点约束
     + 如何实现
 

@@ -50,7 +50,7 @@ enum ExtractionMethod
 };
 
 std::vector<g2o::ConstrainPlane*> GenerateConstrainPlanesOfBbox(Vector4d& bbox, Matrix3d& calib, int rows, int cols);
-void VisualizeConstrainPlanes(g2o::ellipsoid& e_local, g2o::SE3Quat& Twc, ORB_SLAM2::Map* pMap, int visual_group = 0);
+void VisualizeConstrainPlanes(g2o::ellipsoid& e_local, g2o::SE3Quat& Twc, ORB_SLAM2::Map* pMap);
 
 class EllipsoidExtractor
 {
