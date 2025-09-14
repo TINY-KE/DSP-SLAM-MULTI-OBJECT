@@ -594,7 +594,7 @@ namespace g2o
 
     // calculate the external cube of the ellipsoid
     // 8 corners 3*8 matrix, each row is x y z
-    Matrix3Xd ellipsoid::compute3D_BoxCorner() const
+    Matrix3Xd ellipsoid::compute3D_BoxCorner_world() const
     {
         Matrix3Xd corners_body;corners_body.resize(3,8);
         corners_body<< 1, 1, -1, -1, 1, 1, -1, -1,
@@ -606,7 +606,7 @@ namespace g2o
 
     Matrix2Xd ellipsoid::projectOntoImageBoxCorner(const SE3Quat& campose_cw, const Matrix3d& Kalib) const
     {
-        Matrix3Xd corners_3d_world = compute3D_BoxCorner();
+        Matrix3Xd corners_3d_world = compute3D_BoxCorner_world();
         Matrix2Xd corner_2d = homo_to_real_coord<double>(Kalib*homo_to_real_coord<double>(campose_cw.to_homogeneous_matrix()*real_to_homo_coord<double>(corners_3d_world)));
 
         return corner_2d;
@@ -630,11 +630,11 @@ namespace g2o
         return Vector4d(rect_center(0),rect_center(1),widthheight(0),widthheight(1));
     }
 
-    // zhjd：平面的方向量指向物体外 
-    std::vector<g2o::plane*> ellipsoid::GetCubePlanes(Matrix3Xd& mPoints)
+    // zhjd：平面的方向量指向物体外， 且平面为world坐标系下的平面
+    std::vector<g2o::plane*> ellipsoid::GetCubePlanesWorld(Matrix3Xd& mPoints)
     {
         mPoints.resize(3,8);
-        mPoints = compute3D_BoxCorner();
+        mPoints = compute3D_BoxCorner_world();
         Matrix3Xd mIds; mIds.resize(3, 6);
         // 注意： 该 id 从1开始计数！
         mIds << 1, 5, 1, 3, 6, 8,
@@ -914,7 +914,7 @@ namespace g2o
         }
 
         // 开始筛选有效平面
-        Matrix3Xd mPoints = compute3D_BoxCorner();
+        Matrix3Xd mPoints = compute3D_BoxCorner_world();
         Matrix4Xd mIds; mIds.resize(4, 6);
 
         // 注意： 该 id 从1开始计数！

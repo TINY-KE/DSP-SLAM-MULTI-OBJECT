@@ -386,7 +386,7 @@ namespace g2o{
 
         Eigen::Matrix4d QStar = e.generateQuadric();
         Vector4d plane = _measurement;
-        g2o::plane pl(plane); pl.transform(Twc);
+        g2o::plane pl(plane); pl.transform(Twc); // transform to world coordinate
 
         // 此处尝试计算距离
         double dis = distanceFromPlaneToEllipsoid(pl, e);

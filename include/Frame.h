@@ -237,8 +237,8 @@ public:
     g2o::SE3Quat cam_pose_Twc;	     // optimized pose  cam to world
 
     // 椭球体与空间平面之间的关系  Store relations
-    bool mbSetRelation;
-    Relations relations;
+    // bool mbSetRelation;
+    // Relations relations;
 };
 
 }// namespace ORB_SLAM

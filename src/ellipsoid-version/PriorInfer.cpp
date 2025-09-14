@@ -167,7 +167,7 @@ namespace ORB_SLAM2
 
         // 1) 椭球体的六个平面都作为约束平面
         // std::vector<g2o::plane*> vecPlanes = e.GetCubePlanesInImages(g2o::SE3Quat(), mCalib, mRows, mCols, 30);
-        std::vector<g2o::plane*> vecPlanes = e.GetCubePlanes();
+        std::vector<g2o::plane*> vecPlanes = e.GetCubePlanesWorld();
 
         // vec planes to planes
         double angle_thresh = M_PI / 180 * 45; // 10 deg

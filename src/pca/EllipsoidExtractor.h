@@ -75,8 +75,6 @@ public:
     g2o::ellipsoid EstimateLocalEllipsoidUsingMultiPlanes(cv::Mat& depth, Eigen::Vector4d& bbox, int label, double prob, Eigen::VectorXd &pose, camera_intrinsic& camera, pcl::PointCloud<PointType>::Ptr& pcd_ptr);   
     // API2.1: given a supporting plane(local coordinate)
     g2o::ellipsoid EstimateLocalEllipsoidWithSupportingPlane(cv::Mat& depth, Eigen::Vector4d& bbox, int label, double prob, Eigen::VectorXd &pose, camera_intrinsic& camera, g2o::plane* pSupPlane);
-    // API3: PointModel Version
-    bool EstimateLocalEllipsoidUsingPointModel(cv::Mat& depth, Eigen::Vector4d& bbox, int label, double prob, Eigen::VectorXd &pose, camera_intrinsic& camera, g2o::ellipsoid& e_extracted);
 
     void OpenVisualization(Map* pMap);   // if opened, the pointcloud during the process will be visualized 
     void ClearPointCloudList(); // clear the visualized point cloud 
@@ -127,7 +125,8 @@ private:
     double NormalVoter(pcl::PointCloud<PointType>::Ptr& pCloudPCL);
 
     g2o::ellipsoid OptimizeEllipsoidUsingPlanes(g2o::ellipsoid &e_in, MatrixXd& mPlanesParam);
-
+    g2o::ellipsoid OptimizeEllipsoidWithBboxPlanesAndMHPlanes(const g2o::ellipsoid &init_guess, std::vector<g2o::plane> &BboxPlanes, double Bbox_Weight,
+                                                                std::vector<g2o::plane> &MHPlanes,  double MHP_Weight);
     ORB_SLAM2::PointCloud* ApplyMHPlanesFilter(ORB_SLAM2::PointCloud* pCloud, std::vector<g2o::plane*>& vpPlanes);
 
     g2o::SE3Quat GenerateGravityCoordinate(const Vector3d& center, const Vector3d& gravity_normal);

@@ -695,7 +695,7 @@ std::vector<g2o::ConstrainPlane*> GenerateConstrainPlanesOfCuboids(g2o::ellipsoi
 {
     // 1、 从立方体中获得前后二面. 
     // // 获得所有立方体平面
-    // std::vector<g2o::plane*> vecPlanes = e_local_normalized.GetCubePlanes();
+    // std::vector<g2o::plane*> vecPlanes = e_local_normalized.GetCubePlanesWorld();
     // // 从立方体平面中寻找到得前后平面
     // // 判断所有平面法向量，求与Z轴最小夹角最近的.
     // g2o::plane* pfdPlane = selectForwardPlane(vecPlanes);
@@ -888,66 +888,6 @@ g2o::ellipsoid EllipsoidExtractor::EstimateLocalEllipsoidUsingMultiPlanes(cv::Ma
     return e_local_normalized;
 }
 
-// // 使用单目相机版本提取椭球体
-// g2o::ellipsoid EllipsoidExtractor::EstimateLocalEllipsoidMonocular(Eigen::Vector3d& prior, Eigen::Vector4d& bbox, int label, double prob, Eigen::VectorXd &pose, camera_intrinsic& camera)
-// {
-//     g2o::ellipsoid e;
-//     miSystemState = 0;  // reset the state
-//     mSymmetryOutputData.result = false; // reset
-//     mResult = false;
-
-//     if(!mbSetPlane)
-//     {
-//         std::cerr << " Please set ground plane first." << std::endl;
-//         return e;
-//     }
-
-//     clock_t time_start = clock();
-
-//     VectorXd sup_plane = mpPlane->param;    
-
-//     // 以单目形式获得一个初始化椭球体，在后期以semantic prior做精细推理
-    
-//     // bbox 生成 切平面
-
-//     // 开始优化得到椭球体
-    
-//     // -------------- 到此已获得相机坐标系下的椭球体!
-
-//     // 接下来添加 ConstrainPlanes.
-//     Matrix3d calib = CameraToCalibMatrix(camera);
-//     GenerateConstrainPlanesToEllipsoid(e_local_normalized, bbox, depth, campose_wc, calib);
-//     VisualizeConstrainPlanes(e_local_normalized, campose_wc, mpMap); // 中点定在全局坐标系
-
-//     // 评估本次提取的概率 : 投影回来的矩形与 bbox 的 IoU 作为规律.
-//     double prob_3d = CalculateProbability(e_local_normalized, bbox, calib);
-
-//     // calculate the probability of the single-frame ellipsoid estimation
-//     e_local_normalized.prob_3d = prob_3d;
-//     e_local_normalized.prob = prob * prob_3d;    // measurement_prob * symmetry_prob
-//     e_local_normalized.miLabel = label;
-//     e_local_normalized.bbox = bbox;
-//     e_local_normalized.bPointModel = false;
-//     mResult = true;
-//     clock_t time_2_fullProcess = clock();
-
-//     // output the main running time
-//     cout << " -- System Time [EllipsoidExtractor.cpp] :" << endl ;
-//     cout << " ---- time_ExtractPointCloud: " <<(double)(time_1_ExtractPointCloud - time_start) / CLOCKS_PER_SEC << "s" << endl;
-//     cout << " ---- total_ellipsoidExtraction: " <<(double)(time_2_fullProcess - time_start) / CLOCKS_PER_SEC << "s" << endl;
-//     cout << endl;
-
-//     // // 此处添加一个判断, 若 prob_3d < 0.5 则舍弃
-//     // if(prob_3d < 0.5)
-//     // {
-//     //     mResult = false;
-//     // }
-//     // else 
-//     //     mResult = true;
-
-//     return e_local_normalized;
-// }
-
 Vector3d Get3DPointFromDepth(int x, int y, const cv::Mat& depth_, const camera_intrinsic& camera)
 {
     cv::Mat depth = depth_;
@@ -999,48 +939,6 @@ ConstrainPlane* GenerateCenterConstrainPlane(const Vector4d& bbox, const cv::Mat
     pCPlane->image_border = false;
 
     return pCPlane;
-}
-
-// ********************* 
-// 来自 Baseline: TrackingNP.h
-// *********************
-bool EllipsoidExtractor::EstimateLocalEllipsoidUsingPointModel(cv::Mat& depth, Eigen::Vector4d& bbox, int label, double prob, Eigen::VectorXd &pose, camera_intrinsic& camera, g2o::ellipsoid& e_extracted)
-{
-    PointCloud cloud = getPointCloudInRect(depth, bbox, camera);
-    if(cloud.size() < 10) return false;  // 最低要求.
-
-    // 获得中点.
-    PointCloudPCL::Ptr pCloud = QuadricPointCloudToPcl(cloud);
-
-    Eigen::Vector4d centroid;
-    pcl::compute3DCentroid(*pCloud, centroid);
-
-    // 构造椭球体.
-    Vector9d e_vec; 
-    e_vec << centroid.head(3), 0, 0, 0, 0.05, 0.05, 0.05;
-    g2o::ellipsoid e; e.fromMinimalVector(e_vec);
-
-    // 设置 label
-    e.miLabel = label;
-    e.prob = 1;
-    e.bbox = bbox;
-    e.bPointModel = true;
-    e.prob_3d = 0;
-
-    // 添加ConstrainPlanes
-    g2o::SE3Quat campose_wc; campose_wc.fromVector(pose.tail(7));
-    Matrix3d calib = CameraToCalibMatrix(camera);
-    auto cplanes = GenerateConstrainPlanesOfBbox(bbox, calib, depth.rows, depth.cols);
-
-    // 生成中心切平面
-    // ConstrainPlane* pcenter_cplane = GenerateCenterConstrainPlane(bbox, depth, camera);
-    // cplanes.push_back(pcenter_cplane);
-    e.addConstrainPlanes(cplanes);
-
-    VisualizeConstrainPlanes(e, campose_wc, mpMap); // 中点定在全局坐标系
-
-    e_extracted = e;
-    return true;
 }
 
 

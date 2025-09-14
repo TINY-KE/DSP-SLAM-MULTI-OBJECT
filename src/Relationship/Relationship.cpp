@@ -12,7 +12,7 @@ namespace ORB_SLAM2
 
     Relations RelationExtractor::ExtractRelations(std::vector<g2o::ellipsoid *> &vpEllips, std::vector<g2o::plane *> &vpPlanes, Frame* pFrame, std::vector<pcl::PointCloud<pcl::PointXYZRGB>>& vpPlanesPoints)
     {
-        Relations relations;
+        Relations relations_return;
         int obj_num = vpEllips.size();
         for (int obj_id = 0; obj_id < obj_num; obj_id++)
         {
@@ -30,7 +30,7 @@ namespace ORB_SLAM2
                     3, 7, 6, 8, 3, 1;
             
             // 物体的六个平面，平面法向量均指向物体外侧
-            std::vector<g2o::plane*> obj_planes = pEllip->GetCubePlanes(mCorners);  // 椭球体所在的坐标系
+            std::vector<g2o::plane*> obj_planes = pEllip->GetCubePlanesWorld(mCorners);  // 椭球体所在的坐标系
             g2o::plane* pObj_bottom_plane = obj_planes[0];  //物体的底面
 
             // 寻找最佳支撑平面
@@ -69,7 +69,8 @@ namespace ORB_SLAM2
                     rl.pPlane = pSupportingPlane_best;
                     rl.pEllipsoid = pEllip;
                     rl.pFrame = pFrame;
-                    relations.push_back(rl);
+                    relations_return.push_back(rl);
+                    // pEllip->mRelations.push_back(rl);
                 }
             }
             
@@ -143,13 +144,14 @@ namespace ORB_SLAM2
                     rl.pPlane = pBackingPlane_best;
                     rl.pEllipsoid = pEllip;
                     rl.pFrame = pFrame;
-                    relations.push_back(rl);
+                    relations_return.push_back(rl);
+                    // pEllip->mRelations.push_back(rl);
                 }
             }
             
         }
         
-        return relations;        
+        return relations_return;        
     }
 
 
@@ -174,7 +176,7 @@ namespace ORB_SLAM2
             if(model == 1){
                 Matrix3Xd mCorners;  mCorners.resize(3,8);
                 Matrix3Xd mIds; mIds.resize(3, 6);
-                std::vector<g2o::plane*> obj_planes = pEllip->GetCubePlanes(mCorners);  // 椭球体所在的坐标系
+                std::vector<g2o::plane*> obj_planes = pEllip->GetCubePlanesWorld(mCorners);  // 椭球体所在的坐标系
                 g2o::plane* pObj_bottom_plane = obj_planes[0];
 
                 int plane_num = vpPlanes.size();

@@ -179,21 +179,30 @@ pybind11::handle::dec_ref() is being called while the GIL is either not held or 
     + 在数据关联中加上，椭球体在三维空间中的距离判断
 
 + 第2个沙发为什么加入map很慢 
-
-
+    + 已解决
 + 为什么会有scale很小的椭球体在mvpGlobalEllipsolds中
     + 在track中过滤一下
     + 加上距离的数据关联
     
 # relations提取
 + 当前问题:
-    + 支撑平面也得加上基于corner的判断，太远的不能留
-
     + 倚靠平面为什么总是沙发的前面
-
+        + 已解决，椭球体的六个平面方向量是指向物体外，
     + 地面不是手动加入到vplanes里面了吗，  为什么不生效
-
-    + 
+        + 不解决了
+    + 支撑平面也得加上基于corner的判断，太远的不能留
+        + TODO: 
+    + 基于MHP优化椭球体，并用绿色椭球体展示
+        + OptimizeEllipsoidUsingPlanes 函数怎么使用？
+        + MHP也考虑方向
+            double dis;
+            if(mbNormalDirection)
+                dis = GetDistanceWithDirection(pl, e);      // 若开启了则考虑其方向
+            else 
+                dis = distanceFromPlaneToEllipsoid(pl, e);
+        + if(angle_norm_z < M_PI/180.0 * 30)
+        + 直接将墙面和地面的约束分开
+        + 
 
 # 第六阶段 椭球体节点约束
     + 如何实现

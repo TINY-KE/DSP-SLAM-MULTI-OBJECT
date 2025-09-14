@@ -12,6 +12,8 @@
 
 #include "include/utils/matrix_utils.h"
  
+// #include "src/Relationship/Relationship.h"
+
 typedef Eigen::Matrix<double, 9, 1> Vector9d;
 typedef Eigen::Matrix<double, 9, 9> Matrix9d;
 typedef Eigen::Matrix<double, 5, 5> Matrix5d;
@@ -23,11 +25,13 @@ typedef Eigen::Matrix<double, 2, 1> Vector2d;
 typedef Eigen::Matrix<double, 4, 1> Vector4d;
 typedef Eigen::Matrix<double, 6, 6> Matrix6d;
 
+
 namespace g2o
 {
-
 class plane;
 class ConstrainPlane;
+// typedef std::vector<ORB_SLAM2::Relation> Relations;
+
 class ellipsoid{
 
 public:
@@ -132,7 +136,7 @@ public:
 
     // *** The following 4 functions treat the ellipsoid as external cube
     // 3x8 matrix storing 8 corners; each row is x y z
-    Matrix3Xd compute3D_BoxCorner() const;
+    Matrix3Xd compute3D_BoxCorner_world() const;
 
     Matrix2Xd projectOntoImageBoxCorner(const SE3Quat& campose_cw, const Matrix3d& Kalib) const;
 
@@ -158,7 +162,7 @@ public:
     // whether the camera could see the ellipsoid
     bool CheckObservability(const SE3Quat& campose_cw);
 
-    std::vector<plane*> GetCubePlanes(Matrix3Xd& mPoints);  // zhjd：平面的方向量指向物体外 
+    std::vector<plane*> GetCubePlanesWorld(Matrix3Xd& mPoints);  // zhjd：平面的方向量指向物体外 
     std::vector<plane*> GetCubePlanesInImages(const SE3Quat& campose_cw, const Matrix3d& Kalib, int rows, int cols, int pixel_thresh);
 
     void addConstrainPlanes(std::vector<ConstrainPlane*>& vCPlanes);
@@ -179,6 +183,9 @@ private:
 
     void UpdateValueFrom(const g2o::ellipsoid& e);      // update the basic parameters from the given ellipsoid
     void NormalizeConstrainPlanes();
+
+// public:
+//     Relations mRelations;  // relations to MHPlanes
 };
 
 } // g2o
