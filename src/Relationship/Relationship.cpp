@@ -11,8 +11,25 @@ namespace ORB_SLAM2
         return p1.first < p2.first;
     }
 
+    bool RelationExtractor::TooCloseOfPlaneToCorners(g2o::plane* plane, Matrix3Xd& mCorners, Matrix3Xd& mIds){
+
+        // TODO:
+
+        return true;
+    }
+
+
     Relations RelationExtractor::ExtractRelations(std::vector<g2o::ellipsoid *> &vpEllips, std::vector<g2o::plane *> &vpPlanes, Frame* pFrame, std::vector<pcl::PointCloud<pcl::PointXYZRGB>>& vpPlanesPoints)
     {
+        int object_label = 57;  // 假设标签值
+        bool is_on_ground = false;
+        std::vector<int> Objects_on_ground_Labels = {56, 57, 13, 58, 59, 60, 72};
+        if (std::find(Objects_on_ground_Labels.begin(), Objects_on_ground_Labels.end(), object_label) != Objects_on_ground_Labels.end()) {
+            is_on_ground = true;
+        } else {
+            is_on_ground = false;
+        }
+        
         Relations relations_return;
         int obj_num = vpEllips.size();
         std::cout<< "[debug] RelationExtractor::ExtractRelations, obj_num: " << obj_num << ", plane_num: " << vpPlanes.size() << std::endl;
@@ -25,12 +42,13 @@ namespace ORB_SLAM2
             }
             std::cout<< "[debug] RelationExtractor::ExtractRelations, obj_id: " << obj_id << std::endl;
             if(pEllip->mbBackingPlaneDefined || pEllip->mbSupportingPlaneDefined ) {
-                std::cerr << "已提前有MHP! "<< pEllip->mbSupportingPlaneDefined << ", "<< pEllip->mbBackingPlaneDefined << std::endl;
+                std::cerr << "[Error]: 已提前有MHP! "<< pEllip->mbSupportingPlaneDefined << ", "<< pEllip->mbBackingPlaneDefined << std::endl;
                 exit(-1);
             }
             // 获取物体的六个面
             Matrix3Xd mCorners;  mCorners.resize(3,8);
             Matrix3Xd mIds; mIds.resize(3, 6);
+            // 分别对应 地面、顶面、四个侧面
             mIds << 1, 5, 1, 3, 6, 8,
                     2, 8, 5, 7, 7, 5,
                     3, 7, 6, 8, 3, 1;
@@ -42,16 +60,62 @@ namespace ORB_SLAM2
             // 寻找最佳支撑平面
             g2o::plane* pSupportingPlane_best = NULL;
             int sup_plane_id=-1;
+            // 地面中心的坐标
+            Vector3d bottomplane_centor = (mCorners.col(mIds(0,0)-1) + mCorners.col(mIds(2,0)-1))/2;
             std::vector<std::pair<double, g2o::plane*>> supprortingPlaneDisVec;
             for (int plane_id = 0; plane_id < vpPlanes.size(); plane_id++)
             {
                 g2o::plane *pPlane = vpPlanes[plane_id];
-                
+                // typedef pcl::PointXYZRGB PointT;
+                // typedef pcl::PointCloud<PointT> PointCloudPCL;
+                PointCloudPCL PlanePoints = vpPlanesPoints[plane_id];
+
                 // 判断水平面是否是支撑平面
                 if(pPlane->miMHType==g2o::MANHATTAN_PLANE_TYPE::HORIZONTAL){
-                    double dis = pObj_bottom_plane->distanceToPlane(*pPlane);
-                    if(dis>0)   // 即平面不能在物体底面之上
-                        supprortingPlaneDisVec.push_back(make_pair(dis, pPlane));
+                    double z_dis = pObj_bottom_plane->distanceToPlane(*pPlane);
+                    
+                    pcl::KdTreeFLANN<PointT> kdtree;
+                    kdtree.setInputCloud(PlanePoints.makeShared());  // 构建 KD-Tree
+
+                    PointT searchPoint;  //构造查询点
+                    searchPoint.x = bottomplane_centor(0);
+                    searchPoint.y = bottomplane_centor(1);
+                    searchPoint.z = bottomplane_centor(2);
+
+                    std::vector<int> nearest_indices(1);
+                    std::vector<float> nearest_sqr_distances(1);
+
+                    // 计算nearest_point与bottomplane_centor之间的距离
+                    double xy_distance = 1000;
+                    double min_xyz_distance;
+                    // 物体的半轴长度
+                    double object_length = 0;
+                    if (kdtree.nearestKSearch(searchPoint, 1, nearest_indices, nearest_sqr_distances) > 0) {
+                        int index = nearest_indices[0];
+                        min_xyz_distance = std::sqrt(nearest_sqr_distances[0]);
+                        // 你可以通过索引获取点
+                        const PointT& nearest_point = PlanePoints[index];
+                        xy_distance = std::sqrt(std::pow(nearest_point.x - bottomplane_centor(0), 2) + std::pow(nearest_point.y - bottomplane_centor(1), 2));
+                        object_length = std::sqrt(std::pow(pEllip->scale(0) - bottomplane_centor(0), 2) + std::pow(pEllip->scale(0) - bottomplane_centor(1), 2));
+                    }
+                    // if(z_dis>0 && xy_distance<object_length*2 )   // 即平面不能在物体底面之上; 平面不能离地面中心太远
+                    //     supprortingPlaneDisVec.push_back(make_pair(z_dis, pPlane));
+
+                    if(is_on_ground){
+                        g2o::plane* pPlaneGlobal = new g2o::plane(*pPlane);
+                        pPlaneGlobal->transform(pFrame->cam_pose_Twc);
+                        double height = -1 * pPlaneGlobal->param[3] / pPlaneGlobal->param[2];
+                        if(height<0.1) {
+                            supprortingPlaneDisVec.push_back(make_pair(min_xyz_distance, pPlane));
+                        }
+                    }
+                    else{
+                        if(z_dis>0 && z_dis<0.3) {  // 即平面不能在物体底面之上; 平面不能离地面中心太远
+                            supprortingPlaneDisVec.push_back(make_pair(min_xyz_distance, pPlane));
+                            std::cout << "  最近xyz距离为: " << min_xyz_distance << std::endl;
+                            std::cout << "  物体长度 object_length*1.5: " << object_length*1.5 << std::endl;
+                        }
+                    }
                 }
             }
 
@@ -59,7 +123,7 @@ namespace ORB_SLAM2
                 sort(supprortingPlaneDisVec.begin(), supprortingPlaneDisVec.end(), sort_plane_dis);
                 double dis_min = supprortingPlaneDisVec[0].first;
                 pSupportingPlane_best = supprortingPlaneDisVec[0].second;
-                if( dis_min < 0.3 ){
+                {
                     // 寻找 plane_id
                     for(int i=0;i<vpPlanes.size();i++)
                     {

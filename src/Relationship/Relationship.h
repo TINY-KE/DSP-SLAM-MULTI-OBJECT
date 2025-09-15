@@ -24,7 +24,7 @@
 #include <pcl/filters/radius_outlier_removal.h>
 #include <pcl/segmentation/organized_multi_plane_segmentation.h>
 #include <pcl/features/integral_image_normal.h>
-
+#include <pcl/kdtree/kdtree_flann.h>
 namespace ORB_SLAM2
 {
     enum RELATION_TYPE
@@ -65,6 +65,7 @@ namespace ORB_SLAM2
 
         Relations ExtractSupporttingRelations(std::vector<g2o::ellipsoid *> &vpEllips, std::vector<g2o::plane *> &vpPlanes, Frame* pFrame, int model = 1);
 
+        bool TooCloseOfPlaneToCorners(g2o::plane* plane, Eigen::Matrix3Xd& mCorners, Eigen::Matrix3Xd& mIds);
     };
 
 } // namespace ORB_SLAM2

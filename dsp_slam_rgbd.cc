@@ -148,6 +148,9 @@ int main(int argc, char **argv)
         else if (key=='f'){
             images_numbers_to_pass_over = 300;
         }
+        else if (key=='g'){
+            images_numbers_to_pass_over = 450;
+        }
     }
 
     for(int ni = 0; ni < nImages; ni++)
@@ -239,6 +242,9 @@ int main(int argc, char **argv)
                 }
                 else if (key=='f'){
                     images_numbers_to_pass_over = 300;
+                }
+                else if (key=='g'){
+                    images_numbers_to_pass_over = 450;
                 }
             }
     }

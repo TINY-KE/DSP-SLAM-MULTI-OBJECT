@@ -190,9 +190,8 @@ pybind11::handle::dec_ref() is being called while the GIL is either not held or 
         + 已解决，椭球体的六个平面方向量是指向物体外，
     + 地面不是手动加入到vplanes里面了吗，  为什么不生效
         + 不解决了
-    + 支撑平面也得加上基于corner的判断，太远的不能留
-        + TODO: 
-    + 基于MHP优化椭球体，并用绿色椭球体展示
+    
+    + 基于MHP优化椭球体，并用金色椭球体展示
         + OptimizeEllipsoidWithBboxPlanesAndMHPlanes 函数怎么使用？
         + MHP也考虑方向
             double dis;
@@ -204,6 +203,9 @@ pybind11::handle::dec_ref() is being called while the GIL is either not held or 
         + 直接将墙面和地面的约束分开
         + 
 
+    + 支撑平面也得加上基于corner的判断，太远的不能留
+        + TODO: 
+        
 # 第六阶段 椭球体节点约束
     + 如何实现
 

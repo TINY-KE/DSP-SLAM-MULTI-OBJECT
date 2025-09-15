@@ -205,13 +205,12 @@ namespace ORB_SLAM2 {
         // [3] 使用曼哈顿平面（当前只有地面和桌面）优化椭球体  //重要：其实没有用，因为椭球体生成中地面只是提供重力方向。
         int type = Config::Get<int>("Debug.EllipsoidExtraction.OpenRelations");
 
-        // // [3] Extract Relationship
-        // 构建椭球体与曼哈顿平面之间的关联关系
-        TaskRelationship(pFrame);
-
         if(type){
-            // [4] Use Relationship To Refine Ellipsoids
-            // 注意: Refine时必然在第一步可以初始化出有效的物体.
+            // // [4] Extract Relationship
+            // 构建椭球体与曼哈顿平面之间的关联关系
+            TaskRelationship(pFrame);
+
+            // [5] Use Relationship To Refine Ellipsoids
             RefineObjectsWithRelations(pFrame, pKF);
             std::cout << "Finish RefineObjectsWithRelations" << std::endl;
         }
@@ -550,6 +549,41 @@ namespace ORB_SLAM2 {
                     // pKF->ReplaceEllipsoldsGlobal(i, &e_global);
 
                 }
+            }
+            else if(e->mbSupportingPlaneDefined ){   
+
+                double supproting_weight = Config::ReadValue<double>("EllipsoidExtractor.Optimizer.SupportingWeight");
+                g2o::plane* pSupPlane = e->mpSupportingPlane->pPlane;
+
+                double bbox_weight = Config::ReadValue<double>("EllipsoidExtractor.Optimizer.BboxWeight");
+                std::vector<g2o::plane> vBboxPlanes;
+                std::vector<g2o::ConstrainPlane*> vBboxConstrainPlanes = e->mvBboxPlanesLocal;
+                for(auto cp : vBboxConstrainPlanes)
+                    vBboxPlanes.push_back(*cp->pPlane);
+
+                // g2o::ellipsoid e_refined = mpEllipsoidExtractor->OptimizeEllipsoidWithBboxPlanesAndMHPlanes(
+                //         *e, vBboxPlanes, bbox_weight, *pSupPlane, supproting_weight, *pBackPlane, backing_weight);
+                
+
+
+
+                // // 可视化 Refined Object，并变换到世界坐标系下
+                // bool c0 = mpEllipsoidExtractor->GetResult();
+                // std::cout << "[debug] RefineObjectsWithRelations 4, mpEllipsoidExtractor->GetResult()结果为： " << c0 << std::endl;
+                // if( c0 )
+                // {
+                //     // Visualize estimated ellipsoid
+                //     g2o::ellipsoid* pObjRefined = new g2o::ellipsoid(e_refined.transform_from(pFrame->cam_pose_Twc));
+                //     pObjRefined->setColor(Vector3d(189/255.0, 183/255.0, 107/255.0), 1); 
+                //     mpMap->addRefinedEllipsoidVisual(pObjRefined);
+                    
+                //     // 用优化后的
+                //     // (*pFrame->mpLocalObjects[i]) = e_refined;
+
+                //     // g2o::ellipsoid e_global = e_refined.transform_from(pFrame->cam_pose_Twc);
+                //     // pKF->ReplaceEllipsoldsGlobal(i, &e_global);
+
+                // }
             }
         }
 
