@@ -105,7 +105,7 @@ class Detector2D(object):
         print(f"object_classes = {object_classes}")
         
         any_detect = False
-        print(f"detect :", end='')
+        # print(f"detect :", end='')
         for object_class in object_classes:
             for object_id in object_class_table[object_class]:
                 o = object_id
@@ -138,7 +138,7 @@ class Detector2D(object):
         else:
             masks = np.stack(masks, axis=0)
 
-        print(f"make_prediction: n_det = {n_det}")
+        # print(f"make_prediction: n_det = {n_det}")
 
         # img = show_result_pyplot(self.model, image, self.predictions, score_thr=0.2)
         # cv2.imshow("labeled img", img)
@@ -176,14 +176,14 @@ class Detector2D(object):
             label = labels[i]
 
             # scores = boxes[:, -1]
-            print(f"score/label/class/bbox = {format(score, '.6f')}/{label}/{GetLabelText(label)}/{bbox}")
+            # print(f"score/label/class/bbox = {format(score, '.6f')}/{label}/{GetLabelText(label)}/{bbox}")
 
         
         scores = boxes[:, -1]
 
 
         cond3 = (scores >= 0.60)
-        print(f"scores = {scores}")
+        # print(f"scores = {scores}")
         
 
         # valid_mask = (cond2 & cond3)
@@ -196,7 +196,7 @@ class Detector2D(object):
                            "pred_probs": probs[valid_mask],
                            }
         
-        print(f"vaild prediction: n_det = {len(valid_mask[valid_mask])}")
+        # print(f"vaild prediction: n_det = {len(valid_mask[valid_mask])}")
         
         return valid_instances
 

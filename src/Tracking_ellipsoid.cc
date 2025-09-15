@@ -260,7 +260,7 @@ namespace ORB_SLAM2 {
 
         // 每次更新深度观测的时候都清除
         bool bEllipsoidNotClear = true;
-        std::cout << "[Tracking::UpdateDepthEllipsoid Estimation] KeyFrame id: "<< pKF->mnId << ", 共有 " << rows << " 个检测结果" << std::endl;
+        // std::cout << "[Tracking::UpdateDepthEllipsoid Estimation] KeyFrame id: "<< pKF->mnId << ", 共有 " << rows << " 个检测结果" << std::endl;
         std::string pcd_suffix = "";
         int num_success_ellipsoid = 0;
 
@@ -274,7 +274,7 @@ namespace ORB_SLAM2 {
             int label = round(det_vec(5));
             double measurement_prob = det_vec(6);
 
-            Eigen::Vector4d measurement = Eigen::Vector4d(det_vec(1), det_vec(2), det_vec(3), det_vec(4));
+            Eigen::Vector4d measurement = Eigen::Vector4d(det_vec(1), det_vec(2), det_vec(3)-Config::Get<double>("EllipsoidExtractor.RefineEllipsoid.Border.x2.Pixels"), det_vec(4)-Config::Get<double>("EllipsoidExtractor.RefineEllipsoid.Border.y2.Pixels"));
 
             // 3. 筛选条件
             // is_border：包围框是否靠近图像边界。
@@ -430,16 +430,16 @@ namespace ORB_SLAM2 {
                     num_success_ellipsoid ++;
 
                     // KeyFrame id: "<< mpCurrentKeyFrame->mnId << " => Det["
-                    std::cout << "\t KeyFrame id: "<< pKF->mnId << ", => Det[" << i << "] Yes  提取椭球体， pose: "<< pE_extractByFittingGlobal->pose.toXYZPRYVector().transpose() << "， scale: "<< pE_extractByFittingGlobal->scale.transpose() << std::endl;
+                    // std::cout << "\t KeyFrame id: "<< pKF->mnId << ", => Det[" << i << "] Yes  提取椭球体， pose: "<< pE_extractByFittingGlobal->pose.toXYZPRYVector().transpose() << "， scale: "<< pE_extractByFittingGlobal->scale.transpose() << std::endl;
                 }
                 else{
-                    std::cout << "\t KeyFrame id: "<< pKF->mnId << ", => Det[" << i << "] Fail 提取椭球体" << std::endl;
+                    // std::cout << "\t KeyFrame id: "<< pKF->mnId << ", => Det[" << i << "] Fail 提取椭球体" << std::endl;
                 }
 
             }
             else{
-                std::cout << "\t KeyFrame id: "<< pKF->mnId << ", => Det[" << i << "] Fail 提取椭球体, ";
-                cout << " - LowProb|OnBorder|IsHuman:" << !c5_prob_check << "," << !c1_not_on_border << "," << !c4_not_human << std::endl;
+                // std::cout << "\t KeyFrame id: "<< pKF->mnId << ", => Det[" << i << "] Fail 提取椭球体, ";
+                // cout << " - LowProb|OnBorder|IsHuman:" << !c5_prob_check << "," << !c1_not_on_border << "," << !c4_not_human << std::endl;
             }
             // 若不成功保持为NULL
             // 将椭球体观测结果存入Frame
@@ -493,43 +493,65 @@ namespace ORB_SLAM2 {
     // 3) 若不满足，则使用点云中心+bbox产生点模型椭球体
     void Tracking::RefineObjectsWithRelations(ORB_SLAM2::Frame *pFrame, KeyFrame* pKF)
     {
-        // Eigen::VectorXd camera_pose = pFrame->cam_pose_Twc.toVector();
         
-        // for(int i=0;i<num;i++){
-        //     // 对于支撑关系, 且平面非地平面
-        //     // 将该新平面加入到 MHPlanes 中，重新计算一遍提取.
-        //     Relation& rl = rls[i];
+        Eigen::VectorXd camera_pose = pFrame->cam_pose_Twc.toVector();
+        std::vector<g2o::ellipsoid*>& vpEllipsoids = pFrame->mpLocalObjects;
+        
+        for(int i=0;i<vpEllipsoids.size();i++){
+
+            std::cout<<"[debug] RefineObjectsWithRelations 1, Object id: " << i ;
+            g2o::ellipsoid* e = vpEllipsoids[i];
+            if(e==NULL) {
+                std::cout << ", NULL ellipsoid, continue..." << std::endl;
+                continue;
+            }
+            std::cout << "flag:" << e->mbBackingPlaneDefined << "/" << e->mbSupportingPlaneDefined << std::endl;
+            
+            if(e->mbBackingPlaneDefined && e->mbSupportingPlaneDefined ){   
+
+                std::cout<<"[debug] RefineObjectsWithRelations 2, 存在支撑和倚靠平面" << std::endl;
+
+                double supproting_weight = Config::ReadValue<double>("EllipsoidExtractor.Optimizer.SupportingWeight");
+                g2o::plane* pSupPlane = e->mpSupportingPlane->pPlane;
+                std::cout<<"[debug] RefineObjectsWithRelations 2-1" << std::endl;
+                double backing_weight = Config::ReadValue<double>("EllipsoidExtractor.Optimizer.BackingWeight");
+                g2o::plane* pBackPlane = e->mpBackingPlane->pPlane;
+
+                std::cout<<"[debug] RefineObjectsWithRelations 2-2" << std::endl;
+                double bbox_weight = Config::ReadValue<double>("EllipsoidExtractor.Optimizer.BboxWeight");
+                std::vector<g2o::plane> vBboxPlanes;
+                std::vector<g2o::ConstrainPlane*> vBboxConstrainPlanes = e->mvBboxPlanesLocal;
+                std::cout<<"[debug] RefineObjectsWithRelations 2-3" << std::endl;
+                for(auto cp : vBboxConstrainPlanes)
+                    vBboxPlanes.push_back(*cp->pPlane);
+
+                std::cout<<"[debug] RefineObjectsWithRelations 3, 开始优化" << std::endl;
+
+                g2o::ellipsoid e_refined = mpEllipsoidExtractor->OptimizeEllipsoidWithBboxPlanesAndMHPlanes(
+                        *e, vBboxPlanes, bbox_weight, *pSupPlane, supproting_weight, *pBackPlane, backing_weight);
+                
 
 
-        //     if(rl.type == RELATION_TYPE::SUPPORTING){   // 支撑关系
-        //         g2o::plane* pSupPlane = rl.pPlane; 
 
-   
-
-
-
-        //         // 可视化 Refined Object，并变换到世界坐标系下
-        //         bool c0 = mpEllipsoidExtractor->GetResult();
-        //         std::cout << "[debug] Refined mpEllipsoidExtractor->GetResult()结果为： " << c0 << std::endl;
-        //         if( c0 )
-        //         {
-        //             // Visualize estimated ellipsoid
-        //             g2o::ellipsoid* pObjRefined = new g2o::ellipsoid(e.transform_from(pFrame->cam_pose_Twc));
-        //             pObjRefined->setColor(Vector3d(0,0.8,0), 1); 
-        //             mpMap->addEllipsoidVisual(pObjRefined);
-
+                // 可视化 Refined Object，并变换到世界坐标系下
+                bool c0 = mpEllipsoidExtractor->GetResult();
+                std::cout << "[debug] RefineObjectsWithRelations 4, mpEllipsoidExtractor->GetResult()结果为： " << c0 << std::endl;
+                if( c0 )
+                {
+                    // Visualize estimated ellipsoid
+                    g2o::ellipsoid* pObjRefined = new g2o::ellipsoid(e_refined.transform_from(pFrame->cam_pose_Twc));
+                    pObjRefined->setColor(Vector3d(189/255.0, 183/255.0, 107/255.0), 1); 
+                    mpMap->addRefinedEllipsoidVisual(pObjRefined);
                     
-                    
-        //             // 此处设定 Refine 一定优先.
-        //             (*pFrame->mpLocalObjects[obj_id]) = e;
+                    // 用优化后的
+                    // (*pFrame->mpLocalObjects[i]) = e_refined;
 
-        //             g2o::ellipsoid e_global = e.transform_from(pFrame->cam_pose_Twc);
-        //             // (pKF->mpGlobalEllipsolds[obj_id]) = e_global;
-        //             pKF->ReplaceEllipsoldsGlobal(obj_id, &e_global);
+                    // g2o::ellipsoid e_global = e_refined.transform_from(pFrame->cam_pose_Twc);
+                    // pKF->ReplaceEllipsoldsGlobal(i, &e_global);
 
-        //         }
-        //     }
-        // }
+                }
+            }
+        }
 
     }
 

@@ -264,7 +264,7 @@ pcl::PointCloud<PointType>::Ptr EllipsoidExtractor::ExtractPointCloud(cv::Mat& d
     // cout << "time_5_GetCenter: " <<(double)(time_5_GetCenter - time_4_VisualizePointCloud) / CLOCKS_PER_SEC << "s" << endl;
     // cout << "time_6_ApplyEuclideanFilter: " <<(double)(time_6_ApplyEuclideanFilter - time_5_GetCenter) / CLOCKS_PER_SEC << "s" << endl;
     // cout << "time_7_VisualizePointCloud: " <<(double)(time_7_VisualizePointCloud - time_6_ApplyEuclideanFilter) / CLOCKS_PER_SEC << "s" << endl;
-    cout << "[debug]EllipsoidExtractor::ExtractPointCloud End, Time: " << (double)(time_1_1_outliers_filter_end - time_1_1_outliers_filter_start) / CLOCKS_PER_SEC << "s" << endl;
+    cout << "[debug] EllipsoidExtractor::ExtractPointCloud End, Time: " << (double)(time_1_1_outliers_filter_end - time_1_1_outliers_filter_start) / CLOCKS_PER_SEC << "s" << endl;
     return clear_cloud_ptr;
 }
 
@@ -779,7 +779,7 @@ ORB_SLAM2::PointCloud* EllipsoidExtractor::ApplyEuclideanFilter(ORB_SLAM2::Point
     double CONFIG_ClusterTolerance = Config::ReadValue<double>( "EllipsoidExtraction.ClusterTolerance"); 
     double CONFIG_CENTER_DIS = Config::ReadValue<double>( "EllipsoidExtraction.CenterDis"); 
 
-    std::cout<< "[debug] EllipsoidExtractor::ApplyEuclideanFilter: "<< CONFIG_MinClusterSize <<", "<< CONFIG_ClusterTolerance <<", "<< CONFIG_CENTER_DIS <<", "<<std::endl;
+    // std::cout<< "[debug] EllipsoidExtractor::ApplyEuclideanFilter: "<< CONFIG_MinClusterSize <<", "<< CONFIG_ClusterTolerance <<", "<< CONFIG_CENTER_DIS <<", "<<std::endl;
     assert( CONFIG_MinClusterSize>0&&CONFIG_ClusterTolerance>0&&CONFIG_CENTER_DIS>0 && "Forge to set param. " );
 
     pcl::PointCloud<pcl::PointXYZ>::Ptr pCloudPCL = QuadricPointCloudToPclXYZ(*pCloud);

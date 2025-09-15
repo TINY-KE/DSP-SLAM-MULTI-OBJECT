@@ -53,8 +53,18 @@ public:
     Vector4d bbox;  // Local局部观测中存储它.
 
     MatrixXd cplanes;   // constrain 3d planes Nx4, one plane each ROW.
-    std::vector<ConstrainPlane*> mvCPlanes;
-    std::vector<ConstrainPlane*> mvCPlanesWorld;
+    
+
+    std::vector<ConstrainPlane*> mvBboxPlanesLocal;
+    // std::vector<ConstrainPlane*> mvCPlanesWorld;
+    // std::vector<ConstrainPlane*> mvMHPlanesLocal;
+    bool mbSupportingPlaneDefined = false;
+    ConstrainPlane* mpSupportingPlane;
+    bool mbBackingPlaneDefined = false;
+    ConstrainPlane* mpBackingPlane;
+
+
+    // std::vector<ConstrainPlane*> mvMHPlanesWorld;
 
     ellipsoid();
     // Copy constructor.
@@ -136,7 +146,7 @@ public:
 
     // *** The following 4 functions treat the ellipsoid as external cube
     // 3x8 matrix storing 8 corners; each row is x y z
-    Matrix3Xd compute3D_BoxCorner_world() const;
+    Matrix3Xd compute3D_BoxCorner_global() const;
 
     Matrix2Xd projectOntoImageBoxCorner(const SE3Quat& campose_cw, const Matrix3d& Kalib) const;
 
@@ -162,7 +172,7 @@ public:
     // whether the camera could see the ellipsoid
     bool CheckObservability(const SE3Quat& campose_cw);
 
-    std::vector<plane*> GetCubePlanesWorld(Matrix3Xd& mPoints);  // zhjd：平面的方向量指向物体外 
+    std::vector<plane*> GetCubePlanesGlobal(Matrix3Xd& mPoints);  // zhjd：平面的方向量指向物体外 
     std::vector<plane*> GetCubePlanesInImages(const SE3Quat& campose_cw, const Matrix3d& Kalib, int rows, int cols, int pixel_thresh);
 
     void addConstrainPlanes(std::vector<ConstrainPlane*>& vCPlanes);

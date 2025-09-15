@@ -407,7 +407,25 @@ bool MapDrawer::drawLastestEllipsoidsVisual(double prob_thresh, double ellipsoid
 
     return true;
 }
+bool MapDrawer::drawLastestRefinedEllipsoidsVisual(double prob_thresh, double ellipsoidLineWidth) {
 
+    std::vector<ellipsoid*> ellipsoidsVisual = mpMap->GetAllRefinedEllipsoidsVisual();
+
+    std::vector<ellipsoid*> ellipsoids_prob;
+    if(ellipsoidsVisual.size() < 1) return false;
+    auto pE = ellipsoidsVisual.back();
+    if(pE->prob > prob_thresh ){
+        ellipsoids_prob.push_back(pE);
+        // std::cout << "[MapDrawer::drawEllipsoidsVisual] Ellipsoid with prob: " << pE->prob << std::endl;
+    }
+    else{
+        // std::cout << "[MapDrawer::drawEllipsoidsVisual] Ellipsoid with prob: " << pE->prob << " is filtered out." << std::endl;
+    }
+    
+    drawAllEllipsoidsInVector(ellipsoids_prob, 4, ellipsoidLineWidth);
+
+    return true;
+}
 bool MapDrawer::drawGlobalEllipsoids(double prob_thresh, double ellipsoidLineWidth) {
 
     auto mvpMapObjects = mpMap->GetAllMapObjects();

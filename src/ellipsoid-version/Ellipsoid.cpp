@@ -22,6 +22,10 @@ namespace g2o
 {
     ellipsoid::ellipsoid():miInstanceID(-1),mbColor(false),bPointModel(false)
     {
+        mbSupportingPlaneDefined = false;
+        mpSupportingPlane = new ConstrainPlane(NULL);
+        mbBackingPlaneDefined = false;
+        mpBackingPlane = new ConstrainPlane(NULL);
     }
 
     // xyz roll pitch yaw half_scale
@@ -257,8 +261,7 @@ namespace g2o
 
         this->prob = e.prob;
         // this->cplanes = e.cplanes;
-        this->mvCPlanes = e.mvCPlanes;
-        this->mvCPlanesWorld = e.mvCPlanesWorld;
+        this->mvBboxPlanesLocal = e.mvBboxPlanesLocal;
 
         this->bbox = e.bbox;
 
@@ -594,19 +597,20 @@ namespace g2o
 
     // calculate the external cube of the ellipsoid
     // 8 corners 3*8 matrix, each row is x y z
-    Matrix3Xd ellipsoid::compute3D_BoxCorner_world() const
+    // corners坐标考虑了椭球体的位姿，因此是全局坐标系下的点。
+    Matrix3Xd ellipsoid::compute3D_BoxCorner_global() const
     {
         Matrix3Xd corners_body;corners_body.resize(3,8);
         corners_body<< 1, 1, -1, -1, 1, 1, -1, -1,
                 1, -1, -1, 1, 1, -1, -1, 1,
                 -1, -1, -1, -1, 1, 1, 1, 1;
-        Matrix3Xd corners_world = homo_to_real_coord<double>(similarityTransform()*real_to_homo_coord<double>(corners_body));
-        return corners_world;
+        Matrix3Xd corners_global = homo_to_real_coord<double>(similarityTransform()*real_to_homo_coord<double>(corners_body));
+        return corners_global;
     }
 
     Matrix2Xd ellipsoid::projectOntoImageBoxCorner(const SE3Quat& campose_cw, const Matrix3d& Kalib) const
     {
-        Matrix3Xd corners_3d_world = compute3D_BoxCorner_world();
+        Matrix3Xd corners_3d_world = compute3D_BoxCorner_global();
         Matrix2Xd corner_2d = homo_to_real_coord<double>(Kalib*homo_to_real_coord<double>(campose_cw.to_homogeneous_matrix()*real_to_homo_coord<double>(corners_3d_world)));
 
         return corner_2d;
@@ -630,11 +634,11 @@ namespace g2o
         return Vector4d(rect_center(0),rect_center(1),widthheight(0),widthheight(1));
     }
 
-    // zhjd：平面的方向量指向物体外， 且平面为world坐标系下的平面
-    std::vector<g2o::plane*> ellipsoid::GetCubePlanesWorld(Matrix3Xd& mPoints)
+    // zhjd：平面的方向量指向物体外。 平面的位姿考虑了椭球体的位姿，因此是全局坐标系下的平面。
+    std::vector<g2o::plane*> ellipsoid::GetCubePlanesGlobal(Matrix3Xd& mPoints)
     {
         mPoints.resize(3,8);
-        mPoints = compute3D_BoxCorner_world();
+        mPoints = compute3D_BoxCorner_global();
         Matrix3Xd mIds; mIds.resize(3, 6);
         // 注意： 该 id 从1开始计数！
         mIds << 1, 5, 1, 3, 6, 8,
@@ -664,7 +668,7 @@ namespace g2o
 
     void ellipsoid::addConstrainPlanes(std::vector<ConstrainPlane*>& vCPlanes)
     {
-        mvCPlanes = vCPlanes;
+        mvBboxPlanesLocal = vCPlanes;
         NormalizeConstrainPlanes();
     }
 
@@ -675,10 +679,10 @@ namespace g2o
     // 平面方程：n·x + d = 0，反转等价于把法向量 n 指向相反方向。
     void ellipsoid::NormalizeConstrainPlanes()
     {
-        int cplane_num = mvCPlanes.size();
+        int cplane_num = mvBboxPlanesLocal.size();
         for(int i=0;i<cplane_num;i++)
         {
-            ConstrainPlane* pCPlane = mvCPlanes[i];
+            ConstrainPlane* pCPlane = mvBboxPlanesLocal[i];
             // 检查椭球体中心的flag.
             bool flag_positive = pCPlane->pPlane->distanceToPoint(this->pose.translation(), true) > 0;
             if(!flag_positive)
@@ -758,14 +762,14 @@ namespace g2o
         VectorXd vec_info = SaveToVector();
         // std::cout << " 1 ) ellipsoid vec : " << vec_info.transpose() << std::endl;
         // 接下来获得平面数量, 并往后排列平面
-        int plane_num = mvCPlanes.size();
+        int plane_num = mvBboxPlanesLocal.size();
         int single_vec_size = ConstrainPlane::vectorSize();
 
         // 接下来每个平面都变成一个 Vector, 并且叠加到同一个Vector后面
         VectorXd total_cplane_vec; total_cplane_vec.resize(plane_num * single_vec_size);
         for(int i=0; i<plane_num; i++)
         {
-            ConstrainPlane* pCPlane = mvCPlanes[i];
+            ConstrainPlane* pCPlane = mvBboxPlanesLocal[i];
             VectorXd vec_cplane = pCPlane->toVector();
             // std::cout << " 2." << i << ") CPlane vec : " << vec_cplane.transpose() << std::endl;
 
@@ -796,8 +800,8 @@ namespace g2o
         int plane_num_pos = vec_ellipsoid_size;  // 位置在物体信息之后
         int plane_num = round(vec[plane_num_pos]);   
 
-        mvCPlanes.clear();
-        mvCPlanes.resize(plane_num);
+        mvBboxPlanesLocal.clear();
+        mvBboxPlanesLocal.resize(plane_num);
         int sngle_vec_size = ConstrainPlane::vectorSize();
 
         VectorXd vec_cplanes = vec.block(vec_ellipsoid_size+1, 0, plane_num*sngle_vec_size, 1);
@@ -806,7 +810,7 @@ namespace g2o
             VectorXd vec_cplane = vec_cplanes.block(i*sngle_vec_size, 0, sngle_vec_size, 1);
             ConstrainPlane* pCPlane = new ConstrainPlane(NULL);
             pCPlane->fromVector(vec_cplane);    // 该过程会判断无plane时初始化
-            mvCPlanes[i] = pCPlane;
+            mvBboxPlanesLocal[i] = pCPlane;
         }
 
         return;
@@ -914,7 +918,7 @@ namespace g2o
         }
 
         // 开始筛选有效平面
-        Matrix3Xd mPoints = compute3D_BoxCorner_world();
+        Matrix3Xd mPoints = compute3D_BoxCorner_global();
         Matrix4Xd mIds; mIds.resize(4, 6);
 
         // 注意： 该 id 从1开始计数！

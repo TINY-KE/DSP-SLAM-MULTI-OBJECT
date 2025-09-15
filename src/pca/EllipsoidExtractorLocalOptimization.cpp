@@ -83,11 +83,13 @@ g2o::ellipsoid EllipsoidExtractor::OptimizeEllipsoidUsingPlanes(g2o::ellipsoid &
 }
 
 
-g2o::ellipsoid EllipsoidExtractor::OptimizeEllipsoidWithBboxPlanesAndMHPlanes(const g2o::ellipsoid &init_guess, std::vector<g2o::plane> &BboxPlanes, double Bbox_Weight, 
-                                                                                                                    std::vector<g2o::plane> &MHPlanes, double MHP_Weight)
+g2o::ellipsoid EllipsoidExtractor::OptimizeEllipsoidWithBboxPlanesAndMHPlanes(const g2o::ellipsoid &init_guess, 
+                                                                                std::vector<g2o::plane> &BboxPlanes, double Bbox_Weight, 
+                                                                                g2o::plane &SupprotingPlane, double Supproting_Weight,
+                                                                                g2o::plane &BackingPlane, double Backing_Weight)
 {
     // 基本参数的读取
-    double config_plane_angle_sigma = Config::Get<double>("Optimizer.Edges.3DConstrain.PlaneAngle.Sigma");
+    double config_plane_angle_sigma = Config::Get<double>("EllipsoidExtractor.Optimizer.PlaneNormalAngle");
     bool bUseGroundPlaneWeight = true;  // 请将地平面放在平面约束的第一个！
 
     // initialize graph optimization.
@@ -149,45 +151,59 @@ g2o::ellipsoid EllipsoidExtractor::OptimizeEllipsoidWithBboxPlanesAndMHPlanes(co
     }
     
 
-    // 2) normal 边 ( 约束其朝向 ). 
+
+
+    // 2) 支撑面 normal 边 ( 约束其朝向 ). 
     int flag_valid_angle = 1;  // 关闭边约束的朝向!
-    for (int i = 0; i < MHPlanes.size(); i++)
-    {
-        g2o::EdgeSE3EllipsoidPlaneWithNormal* pEdge = new g2o::EdgeSE3EllipsoidPlaneWithNormal;
-        pEdge->setId(graph.edges().size());
-        pEdge->setVertex(0, dynamic_cast<g2o::OptimizableGraph::Vertex *>( vSE3 ));
-        pEdge->setVertex(1, dynamic_cast<g2o::OptimizableGraph::Vertex *>( vEllipsoid ));
-        pEdge->setMeasurement(MHPlanes[i].param);
 
-        Matrix<double,2,1> inv_sigma;
-        inv_sigma << 1, 1/(config_plane_angle_sigma * 1 / 180.0 * M_PI) * flag_valid_angle;   // 距离, 角度标准差 ; 暂时不管
+    g2o::EdgeSE3EllipsoidPlaneWithNormal* pEdge_sup = new g2o::EdgeSE3EllipsoidPlaneWithNormal;
+    pEdge_sup->setId(graph.edges().size());
+    pEdge_sup->setVertex(0, dynamic_cast<g2o::OptimizableGraph::Vertex *>( vSE3 ));
+    pEdge_sup->setVertex(1, dynamic_cast<g2o::OptimizableGraph::Vertex *>( vEllipsoid ));
+    pEdge_sup->setMeasurement(SupprotingPlane.param);
 
-        double pl_weight = 1;
-        pl_weight = MHP_Weight;
-        inv_sigma = inv_sigma * pl_weight;
-        MatrixXd info = inv_sigma.cwiseProduct(inv_sigma).asDiagonal();
-        pEdge->setInformation(info);
-        pEdge->setRobustKernel( new g2o::RobustKernelHuber() );
+    Matrix<double,2,1> inv_sigma;
+    inv_sigma << 1, 1/(config_plane_angle_sigma * 1 / 180.0 * M_PI) * flag_valid_angle;   // 距离, 角度标准差 ; 暂时不管
 
-        graph.addEdge(pEdge);
-    }
+    inv_sigma = inv_sigma * Supproting_Weight;
+    MatrixXd info = inv_sigma.cwiseProduct(inv_sigma).asDiagonal();
+    pEdge_sup->setInformation(info);
+    pEdge_sup->setRobustKernel( new g2o::RobustKernelHuber() );
 
+    graph.addEdge(pEdge_sup);
+
+
+
+
+    // 3) 倚靠面 normal 边 ( 约束其朝向 ). 
+    int flag_valid_angle_back = 1;  // 关闭边约束的朝向!
+
+    g2o::EdgeSE3EllipsoidPlaneWithNormal* pEdge_back = new g2o::EdgeSE3EllipsoidPlaneWithNormal;
+    pEdge_back->setId(graph.edges().size());
+    pEdge_back->setVertex(0, dynamic_cast<g2o::OptimizableGraph::Vertex *>( vSE3 ));
+    pEdge_back->setVertex(1, dynamic_cast<g2o::OptimizableGraph::Vertex *>( vEllipsoid ));
+    pEdge_back->setMeasurement(BackingPlane.param);
+
+    Matrix<double,2,1> inv_sigma_back;
+    inv_sigma_back << 1, 1/(config_plane_angle_sigma * 1 / 180.0 * M_PI) * flag_valid_angle_back;   // 距离, 角度标准差 ; 暂时不管
+
+    inv_sigma_back = inv_sigma_back * Backing_Weight;
+    MatrixXd info_back = inv_sigma_back.cwiseProduct(inv_sigma_back).asDiagonal();
+    pEdge_back->setInformation(info_back);
+    pEdge_back->setRobustKernel( new g2o::RobustKernelHuber() );
+
+    graph.addEdge(pEdge_back);
 
 
 
 
     
-
-   
-
     // 开始优化
     int num_opt = 10;
-    std::cout << "Begin Optimization of ellipsoid with prior... x " << num_opt << std::endl;
-    std::cout << " - BboxPlanes Num : " << BboxPlanes.size() << std::endl;
-    std::cout << " - MHPlanes Num : " << MHPlanes.size() << std::endl;
+    // std::cout << "Begin Optimization of ellipsoid with prior... x " << num_opt << std::endl;
     graph.initializeOptimization();
     graph.optimize( num_opt );  //optimization step
-    std::cout << "Optimization done." << std::endl;
+    // std::cout << "Optimization done." << std::endl;
 
     // // 保存最终 cost 
     // mdCost = graph.chi2();

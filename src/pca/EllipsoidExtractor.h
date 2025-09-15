@@ -124,9 +124,13 @@ private:
     PCAResult PCA(pcl::PointCloud<PointType>::Ptr& pCloudPCL);
     double NormalVoter(pcl::PointCloud<PointType>::Ptr& pCloudPCL);
 
+public:
     g2o::ellipsoid OptimizeEllipsoidUsingPlanes(g2o::ellipsoid &e_in, MatrixXd& mPlanesParam);
-    g2o::ellipsoid OptimizeEllipsoidWithBboxPlanesAndMHPlanes(const g2o::ellipsoid &init_guess, std::vector<g2o::plane> &BboxPlanes, double Bbox_Weight,
-                                                                std::vector<g2o::plane> &MHPlanes,  double MHP_Weight);
+    g2o::ellipsoid OptimizeEllipsoidWithBboxPlanesAndMHPlanes(const g2o::ellipsoid &init_guess, std::vector<g2o::plane> &BboxPlanes, double Bbox_Weight, 
+                                                                                g2o::plane &SupprotingPlane, double Supproting_Weight,
+                                                                                g2o::plane &BackingPlane, double Backing_Weight);
+
+private:
     ORB_SLAM2::PointCloud* ApplyMHPlanesFilter(ORB_SLAM2::PointCloud* pCloud, std::vector<g2o::plane*>& vpPlanes);
 
     g2o::SE3Quat GenerateGravityCoordinate(const Vector3d& center, const Vector3d& gravity_normal);

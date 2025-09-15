@@ -123,6 +123,7 @@ protected:
     int mnBigChangeIdx;
 
     std::mutex mMutexMap;
+    std::mutex mMutexRefinedMap;
 
 
 
@@ -144,6 +145,7 @@ public:
     
 protected:
     std::vector<ellipsoid*> mspEllipsoidsVisual;
+    std::vector<ellipsoid*> mspRefinedEllipsoidsVisual;
     std::vector<ellipsoid*> mspEllipsoidsObjects;
 
 public:
@@ -152,7 +154,11 @@ public:
     void addEllipsoidVisual(ellipsoid* pObj);
     std::vector<ellipsoid*> GetAllEllipsoidsVisual();
     void ClearEllipsoidsVisual();
-
+    
+    void addRefinedEllipsoidVisual(ellipsoid* pObj);
+    std::vector<ellipsoid*> GetAllRefinedEllipsoidsVisual();
+    // void ClearEllipsoidsVisual();
+    
     void addEllipsoidObjects(ellipsoid* pObj);
     std::vector<ellipsoid*> GetAllEllipsoidsObjects();
     void ClearEllipsoidsObjects();

@@ -193,7 +193,7 @@ pybind11::handle::dec_ref() is being called while the GIL is either not held or 
     + 支撑平面也得加上基于corner的判断，太远的不能留
         + TODO: 
     + 基于MHP优化椭球体，并用绿色椭球体展示
-        + OptimizeEllipsoidUsingPlanes 函数怎么使用？
+        + OptimizeEllipsoidWithBboxPlanesAndMHPlanes 函数怎么使用？
         + MHP也考虑方向
             double dis;
             if(mbNormalDirection)

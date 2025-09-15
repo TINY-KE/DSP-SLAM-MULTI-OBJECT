@@ -639,7 +639,7 @@ void Optimizer::LocalJointBundleAdjustment_forLocalMapping(KeyFrame *pKF, bool *
                         // continue;
                     }
 
-                    std::vector<g2o::ConstrainPlane*> vCPlanes = det->pLocalEllipsoidOneFrame->mvCPlanes;
+                    std::vector<g2o::ConstrainPlane*> vCPlanes = det->pLocalEllipsoidOneFrame->mvBboxPlanesLocal;
                     int plane_num = vCPlanes.size();
 
                     for( int i=0;i<plane_num;i++){

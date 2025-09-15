@@ -6,6 +6,15 @@
 
 namespace g2o
 {
+    enum CONSTRAINPLANE_STATE
+    {
+        INVALID = -1,
+        BBOXPLANE = 0,
+        CUBOIDS = 1,
+        SUPPORTING = 2,
+        BACKING = 3
+    };
+
     class plane;
     class ConstrainPlane
     {
@@ -17,14 +26,8 @@ namespace g2o
         bool association_border; // 是否在关联时被判断在边缘
         int state;  // invalid 时, 两种state: 1, 内部  2, 外部
 
-        int type;   // 0 : 来自bbox  ,  1: 来自 cuboids
+        CONSTRAINPLANE_STATE type;  
 
-        // 任务:
-        // 构造函数
-        // 拷贝构造函数
-        // 保持上述三个参数能够继续传递
-
-        // 更新.->不参与优化 不需要.
         plane* pPlane;
 
         // load and save

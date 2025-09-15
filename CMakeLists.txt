@@ -156,13 +156,8 @@ add_library(${PROJECT_NAME} SHARED
         src/ellipsoid-version/Plane.cpp
         src/ellipsoid-version/Ellipsoid.cpp
         src/ellipsoid-version/Geometry.cpp
-        # src/core/DataAssociation.cpp
         src/ellipsoid-version/BasicEllipsoidEdges.cpp
-        # src/ellipsoid-version/NonparamDA.cpp
-        # src/ellipsoid-version/SupportingPlane.cpp
         src/ellipsoid-version/ConstrainPlane.cpp
-        # src/core/SemanticLabel.cpp
-        # src/ellipsoid-version/PriorInfer.cpp
         )
 target_link_libraries(${PROJECT_NAME}
         ${catkin_LIBRARIES}  #for ros

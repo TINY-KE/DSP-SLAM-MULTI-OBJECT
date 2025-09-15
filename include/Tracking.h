@@ -50,7 +50,7 @@
 #include <src/config/Config.h>
 #include <src/dense_builder/builder.h>
 #include <src/Relationship/Relationship.h>
-
+#include "include/ellipsoid-version/ConstrainPlane.h"
 // #include <src/plane/PlaneExtractor.h>
 
 

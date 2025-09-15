@@ -171,7 +171,7 @@ bool PlaneExtractorManhattan::extractManhattanPlanes(const cv::Mat &depth, Eigen
         }  
     }
 
-    std::cout<< "[debug] Extracting Manhattan Planes, 提取到Potential Structural MHPlanes 数量: " << vpPlanes.size() << std::endl;
+    // std::cout<< "[debug] Extracting Manhattan Planes, 提取到Potential Structural MHPlanes 数量: " << vpPlanes.size() << std::endl;
     if( vpPlanes.size() < 1) {      // there should be more than 1 valid planes 
         return false;
     }
@@ -260,7 +260,7 @@ void PlaneExtractorManhattan::UpdateHomeDominantStructuralMHPlanes(g2o::SE3Quat 
                     if( distance < 3.0) // TODO: 输出调试这个值.
                     {
                         state = 1;      // 1) 发现距离太近平面
-                        std::cout << "[debug] UpdateHomeDominantStructuralMHPlanes.distance : " << distance << std::endl;
+                        // std::cout << "[debug] UpdateHomeDominantStructuralMHPlanes.distance : " << distance << std::endl;
                     }
                 }
                 else if (std::abs(angle-M_PI/2) < angle_tolerance )
@@ -293,24 +293,24 @@ void PlaneExtractorManhattan::UpdateHomeDominantStructuralMHPlanes(g2o::SE3Quat 
                 AddNewDominantMHPlane(pPlanesGlobal);
                 mbResult = true;    // 添加了新的，本次成功.
 
-                std::cout<< "[debug] 房间 Dominant Manhattan Planes添加成功, 已有平面数量: " << mvpHomeDominantStructuralMHPlanes.size() << std::endl;
+                // std::cout<< "[debug] 房间 Dominant Manhattan Planes添加成功, 已有平面数量: " << mvpHomeDominantStructuralMHPlanes.size() << std::endl;
             }
             else {
                 switch (state) {
                     case 0:
-                        std::cout << "[debug] 房间 Dominant Manhattan Planes添加成功, 与地面平行，且距离已有平面足够远（<3米）" << std::endl;
+                        // std::cout << "[debug] 房间 Dominant Manhattan Planes添加成功, 与地面平行，且距离已有平面足够远（<3米）" << std::endl;
                         break;
                     case 1:
-                        std::cout << "[debug] 房间 Dominant Manhattan Planes添加失败, 虽然平行，但是距离已有平面太近（<3米）" << std::endl;
+                        // std::cout << "[debug] 房间 Dominant Manhattan Planes添加失败, 虽然平行，但是距离已有平面太近（<3米）" << std::endl;
                         break;
                     case 2:
-                        std::cout << "[debug] 房间 Dominant Manhattan Planes添加失败, 平行的平面数量大于2" << std::endl;
+                        // std::cout << "[debug] 房间 Dominant Manhattan Planes添加失败, 平行的平面数量大于2" << std::endl;
                         break;
                     case 3:
-                        std::cout << "[debug] 房间 Dominant Manhattan Planes添加失败, 与已有平面既不平行也不垂直" << std::endl;
+                        // std::cout << "[debug] 房间 Dominant Manhattan Planes添加失败, 与已有平面既不平行也不垂直" << std::endl;
                         break;
                     default:
-                        std::cout << "[debug] 房间 Dominant Manhattan Planes添加失败, 未知原因" << state << std::endl;
+                        // std::cout << "[debug] 房间 Dominant Manhattan Planes添加失败, 未知原因" << state << std::endl;
                         break;
                 }
             }

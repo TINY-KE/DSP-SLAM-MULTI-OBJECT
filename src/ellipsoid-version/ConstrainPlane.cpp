@@ -6,7 +6,7 @@ using namespace Eigen;
 namespace g2o
 {
 
-ConstrainPlane::ConstrainPlane(plane* ppl):valid(true), image_border(false), association_border(false), pPlane(ppl), state(0), type(-1)
+ConstrainPlane::ConstrainPlane(plane* ppl):valid(true), image_border(false), association_border(false), pPlane(ppl), state(0), type(CONSTRAINPLANE_STATE::INVALID)
 {
 }
 
@@ -29,21 +29,6 @@ VectorXd ConstrainPlane::toVector()
 }
 
 void ConstrainPlane::fromVector(VectorXd& vec){
-    if(vec.size()!=vectorSize()) {std::cerr << "Wrong vec size : " << vec.size() << std::endl; return;}
-    Vector4d stateVec = vec.head(4);
-
-    // TODO: check 这样的转换是否有效
-    valid = round(vec[0]) > 0;
-    image_border = round(vec[1]) > 0;
-    association_border = round(vec[2]) > 0;
-    state = round(vec[3]);
-    type = round(vec[4]);
-
-    // 读取平面
-    Vector4d vec_plane = vec.tail(4);
-    if(pPlane==NULL) pPlane = new g2o::plane(vec_plane);
-    else pPlane->param = vec_plane;
-
     return;
 }
 

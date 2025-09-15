@@ -93,6 +93,7 @@ void Viewer::Run()
     // ellipsoid-version
     pangolin::Var<bool> menuShowEllipsoids("menu.Show Ellipsoids One Frame Visual", false, true);
     pangolin::Var<bool> menuShowLastestEllipsoids("menu.Show Newest Ellipsoids One Frame Visual", true, true);
+    pangolin::Var<bool> menuShowLastestRefinedEllipsoids("menu.Show Refined Ellipsoids One Frame Visual", true, true);
     pangolin::Var<bool> menuShowGlobalEllipsoids("menu.Show Global Ellipsoids", true, true);
     pangolin::Var<double> SliderEllipsoidProbThresh("menu.Ellipsoid Prob", 0.3, 0.0, 1.0);
     pangolin::Var<double> SliderEllipsoidLineWidth("menu.EllipsoidLine Width", 1.0, 0.5, 3.0);
@@ -203,6 +204,11 @@ void Viewer::Run()
                 double ellipsoidProbThresh = SliderEllipsoidProbThresh;
                 double ellipsoidLineWidth = SliderEllipsoidLineWidth;
                 mpMapDrawer->drawLastestEllipsoidsVisual(ellipsoidProbThresh,ellipsoidLineWidth);
+            }
+            if(menuShowLastestRefinedEllipsoids){
+                double ellipsoidProbThresh = SliderEllipsoidProbThresh;
+                double ellipsoidLineWidth = SliderEllipsoidLineWidth;
+                mpMapDrawer->drawLastestRefinedEllipsoidsVisual(ellipsoidProbThresh,ellipsoidLineWidth);
             }
             mpObjectDrawer->ProcessNewObjects();
             if(menuShowSdfObjects){

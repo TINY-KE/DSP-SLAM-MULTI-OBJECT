@@ -708,7 +708,7 @@ bool Frame::SetObservations(KeyFrame* pKF){
     // std::cout << "Debug: Frame::SetObservations" << std::endl;
     std::vector<ObjectDetection*> obj_dets = pKF->GetObjectDetections();
     int num_det = obj_dets.size();
-    std::cout << "num_det = " << num_det << std::endl;
+    // std::cout << "num_det = " << num_det << std::endl;
 
     mmObservations = Eigen::MatrixXd(num_det, 8);
 

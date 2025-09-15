@@ -1,6 +1,7 @@
 #include "Relationship.h"
 // #include "include/ellipsoid-version/Frame.h"
 #include "Frame.h"
+#include "include/ellipsoid-version/ConstrainPlane.h"
 
 using namespace std;
 namespace ORB_SLAM2
@@ -14,6 +15,7 @@ namespace ORB_SLAM2
     {
         Relations relations_return;
         int obj_num = vpEllips.size();
+        std::cout<< "[debug] RelationExtractor::ExtractRelations, obj_num: " << obj_num << ", plane_num: " << vpPlanes.size() << std::endl;
         for (int obj_id = 0; obj_id < obj_num; obj_id++)
         {
             g2o::ellipsoid *pEllip = vpEllips[obj_id];
@@ -21,7 +23,11 @@ namespace ORB_SLAM2
                 // std::cout << "[Relation] NULL ellipsoid." << std::endl;
                 continue;
             }
-
+            std::cout<< "[debug] RelationExtractor::ExtractRelations, obj_id: " << obj_id << std::endl;
+            if(pEllip->mbBackingPlaneDefined || pEllip->mbSupportingPlaneDefined ) {
+                std::cerr << "已提前有MHP! "<< pEllip->mbSupportingPlaneDefined << ", "<< pEllip->mbBackingPlaneDefined << std::endl;
+                exit(-1);
+            }
             // 获取物体的六个面
             Matrix3Xd mCorners;  mCorners.resize(3,8);
             Matrix3Xd mIds; mIds.resize(3, 6);
@@ -30,7 +36,7 @@ namespace ORB_SLAM2
                     3, 7, 6, 8, 3, 1;
             
             // 物体的六个平面，平面法向量均指向物体外侧
-            std::vector<g2o::plane*> obj_planes = pEllip->GetCubePlanesWorld(mCorners);  // 椭球体所在的坐标系
+            std::vector<g2o::plane*> obj_planes = pEllip->GetCubePlanesGlobal(mCorners);  // 椭球体所在的坐标系
             g2o::plane* pObj_bottom_plane = obj_planes[0];  //物体的底面
 
             // 寻找最佳支撑平面
@@ -70,7 +76,11 @@ namespace ORB_SLAM2
                     rl.pEllipsoid = pEllip;
                     rl.pFrame = pFrame;
                     relations_return.push_back(rl);
-                    // pEllip->mRelations.push_back(rl);
+                    
+                    g2o::ConstrainPlane* mhp = new g2o::ConstrainPlane(pSupportingPlane_best);
+                    mhp->type = CONSTRAINPLANE_STATE::SUPPORTING; 
+                    pEllip->mpSupportingPlane = mhp;
+                    pEllip->mbSupportingPlaneDefined = true;
                 }
             }
             
@@ -105,14 +115,14 @@ namespace ORB_SLAM2
                             {
                                 // 平面中点的数量
                                 backingPlaneAreaVec.push_back(make_pair(PlanePoints.size(), pPlane));
-                                std::cout << "  [success] plane_id: " << plane_id << ", area: " << PlanePoints.size() << ", angle: " << angle_diff << ", dis: " << dis << std::endl;
+                                // std::cout << "  [success] plane_id: " << plane_id << ", area: " << PlanePoints.size() << ", angle: " << angle_diff << ", dis: " << dis << std::endl;
                             }
                             else{
-                                std::cout << "  [fail]    plane_id: " << plane_id << ", area: " << PlanePoints.size() << ", angle: " << angle_diff << ", dis: " << dis << std::endl;
+                                // std::cout << "  [fail]    plane_id: " << plane_id << ", area: " << PlanePoints.size() << ", angle: " << angle_diff << ", dis: " << dis << std::endl;
                             }
                         }
                         else{
-                                std::cout << "  [fail]    plane_id: " << plane_id << ", area: " << PlanePoints.size() << ", angle: " << angle_diff << std::endl;
+                                // std::cout << "  [fail]    plane_id: " << plane_id << ", area: " << PlanePoints.size() << ", angle: " << angle_diff << std::endl;
                         }
                     }         
                 }
@@ -146,6 +156,11 @@ namespace ORB_SLAM2
                     rl.pFrame = pFrame;
                     relations_return.push_back(rl);
                     // pEllip->mRelations.push_back(rl);
+
+                    g2o::ConstrainPlane* mhp = new g2o::ConstrainPlane(pBackingPlane_best);
+                    mhp->type = CONSTRAINPLANE_STATE::BACKING; 
+                    pEllip->mpBackingPlane = mhp;
+                    pEllip->mbBackingPlaneDefined = true;
                 }
             }
             
@@ -176,7 +191,7 @@ namespace ORB_SLAM2
             if(model == 1){
                 Matrix3Xd mCorners;  mCorners.resize(3,8);
                 Matrix3Xd mIds; mIds.resize(3, 6);
-                std::vector<g2o::plane*> obj_planes = pEllip->GetCubePlanesWorld(mCorners);  // 椭球体所在的坐标系
+                std::vector<g2o::plane*> obj_planes = pEllip->GetCubePlanesGlobal(mCorners);  // 椭球体所在的坐标系
                 g2o::plane* pObj_bottom_plane = obj_planes[0];
 
                 int plane_num = vpPlanes.size();

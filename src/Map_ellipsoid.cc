@@ -200,8 +200,20 @@ void Map::clearPlanes() {
 
 
 
+void Map::addRefinedEllipsoidVisual(ellipsoid *pObj) {
+    unique_lock<mutex> lock(mMutexRefinedMap);
+    mspRefinedEllipsoidsVisual.push_back(pObj);
+}
+
+vector<ellipsoid *> Map::GetAllRefinedEllipsoidsVisual() {
+    unique_lock<mutex> lock(mMutexRefinedMap);
+    return mspRefinedEllipsoidsVisual;
+}
+
+
 // 用于可视化的椭球体，并没用参与优化
 // 添加真值/单帧生成的椭球体
+
 void Map::addEllipsoidVisual(ellipsoid *pObj) {
     unique_lock<mutex> lock(mMutexMap);
     mspEllipsoidsVisual.push_back(pObj);

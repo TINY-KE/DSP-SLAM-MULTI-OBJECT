@@ -8,13 +8,12 @@
 #include "include/utils/dataprocess_utils.h"
 #include "include/ellipsoid-version/ConstrainPlane.h"
 
-#include "include/ellipsoid-version/PriorInfer.h"
 
 namespace ORB_SLAM2
 {
 void VisualizeConstrainPlanes(g2o::ellipsoid& e_local, g2o::SE3Quat& Twc, Map* pMap)
 {
-    std::vector<g2o::ConstrainPlane*> &vCPlanes = e_local.mvCPlanes;
+    std::vector<g2o::ConstrainPlane*> &vCPlanes = e_local.mvBboxPlanesLocal;
     g2o::ellipsoid e_global = e_local.transform_from(Twc);
     Vector3d center = e_global.pose.translation();
     int planeNum = vCPlanes.size();
@@ -628,7 +627,7 @@ std::vector<g2o::ConstrainPlane*> GenerateConstrainPlanesOfBbox(Vector4d& bbox, 
     // ### ③ 标记平面类型（bbox类型）
     // 添加flag
     for(auto pCPlane : vCPlanesWithBorderFlags)
-        pCPlane->type = 0;  // 0, bbox ; 1, cuboids
+        pCPlane->type = CONSTRAINPLANE_STATE::BBOXPLANE;  
 
     // ### ④ 标记边界平面（是否贴边）
     // 添加边界flag
@@ -695,7 +694,7 @@ std::vector<g2o::ConstrainPlane*> GenerateConstrainPlanesOfCuboids(g2o::ellipsoi
 {
     // 1、 从立方体中获得前后二面. 
     // // 获得所有立方体平面
-    // std::vector<g2o::plane*> vecPlanes = e_local_normalized.GetCubePlanesWorld();
+    // std::vector<g2o::plane*> vecPlanes = e_local_normalized.GetCubePlanesGlobal();
     // // 从立方体平面中寻找到得前后平面
     // // 判断所有平面法向量，求与Z轴最小夹角最近的.
     // g2o::plane* pfdPlane = selectForwardPlane(vecPlanes);
@@ -717,7 +716,7 @@ std::vector<g2o::ConstrainPlane*> GenerateConstrainPlanesOfCuboids(g2o::ellipsoi
 
     // 添加flag
     for(auto pCPlane : vCPlanes)
-        pCPlane->type = 1;  // 0, bbox ; 1, cuboids
+        pCPlane->type = CONSTRAINPLANE_STATE::CUBOIDS;  // 0, bbox ; 1, cuboids
     
     return vCPlanes;
 
@@ -852,8 +851,6 @@ g2o::ellipsoid EllipsoidExtractor::EstimateLocalEllipsoidUsingMultiPlanes(cv::Ma
     // -------------- 到此已获得相机坐标系下的椭球体!
 
     // ✅ 10. 添加bbox约束平面（提升精度）
-    // 接下来添加 ConstrainPlanes.
-    // std::cout<< " [debug] EstimateLocalEllipsoidUsingMultiPlanes 5" << std::endl;
     Matrix3d calib = CameraToCalibMatrix(camera);
     GenerateConstrainPlanesToEllipsoid(e_local_normalized, bbox, depth, campose_wc, calib);
     VisualizeConstrainPlanes(e_local_normalized, campose_wc, mpMap); // 中点定在全局坐标系
@@ -871,11 +868,11 @@ g2o::ellipsoid EllipsoidExtractor::EstimateLocalEllipsoidUsingMultiPlanes(cv::Ma
     mResult = true;
     clock_t time_2_fullProcess = clock();
     
-    // output the main running time
-    cout << "\t -- System Time [EllipsoidExtractor.cpp] :" << endl ;
-    cout << "\t \t ---- time_ExtractPointCloud: " <<(double)(time_1_ExtractPointCloud - time_start) / CLOCKS_PER_SEC << "s" << endl;
-    cout << "\t \t ---- total_ellipsoidExtraction: " <<(double)(time_2_fullProcess - time_start) / CLOCKS_PER_SEC << "s" << endl;
-    cout << endl;
+    // // output the main running time
+    // cout << "\t -- System Time [EllipsoidExtractor.cpp] :" << endl ;
+    // cout << "\t \t ---- time_ExtractPointCloud: " <<(double)(time_1_ExtractPointCloud - time_start) / CLOCKS_PER_SEC << "s" << endl;
+    // cout << "\t \t ---- total_ellipsoidExtraction: " <<(double)(time_2_fullProcess - time_start) / CLOCKS_PER_SEC << "s" << endl;
+    // cout << endl;
 
     // 此处添加一个判断, 若 尺寸过小 则舍弃
     if(e_local_normalized.scale(0) <= 0.05 || e_local_normalized.scale(1) <= 0.05 || e_local_normalized.scale(2) <= 0.05)
@@ -935,7 +932,7 @@ ConstrainPlane* GenerateCenterConstrainPlane(const Vector4d& bbox, const cv::Mat
 
     // 生成 Constrainplane返回.
     ConstrainPlane* pCPlane = new ConstrainPlane(ppl);
-    pCPlane->type = 0;
+    pCPlane->type = CONSTRAINPLANE_STATE::BBOXPLANE;
     pCPlane->image_border = false;
 
     return pCPlane;
@@ -949,7 +946,7 @@ void EllipsoidExtractor::OpenManhattanPlanesFilter(const std::vector<g2o::plane*
     if(mvpHomeDominantMHPlanes.size()>0) 
         mbOpenMHPlanesFilter = true;
 
-    std::cout << "[debug] 椭球体提取器，开启主导曼哈顿平面过滤点云, MHPlanes set!!! size: " << mvpHomeDominantMHPlanes.size() << std::endl;
+    // std::cout << "[debug] 椭球体提取器，开启主导曼哈顿平面过滤点云, MHPlanes set!!! size: " << mvpHomeDominantMHPlanes.size() << std::endl;
 }
 
 // 设置并开启曼哈顿平面
