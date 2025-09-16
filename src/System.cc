@@ -142,7 +142,6 @@ System::System(const string &strVocFile, const string &strSettingsFile, const st
     mpMapPublisher = new MapPublisher(mpMap, strSettingsFile);\
     mpObjectDrawer = new ObjectDrawer(mpMap, mpMapDrawer, strSettingsFile);
     mpMapDrawer->SetObjectDrawer(mpObjectDrawer);
-    
     //Initialize the Tracking thread
     //(it will live in the main thread of execution, the one that called this constructor)
     mpTracker = new Tracking(this, mpVocabulary, mpFrameDrawer, mpMapDrawer, mpMapPublisher,
@@ -779,5 +778,8 @@ void System::SetImageNames(vector<string>& vstrImageFilenamesRGB)
 Map* System::getMap() {
     return mpMap;
 }
+
+
+
 
 } //namespace ORB_SLAM

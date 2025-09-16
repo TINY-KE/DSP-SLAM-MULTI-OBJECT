@@ -80,6 +80,8 @@ DecoderPaths: ["weights/deepsdf/chairs_64",
 # ros
 use_ros: 0   # 1：读取存贮在本地的ros.png   0：根据association.txt读取图片
 DatasetPathRoot: "/home/robotlab/dataset/ICL-NUIM/living_room_traj2n_frei_png"
+Dataset.Path.Map: "/home/robotlab/dataset/ICL-NUIM/living_room_traj2n_frei_png/dataset.pcd"
+Visualization.Map.Filter.DisThresh: 1
 Minimux_Points_To_Judge_Good: 5  #20  #视情况，看是否要减小到5
 
 # camera
@@ -114,7 +116,7 @@ EllipsoidExtractor.StatisticalOutlierRemoval.MeanK: 50
 EllipsoidExtractor.SupportingPlaneFilter.DisThresh: 0.03
 EllipsoidExtractor.Optimizer.SupportingWeight: 1.0
 EllipsoidExtractor.Optimizer.BackingWeight:  1.0
-EllipsoidExtractor.Optimizer.BboxWeight:  0
+EllipsoidExtractor.Optimizer.BboxWeight:  1.2
 EllipsoidExtractor.Optimizer.PlaneNormalAngle: 100
 EllipsoidExtractor.RefineEllipsoid.Border.x2.Pixels: 0
 EllipsoidExtractor.RefineEllipsoid.Border.y2.Pixels: 0
@@ -136,7 +138,7 @@ Plane.MH_points_in_plane_size_scale: 0.25
 Tracking.AssociateObjectWithEllipsold: 1
 Tracking.AssociateDebug: 0
 Tracking.AssociateIoUThresold: 0.42
-Tracking.AssociateDisThresold: 0.3
+Tracking.AssociateDisThresold: 0.5
 
 # Bounding box filter
 Measurement.Border.Pixels: 10

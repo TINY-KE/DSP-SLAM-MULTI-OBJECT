@@ -316,6 +316,9 @@ public:
     Builder* mpBuilder;     // a dense pointcloud builder from visualization
 
 private:
+    void LoadPointcloud(const string& strPcdDir, const string& strPointcloud_name);   //g2o::SE3Quat Ttrans=g2o::SE3Quat()
+    bool mb_global_map_input = true;
+private:
     Eigen::Matrix3d mCalib;
 };
 

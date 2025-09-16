@@ -129,6 +129,8 @@ public:
     g2o::ellipsoid OptimizeEllipsoidWithBboxPlanesAndMHPlanes(const g2o::ellipsoid &init_guess, std::vector<g2o::plane> &BboxPlanes, double Bbox_Weight, 
                                                                                 g2o::plane &SupprotingPlane, double Supproting_Weight,
                                                                                 g2o::plane &BackingPlane, double Backing_Weight);
+    g2o::ellipsoid OptimizeEllipsoidWithBboxPlanesAndMHPlanes(const g2o::ellipsoid &init_guess, std::vector<g2o::plane> &BboxPlanes, double Bbox_Weight, 
+                                                                                g2o::plane &SupprotingPlane, double Supproting_Weight);
 
 private:
     ORB_SLAM2::PointCloud* ApplyMHPlanesFilter(ORB_SLAM2::PointCloud* pCloud, std::vector<g2o::plane*>& vpPlanes);

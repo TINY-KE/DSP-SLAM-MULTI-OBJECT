@@ -539,7 +539,9 @@ namespace ORB_SLAM2 {
                 {
                     // Visualize estimated ellipsoid
                     g2o::ellipsoid* pObjRefined = new g2o::ellipsoid(e_refined.transform_from(pFrame->cam_pose_Twc));
-                    pObjRefined->setColor(Vector3d(189/255.0, 183/255.0, 107/255.0), 1); 
+                    // pObjRefined->setColor(Vector3d(189/255.0, 183/255.0, 107/255.0), 1); 
+                    // pObjRefined->setColor(Vector3d(0/255.0, 128/255.0, 0/255.0), 1); 
+                    pObjRefined->setColor(Vector3d(255/255.0, 128/255.0, 0/255.0), 1); 
                     mpMap->addRefinedEllipsoidVisual(pObjRefined);
                     
                     // 用优化后的
@@ -561,29 +563,30 @@ namespace ORB_SLAM2 {
                 for(auto cp : vBboxConstrainPlanes)
                     vBboxPlanes.push_back(*cp->pPlane);
 
-                // g2o::ellipsoid e_refined = mpEllipsoidExtractor->OptimizeEllipsoidWithBboxPlanesAndMHPlanes(
-                //         *e, vBboxPlanes, bbox_weight, *pSupPlane, supproting_weight, *pBackPlane, backing_weight);
+                g2o::ellipsoid e_refined = mpEllipsoidExtractor->OptimizeEllipsoidWithBboxPlanesAndMHPlanes(
+                        *e, vBboxPlanes, bbox_weight, *pSupPlane, supproting_weight);
                 
 
 
 
-                // // 可视化 Refined Object，并变换到世界坐标系下
-                // bool c0 = mpEllipsoidExtractor->GetResult();
-                // std::cout << "[debug] RefineObjectsWithRelations 4, mpEllipsoidExtractor->GetResult()结果为： " << c0 << std::endl;
-                // if( c0 )
-                // {
-                //     // Visualize estimated ellipsoid
-                //     g2o::ellipsoid* pObjRefined = new g2o::ellipsoid(e_refined.transform_from(pFrame->cam_pose_Twc));
-                //     pObjRefined->setColor(Vector3d(189/255.0, 183/255.0, 107/255.0), 1); 
-                //     mpMap->addRefinedEllipsoidVisual(pObjRefined);
+                // 可视化 Refined Object，并变换到世界坐标系下
+                bool c0 = mpEllipsoidExtractor->GetResult();
+                std::cout << "[debug] RefineObjectsWithRelations 4, mpEllipsoidExtractor->GetResult()结果为： " << c0 << std::endl;
+                if( c0 )
+                {
+                    // Visualize estimated ellipsoid
+                    g2o::ellipsoid* pObjRefined = new g2o::ellipsoid(e_refined.transform_from(pFrame->cam_pose_Twc));
+                    // pObjRefined->setColor(Vector3d(189/255.0, 183/255.0, 107/255.0), 1); 
+                    pObjRefined->setColor(Vector3d(255/255.0, 255/255.0, 0/255.0), 1); 
+                    mpMap->addRefinedEllipsoidVisual(pObjRefined);
                     
-                //     // 用优化后的
-                //     // (*pFrame->mpLocalObjects[i]) = e_refined;
+                    // 用优化后的
+                    // (*pFrame->mpLocalObjects[i]) = e_refined;
 
-                //     // g2o::ellipsoid e_global = e_refined.transform_from(pFrame->cam_pose_Twc);
-                //     // pKF->ReplaceEllipsoldsGlobal(i, &e_global);
+                    // g2o::ellipsoid e_global = e_refined.transform_from(pFrame->cam_pose_Twc);
+                    // pKF->ReplaceEllipsoldsGlobal(i, &e_global);
 
-                // }
+                }
             }
         }
 
@@ -679,14 +682,58 @@ namespace ORB_SLAM2 {
                 // cout << "DenseBuild: after AddPointCloudList ";
                 // printMemoryUsage();
 
-                // Get and visualize global pointcloud.
-                PointCloudPCL::Ptr pCloudPCL = mpBuilder->getMap();
-                auto pCloud = pclToQuadricPointCloudPtr(pCloudPCL);
-                mpMap->AddPointCloudList("Builder.Global Points", pCloud);
+                bool open_global = false;
+
+                if(open_global){
+                    // Get and visualize global pointcloud.
+                    PointCloudPCL::Ptr pCloudPCL = mpBuilder->getMap();
+                    auto pCloud = pclToQuadricPointCloudPtr(pCloudPCL);
+                    mpMap->AddPointCloudList("Builder.Global Points", pCloud);
+                }
+                
             }
         }
     }
 
 
+PointCloud* filterCloudAsHeight(PointCloud* pCloud,  double dis_thresh)
+{
+    // std::cout << "Filter Cloud using thresh : " << dis_thresh << std::endl;
+    PointCloud* pCloudFiltered = new PointCloud;
+    int num = pCloud->size();
+    for(int i=0;i<num;i++)
+    {
+        PointXYZRGB p = (*pCloud)[i];
+        Vector3d center; center << p.x, p.y, p.z;
+
+        double dis = p.z;
+        // if(dis < dis_thresh)
+            pCloudFiltered->push_back(p);
+    }
+    return pCloudFiltered;
+}
+    
+void Tracking::LoadPointcloud(const string& strPcdDir, const string& strPointcloud_name)
+{
+    pcl::PointCloud<pcl::PointXYZRGB>::Ptr  cloud (new pcl::PointCloud<pcl::PointXYZRGB>);
+    pcl::io::loadPCDFile<pcl::PointXYZRGB>(strPcdDir.c_str(), *cloud);
+
+    //  = Ttrans.to_homogeneous_matrix();
+    Matrix4d transform = Converter::toMatrix4d(mCurrentFrame.mTcw.inv());
+    pcl::transformPointCloud (*cloud, *cloud, transform);
+
+    auto pCloud = pclToQuadricPointCloudPtr(cloud);
+
+    // 临时过滤顶部
+    double dis_thresh = Config::ReadValue<double>("Visualization.Map.Filter.DisThresh");
+    if(dis_thresh > 0){
+        auto pCloud_filtered = filterCloudAsHeight(pCloud, dis_thresh);
+        delete pCloud;
+        pCloud = pCloud_filtered;
+    }
+    mpMap->AddPointCloudList(strPointcloud_name, pCloud);
+
+    return;
+}
 
 }

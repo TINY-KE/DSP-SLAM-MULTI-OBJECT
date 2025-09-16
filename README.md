@@ -204,8 +204,24 @@ pybind11::handle::dec_ref() is being called while the GIL is either not held or 
         + 
 
     + 支撑平面也得加上基于corner的判断，太远的不能留
-        + TODO: 
-        
+        + 在支撑平面提取中,加上物体类型的筛选,沙发、椅子等物体直接选择地面
+       
+    + 实现无倚靠平面的椭球体refine
+        + 完成了，
+        + 用463帧展示椅子饿refine
+    
+    + 修改refine椭球体的颜色
+    + 生成全局的点云
+        + lzw留下的点云不行，是歪的
+
+    + 电视下面的物体有问题
+        + 
+
+    + refine只是可视化
+
++ 数据关联后，点云融合，并生成物体
+    + 
+
 # 第六阶段 椭球体节点约束
     + 如何实现
 

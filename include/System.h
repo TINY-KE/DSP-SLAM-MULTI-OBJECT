@@ -235,6 +235,7 @@ public:
     
     Map* getMap();
     int mbMapInSameThread;
+
 };
 
 }// namespace ORB_SLAM

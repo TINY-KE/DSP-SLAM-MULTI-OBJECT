@@ -100,7 +100,7 @@ void Viewer::Run()
     pangolin::Var<bool> menuShowSdfObjects("menu.Show SDF Objects",true,true);
     // 深度点云
     pangolin::Var<float> SliderPointCloudListSize("menu.Pointcloud Size", 3.0, 0.5, 10.0);
-    pangolin::Var<bool> menuShowDepthPoints("menu.Show Depth Points",false,true);
+    // pangolin::Var<bool> menuShowDepthPoints("menu.Show Depth Points",false,true);
     // 地面
     pangolin::Var<float> SlidermPlaneLineWidth("menu.PlaneLine Width", 1.0, 0.5, 3.0);
     pangolin::Var<bool> menuShowGroundPlane("menu.Show GroundPlane",true,true);
@@ -219,11 +219,11 @@ void Viewer::Run()
                 double ellipsoidLineWidth = SliderEllipsoidLineWidth;
                 mpMapDrawer->drawGlobalEllipsoids(ellipsoidProbThresh,ellipsoidLineWidth);
             }
-            if(menuShowDepthPoints)
-            {
-                float pointcloudSize = SliderPointCloudListSize;
-                mpMapDrawer->drawPointCloudLists(pointcloudSize);
-            }
+            // if(menuShowDepthPoints)
+            // {
+            //     float pointcloudSize = SliderPointCloudListSize;
+            //     mpMapDrawer->drawPointCloudLists(pointcloudSize);
+            // }
 
             // 展示图片
             if (menuShowFrameImg) 

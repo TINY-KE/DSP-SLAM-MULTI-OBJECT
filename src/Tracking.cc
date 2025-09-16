@@ -162,6 +162,7 @@ Tracking::Tracking(System *pSys, ORBVocabulary* pVoc, FrameDrawer *pFrameDrawer,
     
     // 设置地面为默认值，包括tracker、map、EllipsoidExtractor
     SetGroundPlaneMannually( Eigen::Vector4d(0,0,1,0));
+
     std::cout<<"[debug] tracking.cc: SetGroundPlaneMannually: "<<mGroundPlane.param.transpose()<<std::endl;
     mpMap->addPlane(&mGroundPlane);
     // std::cout<<"[debug] tracking.cc: SetGroundPlaneMannually 2: "<<mGroundPlane.param.transpose()<<std::endl;
@@ -295,6 +296,11 @@ cv::Mat Tracking::GrabImageRGBD(const cv::Mat &imRGB,const cv::Mat &imD, const d
 
     Track();
 
+    if(mb_global_map_input){
+        mb_global_map_input = false;
+        LoadPointcloud(Config::Get<string>("Dataset.Path.Map"), "background_world");
+    }
+    
     return mCurrentFrame.mTcw.clone();
 }
 
