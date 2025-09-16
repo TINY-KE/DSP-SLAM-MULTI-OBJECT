@@ -86,18 +86,6 @@ pybind11::handle::dec_ref() is being called while the GIL is either not held or 
     + 提取曼哈顿平面
     + 
 
-+ 利用椭球体设置物体位姿
-    + else if(mnComputeCuboidType==3) 没起作用
-    + pMap->addPlane(pPlane, visual_group); 曼哈顿平面的分组没修改
-    + 读取以下lj程序的mh平面的数量
-    [debug] Tracking::RefineObjectsWithRelations 1, 共有 1 个支撑关系
-    + *pcd_ptr = *pCloudPCL;  !!!!  这是什么问题？？？？
-    + 要不要把点云添加到观测中
-        // if (pcd_ptr_of_frame!=NULL) {
-                //     std::cout << "  - !!! det->setPcdPtr(pcd_ptr_of_frame);" << std::endl;
-                //     det->setPcdPtr(pcd_ptr_of_frame);
-                // }
-
 + 如何使用曼哈顿平面
     + mbOpenMHPlanesFilter = false;  //zhjd: 暂时使用地面进行过滤，之后可以改为使用曼哈顿平面
     + 前一，TaskManhattanPlanes(ORB_SLAM2::Frame *pFrame)
@@ -220,8 +208,12 @@ pybind11::handle::dec_ref() is being called while the GIL is either not held or 
     + refine只是可视化
 
 + 数据关联后，点云融合，并生成物体
-    + 
+    + TODO:将Sim3Two改为private，并且在dsp生成中改为使用椭球体Sim3Two
+        + SetObjectPoseSim3中已经将椭球体位姿赋予了Sim3Two
 
+    + 利用PCDCloud生成的物体，尺度有问题，不满足MHP约束
+        + 用refine椭球体替代蓝色椭球体
+        + 将椭球体顶点加入约束中。
 # 第六阶段 椭球体节点约束
     + 如何实现
 

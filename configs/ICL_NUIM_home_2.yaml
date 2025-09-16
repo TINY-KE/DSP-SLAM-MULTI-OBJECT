@@ -146,8 +146,13 @@ Measurement.LengthLimit.Pixels: 0
 Measurement.Probability.Thresh: 0
 
 # 物体建模
-Mapping.AddDepthPcdToMapObject: 1
+Mapping.use_depth_pcd_to_reconstruct: 1
 Mapping.LocalMappingInSameThread: 1
+Mapping.PcdCloudVoxelType: 1  #0 不降采样， 1 均匀， 2 近似
+Mapping.PcdCloudVoxelSize: 0.03
+Mapping.MinValidPoints: 50
+Mapping.MinValidRays: 1
+
 
 # use_object
 useObjectConstruct: 1

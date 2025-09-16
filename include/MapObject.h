@@ -27,6 +27,7 @@
 #include <pcl/point_cloud.h>
 #include <pcl/point_types.h>
 #include "src/config/Config.h"
+#include <pcl/filters/approximate_voxel_grid.h>  
 
 typedef pcl::PointXYZ PointType;
 
@@ -159,8 +160,8 @@ private:
 
     std::mutex mMutexPointCloud;
 
-    std::shared_ptr<PointCloud> mPoints;
-    pcl::PointCloud<PointType>::Ptr pcd_ptr;   //深度点云
+    std::shared_ptr<PointCloud> mPcdCloudPoints;
+    pcl::PointCloud<PointType>::Ptr mpPcdCloudPtr;   //深度点云
 
     bool mbValidDepthPointCloudFlag;
 

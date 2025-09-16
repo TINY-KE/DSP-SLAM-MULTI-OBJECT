@@ -356,20 +356,20 @@ namespace ORB_SLAM2 {
                         det->isValidPcd = false;
                     }
                     else{
-                        det->isValidPcd = true;
+                        det->setPcdPtr(pcd_ptr_of_frame);
                         ORB_SLAM2::PointCloud* pDeepPointsInObject = pclXYZToQuadricPointCloudPtr(pcd_ptr_of_frame); // normalized coordinate
                         mpMap->AddPointCloudList("DeepPoints in object", pDeepPointsInObject, 0);
                     }
                 }
                 else if(type == 2)
                 {
-                    // std::cout<<"[debug] Tracking::UpdateDepthEllipsoidEstimation, Using Supporting Planes" << std::endl;
-                    g2o::plane* pSupPlaneLocal = new g2o::plane(mGroundPlane);
-                    pSupPlaneLocal->transform(pFrame->cam_pose_Twc.inverse());
-                    e_extractByFitting_newSym = \
-                        mpEllipsoidExtractor->EstimateLocalEllipsoidWithSupportingPlane( \
-                            pFrame->pointcloud_img, measurement, label, measurement_prob, pose, mCamera, pSupPlaneLocal);
-                    auto det = mvpObjectDetections[i];  det->isValidPcd = true;
+                    // // std::cout<<"[debug] Tracking::UpdateDepthEllipsoidEstimation, Using Supporting Planes" << std::endl;
+                    // g2o::plane* pSupPlaneLocal = new g2o::plane(mGroundPlane);
+                    // pSupPlaneLocal->transform(pFrame->cam_pose_Twc.inverse());
+                    // e_extractByFitting_newSym = \
+                    //     mpEllipsoidExtractor->EstimateLocalEllipsoidWithSupportingPlane( \
+                    //         pFrame->pointcloud_img, measurement, label, measurement_prob, pose, mCamera, pSupPlaneLocal);
+                    // auto det = mvpObjectDetections[i];  det->isValidPcd = true;
                 }
 
                 

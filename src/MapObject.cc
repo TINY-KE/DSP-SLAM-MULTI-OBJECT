@@ -222,7 +222,9 @@ void MapObject::SetObjectPoseSim3(const Eigen::Matrix4f &Two)
     // Decompose T into Rotation, translation and scale
     Rwo = Two.topLeftCorner<3, 3>();
     // scale is fixed once the object is initialized
+    // 缩放因子
     scale = pow(Rwo.determinant(), 1./3.);
+    // 旋转矩阵除以scale，从而将物体缩小到单位球内
     invScale = 1. / scale;
     Rwo /= scale;
     two = Two.topRightCorner<3, 1>();
@@ -1049,12 +1051,12 @@ bool MapObject::hasValidDepthPointCloud()
 std::shared_ptr<PointCloud> MapObject::GetPointCloud()
 {
     unique_lock<mutex> lock(mMutexPointCloud);
-    return mPoints;
+    return mPcdCloudPoints;
 }
 
 void MapObject::AddDepthPointCloudFromObjectDetection(pcl::PointCloud<PointType>::Ptr new_pcd_ptr)
 {
-    std::cout << "AddDepthPointCloudFromObjectDetection" << std::endl;
+    // std::cout << "AddDepthPointCloudFromObjectDetection" << std::endl;
     // // 这里可能还需要一次降采样操作
     unique_lock<mutex> lock(mMutexPointCloud);
 
@@ -1064,50 +1066,69 @@ void MapObject::AddDepthPointCloudFromObjectDetection(pcl::PointCloud<PointType>
         return;
     }
     
-    if (pcd_ptr == nullptr) 
+    if (mpPcdCloudPtr == nullptr) 
     {
-        std::cout << "pcd_ptr = nullptr" << std::endl;
-        pcd_ptr = pcl::PointCloud<PointType>::Ptr(new pcl::PointCloud<PointType>);
+        std::cout << "mpPcdCloudPtr = nullptr" << std::endl;
+        mpPcdCloudPtr = pcl::PointCloud<PointType>::Ptr(new pcl::PointCloud<PointType>);
         std::cout << "error in 1" << std::endl;
-        *pcd_ptr = *(new_pcd_ptr);
+        *mpPcdCloudPtr = *(new_pcd_ptr);
         mbValidDepthPointCloudFlag = true;
     }
     else{
         std::cout << "Merging .. " << std::endl;
         pcl::PointCloud<PointType>::Ptr mergedCloud(new pcl::PointCloud<PointType>);
-        pcl::concatenate(*(new_pcd_ptr), *pcd_ptr, *mergedCloud);
-        pcd_ptr->clear();
+        pcl::concatenate(*(new_pcd_ptr), *mpPcdCloudPtr, *mergedCloud);
+        mpPcdCloudPtr->clear();
         new_pcd_ptr->clear();
-        *pcd_ptr = *mergedCloud;
+        *mpPcdCloudPtr = *mergedCloud;
         mbValidDepthPointCloudFlag = true;
     }
 
-    std::cout << "error in 2" << std::endl;
+    // std::cout << "error in 2" << std::endl;
     
     // 打印合并后的点云的大小
     // std::cout << "Debug: Merged Cloud Size: " << pcd_ptr->size() << std::endl;
     // std::cout << "mnId = " << mnId << ", Merged Cloud Size: " << std::endl;
 
     // 进行一次将采样
-    double grid_size = Config::Get<double>("MapObject.PointCloudVoxelSize");
-    static pcl::VoxelGrid<PointType> voxel;
-    double gridsize = grid_size;
-    voxel.setLeafSize( gridsize, gridsize, gridsize );
-    voxel.setInputCloud( pcd_ptr );
-    pcl::PointCloud<PointType>::Ptr tmp( new pcl::PointCloud<PointType>() );
-    voxel.filter( *tmp );
-    pcd_ptr.reset(new pcl::PointCloud<PointType>());
-    pcl::copyPointCloud(*tmp, *pcd_ptr);
-    tmp.reset();
+    double grid_size = Config::Get<double>("Mapping.PcdCloudVoxelSize");
+    int PcdCloudVoxelType = Config::Get<int>("Mapping.PcdCloudVoxelType");
+    if(PcdCloudVoxelType == 1){
+        static pcl::VoxelGrid<PointType> voxel;
+        double gridsize = grid_size;
+        voxel.setLeafSize( gridsize, gridsize, gridsize );
+        voxel.setInputCloud( mpPcdCloudPtr );
+        pcl::PointCloud<PointType>::Ptr tmp( new pcl::PointCloud<PointType>() );
+        voxel.filter( *tmp );
+        mpPcdCloudPtr.reset(new pcl::PointCloud<PointType>());
+        pcl::copyPointCloud(*tmp, *mpPcdCloudPtr);
+        tmp.reset();
+    }
+    else if(PcdCloudVoxelType == 2){
+        static pcl::ApproximateVoxelGrid<PointType> voxel;  // 修改类名
+        double gridsize = grid_size;
+        // 设置体素大小
+        voxel.setLeafSize(gridsize, gridsize, gridsize);
+        // 设置输入点云
+        voxel.setInputCloud(mpPcdCloudPtr);
+        // 输出到临时点云
+        pcl::PointCloud<PointType>::Ptr tmp(new pcl::PointCloud<PointType>());
+        voxel.filter(*tmp);
+        // 重新赋值回原始点云指针
+        mpPcdCloudPtr.reset(new pcl::PointCloud<PointType>());
+        pcl::copyPointCloud(*tmp, *mpPcdCloudPtr);
+        tmp.reset();
+    } 
+
 
     // std::cout << "Debug: Undersampled Cloud Size: " << pcd_ptr->size() << std::endl;
 
     // TODO: 这里判定点云有效的参数有待写入参数文件
-    if (pcd_ptr->size() > 5) {
+    if (mpPcdCloudPtr->size() > 5) {
         mbValidDepthPointCloudFlag = true;
     }
 
-    mPoints = std::make_shared<PointCloud>(pclXYZToQuadricPointCloud(pcd_ptr));
+    mPcdCloudPoints = std::make_shared<PointCloud>(pclXYZToQuadricPointCloud(mpPcdCloudPtr));
 
     // return true;
 }
@@ -1128,7 +1149,7 @@ g2o::ellipsoid* MapObject::GetEllipsold()
 
 pcl::PointCloud<PointType>::Ptr MapObject::GetDepthPointCloudPCL()
 {
-    return pcd_ptr;
+    return mpPcdCloudPtr;
 }
 
 }

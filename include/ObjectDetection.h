@@ -70,9 +70,13 @@ public:
     double prob;            //物体检测概率
     bool isValidPcd;        //用于提取椭球体的点云，是否提取成功
 
+private:
     // 用于生成椭球体的深度点云
     pcl::PointCloud<PointType>::Ptr pcd_ptr;
+
+public:
     void setPcdPtr(pcl::PointCloud<PointType>::Ptr& pcd_ptr_);  //往单帧观测中添加深度点云
+    pcl::PointCloud<PointType>::Ptr getPcdPtr();
 
     // 单帧椭球体提取结果
     g2o::ellipsoid* pLocalEllipsoidOneFrame = NULL;  // 单帧椭球体提取结果

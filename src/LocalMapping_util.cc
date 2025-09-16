@@ -84,125 +84,12 @@ void LocalMapping::MapObjectCulling()
 // 用于双目模式
 void LocalMapping::GetNewObservations()
 {
-    // PyThreadStateLock PyThreadLock;
 
-    // // cout << "LocalMapping: Estimating new poses for associated objects" << endl;
-
-    // auto Tcw = Converter::toMatrix4f(mpCurrentKeyFrame->GetPose());
-    // auto mvpAssociatedObjects = mpCurrentKeyFrame->GetMapObjectMatches();
-    // auto mvpObjectDetections = mpCurrentKeyFrame->GetObjectDetections();
-
-    // for (int i = 0; i < mvpObjectDetections.size(); i++)
-    // {
-    //     auto det = mvpObjectDetections[i];
-    //     if (det->isNew)
-    //         continue;
-    //     if (!det->isGood_OrbPointsEnough)
-    //         continue;
-
-    //     auto pMO = mvpAssociatedObjects[i];
-    //     if (pMO)
-    //     {
-    //         // Tco obtained by transforming Two to camera frame
-    //         Eigen::Matrix4f iniSE3Tco = Tcw * pMO->GetPoseSE3();
-    //         g2o::SE3Quat Tco = Converter::toSE3Quat(iniSE3Tco);
-    //         // Tco after running ICP, use Tco provided by detector
-    //         Eigen::Matrix4f SE3Tco = pyOptimizer.attr("estimate_pose_cam_obj")
-    //                 (det->SE3Tco, pMO->scale, det->SurfacePoints, pMO->GetShapeCode()).cast<Eigen::Matrix4f>();
-    //         g2o::SE3Quat Zco = Converter::toSE3Quat(SE3Tco);
-    //         // error
-    //         Eigen::Vector3f dist3D = SE3Tco.topRightCorner<3, 1>() - iniSE3Tco.topRightCorner<3, 1>();
-    //         Eigen::Vector2f dist2D; dist2D << dist3D[0], dist3D[2];
-    //         Eigen::Matrix<double, 6, 1> e = (Tco.inverse() * Zco).log();
-
-    //         if (pMO->isDynamic()) // if associated with a dynamic object
-    //         {
-    //             auto motion = pMO->SE3Tow * Tcw.inverse() * SE3Tco;
-    //             float deltaT = (float)(mpCurrentKeyFrame->mnFrameId - mpLastKeyFrame->mnFrameId);
-    //             auto speed = motion.topRightCorner<3, 1>() / deltaT;
-    //             pMO->SetObjectPoseSE3(Tcw.inverse() * SE3Tco);
-    //             pMO->SetVelocity(speed);
-    //         }
-    //         else // associated with a static object
-    //         {
-    //             if (dist2D.norm() < 1.0 && e.norm() < 1.5) // if the change of translation is very small, then it really is a static object
-    //             {
-    //                 det->SetPoseMeasurementSE3(SE3Tco);
-    //             }
-    //             else // if change is large, it could be dynamic object or false association
-    //             {
-    //                 // If just observed, assume it is dynamic
-    //                 if (pMO->Observations() <= 2)
-    //                 {
-    //                     pMO->SetDynamicFlag();
-    //                     auto motion = pMO->SE3Tow * Tcw.inverse() * SE3Tco;
-    //                     float deltaT = (float)(mpCurrentKeyFrame->mnFrameId - mpLastKeyFrame->mnFrameId);
-    //                     auto speed = motion.topRightCorner<3, 1>() / deltaT;
-    //                     pMO->SetObjectPoseSE3(Tcw.inverse() * SE3Tco);
-    //                     pMO->SetVelocity(speed);
-    //                     mpMap->mnDynamicObj++;
-    //                 }
-    //                 else
-    //                 {
-    //                     det->isNew = true;
-    //                     mpCurrentKeyFrame->EraseMapObjectMatch(i);
-    //                     pMO->EraseObservation(mpCurrentKeyFrame);
-    //                 }
-    //             }
-    //         }
-    //     }
-    // }
 }
 // 用于双目模式
 void LocalMapping::CreateNewMapObjects()
 {
-    // PyThreadStateLock PyThreadLock;
 
-    // // cout << "LocalMapping: Started new objects creation" << endl;
-
-    // auto SE3Twc = Converter::toMatrix4f(mpCurrentKeyFrame->GetPoseInverse());
-    // auto mvpObjectDetections = mpCurrentKeyFrame->GetObjectDetections();
-
-    // for (int i = 0; i < mvpObjectDetections.size(); i++)
-    // {
-    //     // This might happen when a new KF is created in Tracking thread
-    //     if (mbAbortBA)
-    //         return;
-
-    //     auto det = mvpObjectDetections[i];
-
-    //     if (det->nRays == 0)
-    //         continue;
-    //     if (!det->isNew)
-    //         continue;
-    //     if (!det->isNew)
-    //         continue;
-    //     auto pyMapObject = pyOptimizer.attr("reconstruct_object")
-    //             (det->Sim3Tco, det->SurfacePoints, det->RayDirections, det->DepthObs);
-    //     if (!pyMapObject.attr("is_good").cast<bool>())
-    //         continue;
-
-    //     if (mbAbortBA)
-    //         return;
-
-    //     auto Sim3Tco = pyMapObject.attr("t_cam_obj").cast<Eigen::Matrix4f>();
-    //     det->SetPoseMeasurementSim3(Sim3Tco);
-    //     // Sim3, SE3, Sim3
-    //     Eigen::Matrix4f Sim3Two = SE3Twc * Sim3Tco;
-    //     auto code = pyMapObject.attr("code").cast<Eigen::Matrix<float, 64, 1>>();
-    //     auto pNewObj = new MapObject(Sim3Two, code, mpCurrentKeyFrame, mpMap);
-
-    //     auto pyMesh = pyMeshExtractor.attr("extract_mesh_from_code")(code);
-    //     pNewObj->vertices = pyMesh.attr("vertices").cast<Eigen::MatrixXf>();
-    //     pNewObj->faces = pyMesh.attr("faces").cast<Eigen::MatrixXi>();
-
-    //     pNewObj->AddObservation(mpCurrentKeyFrame, i);
-    //     mpCurrentKeyFrame->AddMapObject(pNewObj, i);
-    //     mpMap->AddMapObject(pNewObj);
-    //     mpObjectDrawer->AddObject(pNewObj);
-    //     mlpRecentAddedMapObjects.push_back(pNewObj);
-    // }
-    // // cout << "LocalMapping: Finished new objects creation" << endl;
 }
 
 /*
@@ -409,6 +296,7 @@ void LocalMapping::ProcessDetectedObjects_byPythonReconstruct()
 
             cout << "Before reconstruct_object" << std::endl;
 
+            // TODO:将Sim3Two改为private，并且在dsp生成中改为使用椭球体Sim3Two
             auto pyMapObject = optimizer_ptr->attr("reconstruct_object")
                     (SE3Tcw * pMO->Sim3Two, surface_points_cam, rays, depth_obs, pMO->vShapeCode);
 
@@ -416,8 +304,8 @@ void LocalMapping::ProcessDetectedObjects_byPythonReconstruct()
             if (!pMO->reconstructed)
             {
                 auto flipped_Two = pMO->Sim3Two;
-                flipped_Two.col(0) *= -1;
-                flipped_Two.col(2) *= -1;
+                flipped_Two.col(0) *= -1;  // 翻转 X 轴方向
+                flipped_Two.col(2) *= -1;  // 翻转 Z 轴方向
                 auto pyMapObjectFlipped = optimizer_ptr->attr("reconstruct_object")
                         (SE3Tcw * flipped_Two, surface_points_cam, rays, depth_obs, pMO->vShapeCode);
 
@@ -493,7 +381,7 @@ void LocalMapping::Create_Multi_NewObjectsFromDetections()  // 用于RGBD模式
         // If the detection is a new object, create a new map object.
         if (!det->isNew)
             continue;
-        if (!det->isGood_OrbPointsEnough && !mb_add_depth_pcd_to_map_object)
+        if (!det->isGood_OrbPointsEnough && !mb_use_depth_pcd_to_reconstruct)
             continue;
         if (mvpGlobalEllipsolds[det_i] == NULL) 
             continue;
@@ -546,7 +434,7 @@ void LocalMapping::Process_Multi_DetectedObjects_byPythonReconstruct()
         // check if it's ready for reconstruction, reconstruct if it's got enough points
         if (det->isNew)   //只有track中数据关联上的物体才会被重建
             continue;
-        if (!det->isGood_OrbPointsEnough && !mb_add_depth_pcd_to_map_object)
+        if (!det->isGood_OrbPointsEnough && !mb_use_depth_pcd_to_reconstruct)
             continue;
 
         MapObject *pMO = mvpAssociatedObjects[det_i];  
@@ -561,60 +449,233 @@ void LocalMapping::Process_Multi_DetectedObjects_byPythonReconstruct()
         int numKFsPassedSinceInit = int(mpCurrentKeyFrame->mnId - pMO->mpRefKF->mnId);
 
         // 把深度点云加到地图物体中
-        if (mb_add_depth_pcd_to_map_object) {
-            pMO->AddDepthPointCloudFromObjectDetection(det->pcd_ptr);
+        bool success_contruct = false;
+        if (mb_use_depth_pcd_to_reconstruct) {
+            if ( mvpGlobalEllipsolds[det_i] != NULL ) {
+                std::cout<<"[debug] 开启基于PCD点云的DeepSDF建模"<<std::endl;
+                success_contruct = DeepSDFObjectConstruction_PcdCloud(det, pMO, det_i);
+            }
+        }
+        else{ 
+            if ( mvpGlobalEllipsolds[det_i] != NULL ) {
+                std::cout<<"[debug] 开启基于ORB点云的DeepSDF建模"<<std::endl;
+                success_contruct = DeepSDFObjectConstruction(det, pMO, det_i);
+            }
         }
 
-        // //更新物体的Sim3Two
-        // if(mnComputeCuboidType==0)
-        //     pMO->ComputeCuboidPCA(numKFsPassedSinceInit < 15);   
-        // else if(mnComputeCuboidType==1)
-        //     pMO->ComputeCuboidPCA_manhattan(numKFsPassedSinceInit < 15);   
-        // else if(mnComputeCuboidType==2)
-        //     pMO->ComputeCuboidPCA_ellipsoid(numKFsPassedSinceInit < 15);   
-        // else if(mnComputeCuboidType==3)
-        // {
-        //     if (mvpGlobalEllipsolds[det_i] == NULL) {
-        //         cout << "[zhjd-debug] Process_Multi_DetectedObjects ComputeCuboid: KeyFrame id: "<< mpCurrentKeyFrame->mnId << ", => Det[" << det_i << "] 为空，无法SetPoseByEllipsold" << endl;
-        //         continue;
-        //         // pMO->SetBadFlag();
-        //         // continue;
-        //     }
-        //     else{
-        //         // Method 2: 使用来自椭球体的位姿信息
-        //         std::cout << "[zhjd-debug] Process_Multi_DetectedObjects ComputeCuboid: 利用椭球体SetPoseByEllipsold" << std::endl;
-        //         pMO->SetPoseByEllipsoid(mvpGlobalEllipsolds[det_i]);
-        //     }
-        // }
-        // else if(mnComputeCuboidType==4)
-        // {
-        //     if (mvpGlobalEllipsolds[det_i] == NULL) {
-        //         cout << "[zhjd-debug] Process_Multi_DetectedObjects ComputeCuboid: KeyFrame id: "<< mpCurrentKeyFrame->mnId << ", => Det[" << det_i << "] 为空，无法SetPoseByEllipsold" << endl;
-        //         bool updatePose = true;
-        //         pMO->ComputeCuboidPCA_ellipsoid(updatePose); 
-        //     }
-        //     else if (mvpGlobalEllipsolds[det_i]->scale(0) <= 0.05 || mvpGlobalEllipsolds[det_i]->scale(1) <= 0.05 || mvpGlobalEllipsolds[det_i]->scale(2) <= 0.05) {
-        //         cout << "[zhjd-debug] Process_Multi_DetectedObjects ComputeCuboid: KeyFrame id: "<< mpCurrentKeyFrame->mnId << ", => Det[" << det_i << "] 尺寸过小，无法SetPoseByEllipsold" << endl;
-        //         bool updatePose = true;
-        //         pMO->ComputeCuboidPCA_ellipsoid(updatePose); 
-        //     }
-        //     else{
-        //         // Method 2: 使用来自椭球体的位姿信息
-        //         std::cout << "[zhjd-debug] Process_Multi_DetectedObjects ComputeCuboid: 利用椭球体SetPoseByEllipsold" << std::endl;
-        //         pMO->SetPoseByEllipsoid(mvpGlobalEllipsolds[det_i]);
-        //     }
-        // }
-    
-
-
-        pMO->AddObjectObservation(mpCurrentKeyFrame, det_i);
-        mpCurrentKeyFrame->AddMapObject(pMO, det_i);
-        mlpRecentAddedMapObjects.push_back(pMO);
-
-        nLastReconKFID = int(mpCurrentKeyFrame->mnId);
+        if(pMO->reconstructed){
+            pMO->AddObjectObservation(mpCurrentKeyFrame, det_i);
+            mpCurrentKeyFrame->AddMapObject(pMO, det_i);
+            mpObjectDrawer->AddObject(pMO);
+            mlpRecentAddedMapObjects.push_back(pMO);
+            nLastReconKFID = int(mpCurrentKeyFrame->mnId);
+        }
     }
 }
+bool LocalMapping::DeepSDFObjectConstruction_PcdCloud(ObjectDetection *det, MapObject *pMO, int det_i){
 
+        pMO->AddDepthPointCloudFromObjectDetection(det->getPcdPtr());
+        auto SE3Twc = Converter::toMatrix4f(mpCurrentKeyFrame->GetPoseInverse());
+        auto SE3Tcw = Converter::toMatrix4f(mpCurrentKeyFrame->GetPose());
+        cv::Mat Rcw = mpCurrentKeyFrame->GetRotation();
+        cv::Mat tcw = mpCurrentKeyFrame->GetTranslation();
+
+        int n_valid_points = 0;  //有效点的数量
+
+        // 获取PCD Cloud
+        std::shared_ptr<PointCloud> mPointsPtr = pMO->GetPointCloud();
+        PointCloud* pPoints = mPointsPtr.get();
+        n_valid_points = pPoints->size();
+
+        // TODO: 此处还是用的ORB feature points， 但似乎也没什么好的解决方法
+        // 记录物体上的关键点的数量  2D feature points inside mask 
+        int n_rays = 0;
+        auto map_points_vector = mpCurrentKeyFrame->GetMapPointMatches();
+        for (auto idx : det->GetFeaturePoints())
+        {
+            auto pMP = map_points_vector[idx];
+            if (!pMP)
+                continue;
+            if (pMP->isBad())
+                continue;
+            if (pMP->object_id != pMO->mnId)
+                continue;
+            if (pMP->isOutlier())
+                continue;
+            n_rays++;
+        }
+
+
+        int n_background_ray = det->background_rays.rows();
+        
+        int min_valid_points = Config::Get<int>("Mapping.MinValidPoints");
+        int min_valid_rays = Config::Get<int>("Mapping.MinValidRays");
+        if (n_valid_points >= min_valid_points && n_rays > min_valid_rays)
+        // if (n_valid_points >= min_valid_points)  //这个判断有必要吗？  因为点云非常稠密
+        {
+            //！获取surface_points_cam
+            Eigen::MatrixXf surface_points_cam = Eigen::MatrixXf::Zero(n_valid_points, 3);
+            int p_i = 0;
+
+            std::shared_ptr<PointCloud> mPointsPtr = pMO->GetPointCloud();
+            PointCloud* pPoints = mPointsPtr.get();
+            
+            // （1）将PCD点云，转换为DSP表面的点
+            for(int i=0; i<pPoints->size(); i=i+1)
+            {
+                PointXYZRGB &p = (*pPoints)[i];
+                cv::Mat x3Dw = (cv::Mat_<float>(3,1) << p.x, p.y, p.z);
+                cv::Mat x3Dc = Rcw * x3Dw + tcw;
+                float xc = x3Dc.at<float>(0);
+                float yc = x3Dc.at<float>(1);
+                float zc = x3Dc.at<float>(2);
+                surface_points_cam(p_i, 0) = xc;
+                surface_points_cam(p_i, 1) = yc;
+                surface_points_cam(p_i, 2) = zc;
+                p_i++;
+            }
+
+
+            // （2）获取ray_pixels和depth_obs
+            Eigen::MatrixXf ray_pixels = Eigen::MatrixXf::Zero(n_rays, 2);
+            Eigen::VectorXf depth_obs = Eigen::VectorXf::Zero(n_rays);
+            int k_i = 0;
+            for (auto point_idx : det->GetFeaturePoints())
+            {
+                auto pMP = map_points_vector[point_idx];
+                if (!pMP)
+                    continue;
+                if(pMP->isBad())
+                    continue;
+                if(pMP->object_id != pMO->mnId)
+                    continue;
+                if (pMP->isOutlier())
+                    continue;
+
+                cv::Mat x3Dw = pMP->GetWorldPos();
+                cv::Mat x3Dc = Rcw * x3Dw + tcw;
+                depth_obs(k_i) = x3Dc.at<float>(2);
+                ray_pixels(k_i, 0) = mpCurrentKeyFrame->mvKeysUn[point_idx].pt.x;
+                ray_pixels(k_i, 1 ) = mpCurrentKeyFrame->mvKeysUn[point_idx].pt.y;
+                k_i++;
+            }
+            // 像素点的归一化的向量 [[x,y,1], ... ]
+            Eigen::MatrixXf u_hom(n_rays, 3);
+            u_hom << ray_pixels, Eigen::MatrixXf::Ones(n_rays, 1);
+            // 转换到相机坐标系的射线向量
+            Eigen::MatrixXf fg_rays(n_rays, 3);
+            Eigen::Matrix3f invK = Converter::toMatrix3f(mpTracker->GetCameraIntrinsics()).inverse();
+            for (int i = 0; i  < n_rays; i++)
+            {
+                auto x = u_hom.row(i).transpose();
+                fg_rays.row(i) = (invK * x).transpose();
+            }
+            Eigen::MatrixXf rays(fg_rays.rows() + det->background_rays.rows(), 3);
+            rays << fg_rays, det->background_rays;
+
+
+
+            /**
+             * 表面点与射线数据准备完毕，下面进行物体重建
+             * 
+            */
+            PyThreadStateLock PyThreadLock;
+
+            auto Sim3Two_pMO = pMO->Sim3Two;
+
+            int class_id = det->label;
+            py::object* optimizer_ptr;
+            if(mmPyOptimizers.count(class_id) > 0) {
+                py::object* optimizer_ptr_local = &(mmPyOptimizers[class_id]);
+                optimizer_ptr = optimizer_ptr_local;
+            }
+            else{
+                cout << " [ProcessDetectedObjects_byPythonReconstruct] class " << class_id << " is not in yolo_classes" << endl;
+                int default_class_id = 60;  //默认物体设置为桌子
+                py::object* optimizer_ptr_local = &(mmPyOptimizers[default_class_id]);
+                optimizer_ptr = optimizer_ptr_local;
+            }
+
+            cout << " [debug] Before reconstruct_object from detection ["<< det_i << "]"<< std::endl;
+
+            auto pyMapObject = optimizer_ptr->attr("reconstruct_object")
+                    (SE3Tcw * pMO->Sim3Two, surface_points_cam, rays, depth_obs, pMO->vShapeCode);
+
+            cout << " [debug] reconstruct_object 1, class id = "<<  class_id << std::endl;
+
+            // If not initialized, duplicate optimization to resolve orientation ambiguity
+            // 翻转物体朝向。这对椭球体来时是非常有必要的
+            if (!pMO->reconstructed)
+            {
+                auto flipped_Two = pMO->Sim3Two;
+                flipped_Two.col(0) *= -1;   // 翻转x方向
+                flipped_Two.col(2) *= -1;   // 翻转z方向
+                // y方向是与地面垂直的，所以不用翻转方向。
+                auto pyMapObjectFlipped = optimizer_ptr->attr("reconstruct_object")
+                        (SE3Tcw * flipped_Two, surface_points_cam, rays, depth_obs, pMO->vShapeCode);
+
+                if (pyMapObject.attr("loss").cast<float>() > pyMapObjectFlipped.attr("loss").cast<float>())
+                    pyMapObject = pyMapObjectFlipped;
+            }
+            cout << " [debug] reconstruct_object 2, class id = "<<  class_id << std::endl;
+            
+            auto Sim3Tco = pyMapObject.attr("t_cam_obj").cast<Eigen::Matrix4f>();
+
+            det->SetPoseMeasurementSim3(Sim3Tco);
+            // // Sim3, SE3, Sim3
+            // // std::cbrt(Sim3Two.topLeftCorner<3, 3>().determinant());
+            // std::cout << "Sim3Two  scale old = " << std::cbrt(pMO->Sim3Two.topLeftCorner<3, 3>().determinant()) << std::endl;
+            Eigen::Matrix4f Sim3Two = SE3Twc * Sim3Tco;
+            // // Sim3Two.topLeftCorner<3, 3>() *= 1.2;
+            // std::cout << "Sim3Two scale new = " << std::cbrt(Sim3Two.topLeftCorner<3, 3>().determinant())  << std::endl;
+            // std::cout << "Sim3Two scale cube = " << sqrt(pMO->w*pMO->w + pMO->h*pMO->h + pMO->l*pMO->l)/2.0 << std::endl;
+
+            int code_len = optimizer_ptr->attr("code_len").cast<int>();
+            Eigen::Matrix<float, 64, 1> code = Eigen::VectorXf::Zero(64);
+            if (code_len == 32)
+            {
+                auto code_32 = pyMapObject.attr("code").cast<Eigen::Matrix<float, 32, 1>>();
+                code.head(32) = code_32;
+            }
+            else
+            {
+                code = pyMapObject.attr("code").cast<Eigen::Matrix<float, 64, 1>>();
+            }
+
+            
+            cout << " [debug] Before extract_mesh_from_code for object labe:"<< class_id << ", labe:"<< class_id << std::endl;
+
+            // 获取mesh提取器
+            py::object* mesh_extracter_ptr;
+            if(mmPyOptimizers.count(class_id) > 0) {
+                cout << " [debug] ProcessDetectedObjects_byPythonReconstruct class " << class_id << " is in yolo_classes" << endl;
+                py::object* mesh_extracter_ptr_local = &(mmPyMeshExtractors[class_id]);
+                mesh_extracter_ptr = mesh_extracter_ptr_local;
+            }
+            else{
+                cerr << " [debug] ProcessDetectedObjects_byPythonReconstruct class " << class_id << " is NOT in yolo_classes" << endl;
+                int default_class_id = 60;  //默认物体设置为桌子
+                py::object* mesh_extracter_ptr_local = &(mmPyMeshExtractors[default_class_id]);
+                mesh_extracter_ptr = mesh_extracter_ptr_local;
+            }
+
+            cout << " [debug] reconstruct_object 3, class id = "<<  class_id << std::endl;
+
+            pMO->UpdateReconstruction(Sim3Two, code);
+            cout << " [debug] reconstruct_object 3-1, class id = "<<  class_id << std::endl;
+            auto pyMesh = mesh_extracter_ptr->attr("extract_mesh_from_code")(code);
+            cout << " [debug] reconstruct_object 3-2, class id = "<<  class_id << std::endl;
+            pMO->vertices = pyMesh.attr("vertices").cast<Eigen::MatrixXf>();
+            cout << " [debug] reconstruct_object 3-3, class id = "<<  class_id << std::endl;
+            pMO->faces = pyMesh.attr("faces").cast<Eigen::MatrixXi>();
+            cout << " [debug] reconstruct_object 3-4, class id = "<<  class_id << std::endl;
+            pMO->reconstructed = true;
+            cout << " [debug] reconstruct_object 3-5, class id = "<<  class_id << std::endl;
+        }
+        cout << " [debug] End DeepSDFObjectConstruction_PcdCloud" << std::endl;
+
+        return true;
+}
 
 bool LocalMapping::DeepSDFObjectConstruction(ObjectDetection *det, MapObject *pMO, int det_i){
         
@@ -855,13 +916,13 @@ bool LocalMapping::DeepSDFObjectConstruction(ObjectDetection *det, MapObject *pM
             pMO->reconstructed = true;
 
 
-            
-            pMO->AddObjectObservation(mpCurrentKeyFrame, det_i);
-            mpCurrentKeyFrame->AddMapObject(pMO, det_i);
-            mpObjectDrawer->AddObject(pMO);
-            mlpRecentAddedMapObjects.push_back(pMO);
+            return true;
+            // pMO->AddObjectObservation(mpCurrentKeyFrame, det_i);
+            // mpCurrentKeyFrame->AddMapObject(pMO, det_i);
+            // mpObjectDrawer->AddObject(pMO);
+            // mlpRecentAddedMapObjects.push_back(pMO);
 
-            nLastReconKFID = int(mpCurrentKeyFrame->mnId);
+            // nLastReconKFID = int(mpCurrentKeyFrame->mnId);
         }
 }
  

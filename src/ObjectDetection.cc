@@ -121,5 +121,7 @@ void ObjectDetection::setPcdPtr(pcl::PointCloud<PointType>::Ptr& pcd_ptr_)
     // std::cout << "Debug: ObjectDetection::setPcdPtr, size = " << pcd_ptr.size() << std::endl;
 }
 
-
+pcl::PointCloud<PointType>::Ptr ObjectDetection::getPcdPtr(){
+    return pcd_ptr;
+}
 }
