@@ -47,6 +47,7 @@ public:
     int Observations();
     std::map<KeyFrame*,size_t> GetObservations();
     void SetObjectPoseSim3(const Eigen::Matrix4f &Two);  //用于localmapping
+    void SetObjectPoseSim3(const Eigen::Matrix4f &Two, double s);
     void SetObjectPoseSE3(const Eigen::Matrix4f &Two);   //用于loopclose
     void SetShapeCode(const Eigen::Matrix<float, 64, 1> &code);
     void UpdateReconstruction(const Eigen::Matrix4f &T, const Eigen::Matrix<float, 64, 1> &vCode);
@@ -167,7 +168,7 @@ private:
 
 public:
 
-    void SetPoseByEllipsoid(g2o::ellipsoid* e);
+    void SetPoseByEllipsoid(g2o::ellipsoid* e, double scale_manual = 1.0);
 
     // 获取椭球体
     g2o::ellipsoid* GetEllipsold();

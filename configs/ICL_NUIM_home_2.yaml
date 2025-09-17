@@ -152,7 +152,7 @@ Mapping.PcdCloudVoxelType: 1  #0 不降采样， 1 均匀， 2 近似
 Mapping.PcdCloudVoxelSize: 0.03
 Mapping.MinValidPoints: 50
 Mapping.MinValidRays: 1
-
+Mapping.ObjectScale: 0.8
 
 # use_object
 useObjectConstruct: 1

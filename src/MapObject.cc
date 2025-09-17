@@ -236,6 +236,29 @@ void MapObject::SetObjectPoseSim3(const Eigen::Matrix4f &Two)
     SE3Tow = SE3Two.inverse();
 }
 
+void MapObject::SetObjectPoseSim3(const Eigen::Matrix4f &Two, double s)
+{
+    unique_lock<mutex> lock(mMutexObject);
+    Sim3Two = Two;
+    Sim3Tow = Sim3Two.inverse();
+
+    // Decompose T into Rotation, translation and scale
+    Rwo = Two.topLeftCorner<3, 3>();
+    // scale is fixed once the object is initialized
+    // 缩放因子
+    scale = s;
+    // 旋转矩阵除以scale，从而将物体缩小到单位球内
+    invScale = 1. / scale;
+    Rwo /= scale;
+    two = Two.topRightCorner<3, 1>();
+
+    // Transformation Matrix in SE3
+    SE3Two = Eigen::Matrix4f::Identity();
+    SE3Two.topLeftCorner<3, 3>() = Rwo;
+    SE3Two.topRightCorner<3, 1>() = two;
+    SE3Tow = SE3Two.inverse();
+}
+
 void MapObject::SetObjectPoseSE3(const Eigen::Matrix4f &Two)
 {
     unique_lock<mutex> lock(mMutexObject);
@@ -302,12 +325,16 @@ void MapObject::RemoveOutliersSimple()
     }
 }
 
+
+// 移除或标记掉在三维空间中偏离模型边界的离群点（Outliers）。
+// 它使用了模型的边界范围（x/y/z 最小最大值）来判断点是否处于合理范围内，如果超出一定比例，则认为是离群点。
 void MapObject::RemoveOutliersModel()
 {
     // sanity check: too few number of vertices
     if (vertices.rows() <= 10)
         return;
 
+    // .col(*).minCoeff();是使用 Eigen 库 中的函数，来求取一个矩阵中某一列的最小值。
     float xmin = vertices.col(0).minCoeff();
     float xmax = vertices.col(0).maxCoeff();
     float ymin = vertices.col(1).minCoeff();
@@ -338,6 +365,7 @@ void MapObject::RemoveOutliersModel()
         {
             // 判断是否为离群点：
             auto x3Dw = Converter::toVector3f(pMP->GetWorldPos());
+            // 把点从世界坐标系转换到物体坐标系下
             auto x3Do = invScale * Rwo.inverse() * x3Dw - invScale * Rwo.inverse() * two;
             if (x3Do(0) > sx * xmax || x3Do(0) < sx * xmin ||
                 x3Do(1) > sy * ymax || x3Do(1) < sy * ymin ||
@@ -992,7 +1020,7 @@ void MapObject::SetEllipsoid(g2o::ellipsoid e){
     }
 }
 
-void MapObject::SetPoseByEllipsoid(g2o::ellipsoid* e)
+void MapObject::SetPoseByEllipsoid(g2o::ellipsoid* e, double scale_manual)
 {
     Eigen::Matrix4f Two;
     {
@@ -1024,18 +1052,19 @@ void MapObject::SetPoseByEllipsoid(g2o::ellipsoid* e)
         * Eigen::AngleAxisf(-M_PI/2, Eigen::Vector3f(0,1,0)).matrix();
     Two.topLeftCorner(3, 3) = Two.topLeftCorner(3, 3) * Ron;
 
-    // cout << "Two from ellipsold = " << Two.matrix() << endl;
+    cout << "[deub] SetPoseByEllipsoid: 椭球体对角线长度：" << s << "0.5倍对角线长度：" << 0.50 * s << endl;
 
-    Two.topLeftCorner(3, 3) = 0.40 * s * Two.topLeftCorner(3, 3);
+    Two.topLeftCorner(3, 3) = 0.50 * s * scale_manual * Two.topLeftCorner(3, 3);
 
 
     w = e->scale(1) * 2;  // x
     h = e->scale(2) * 2;  // y
     l = e->scale(0) * 2;  // z
 
-    // std::cout << "Setting scale = " << e->scale.transpose().matrix() << std::endl;
-    // cout << "in setPoseByEllipsold: Two = \n" << Two.matrix() << endl;
     } //这个括号是为了让上面的lock先释放，万万不可删
+
+    // double s = std::sqrt(w * w + h * h + l * l)/2;
+    // SetObjectPoseSim3(Two, s); // Two
     SetObjectPoseSim3(Two); // Two
 
     SetEllipsoid(*e);

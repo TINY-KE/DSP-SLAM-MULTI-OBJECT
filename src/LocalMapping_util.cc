@@ -409,8 +409,10 @@ void LocalMapping::Create_Multi_NewObjectsFromDetections()  // 用于RGBD模式
         }
         // pNewObj->GetMapPointsWithinBoundingCubeToGround();
         // std::cout<<"[GetMapPointsWithinBoundingCubeToGround] end"<<std::endl;
+        
+        double scale = Config::Get<double>("Mapping.ObjectScale");
 
-        pNewObj->SetPoseByEllipsoid(mvpGlobalEllipsolds[det_i]);
+        pNewObj->SetPoseByEllipsoid(mvpGlobalEllipsolds[det_i], scale);
     }
 }
 
