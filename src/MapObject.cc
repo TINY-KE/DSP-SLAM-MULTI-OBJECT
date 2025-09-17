@@ -1048,11 +1048,7 @@ bool MapObject::hasValidDepthPointCloud()
     return mbValidDepthPointCloudFlag;
 }
 
-std::shared_ptr<PointCloud> MapObject::GetPointCloud()
-{
-    unique_lock<mutex> lock(mMutexPointCloud);
-    return mPcdCloudPoints;
-}
+
 
 void MapObject::AddDepthPointCloudFromObjectDetection(pcl::PointCloud<PointType>::Ptr new_pcd_ptr)
 {
@@ -1062,20 +1058,20 @@ void MapObject::AddDepthPointCloudFromObjectDetection(pcl::PointCloud<PointType>
 
     // std::cout << "mnId = " << mnId << std::endl;
     if (new_pcd_ptr == nullptr) {
-        std::cout << "new_pcd_ptr = nullptr" << std::endl;
+        std::cout << " [debug] AddDepthPointCloudFromObjectDetection: 1 new_pcd_ptr = nullptr" << std::endl;
         return;
     }
     
     if (mpPcdCloudPtr == nullptr) 
     {
-        std::cout << "mpPcdCloudPtr = nullptr" << std::endl;
+        std::cout << " [debug] AddDepthPointCloudFromObjectDetection: 2 mpPcdCloudPtr = nullptr" << std::endl;
         mpPcdCloudPtr = pcl::PointCloud<PointType>::Ptr(new pcl::PointCloud<PointType>);
-        std::cout << "error in 1" << std::endl;
+        // std::cout << "error in 1" << std::endl;
         *mpPcdCloudPtr = *(new_pcd_ptr);
         mbValidDepthPointCloudFlag = true;
     }
     else{
-        std::cout << "Merging .. " << std::endl;
+        std::cout << " [debug] AddDepthPointCloudFromObjectDetection: 3 Merging .. " << std::endl;
         pcl::PointCloud<PointType>::Ptr mergedCloud(new pcl::PointCloud<PointType>);
         pcl::concatenate(*(new_pcd_ptr), *mpPcdCloudPtr, *mergedCloud);
         mpPcdCloudPtr->clear();
@@ -1150,6 +1146,12 @@ g2o::ellipsoid* MapObject::GetEllipsold()
 pcl::PointCloud<PointType>::Ptr MapObject::GetDepthPointCloudPCL()
 {
     return mpPcdCloudPtr;
+}
+
+std::shared_ptr<PointCloud> MapObject::GetPointCloud()
+{
+    unique_lock<mutex> lock(mMutexPointCloud);
+    return mPcdCloudPoints;
 }
 
 }

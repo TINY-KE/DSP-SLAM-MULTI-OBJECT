@@ -61,7 +61,7 @@ void ObjectDrawer::ProcessNewObjects()
     }
 }
 
-void ObjectDrawer::DrawObjects(bool bFollow, const Eigen::Matrix4f &Tec)
+void ObjectDrawer::DrawObjects(bool bFollow, const Eigen::Matrix4f &Tec, bool show_inline_points, double pointSize)
 {
     unique_lock<mutex> lock(mMutexObjects);
 
@@ -85,6 +85,42 @@ void ObjectDrawer::DrawObjects(bool bFollow, const Eigen::Matrix4f &Tec)
             mpRenderer->Render(idx, Tec * SE3TcwFollow * Sim3Two, mvObjectColors[pMO->GetRenderId() % mvObjectColors.size()]);
         }
         // DrawCuboid(pMO);
+
+        if(show_inline_points){
+            pcl::PointCloud<PointType>::Ptr pointLists = pMO->GetDepthPointCloudPCL();
+            if(pointLists==nullptr)
+                continue;
+            // cout << "pointLists.size() = " << pointLists.size() << std::endl;
+
+            glPushMatrix();
+            for(int i=0; i<pointLists->size(); i=i+1)
+            {
+                pcl::PointXYZ &pt = (*pointLists)[i];
+                pcl::PointXYZRGB pt_rgb;
+                pt_rgb.x = pt.x;
+                pt_rgb.y = pt.y;
+                pt_rgb.z = pt.z;
+
+                // 设置颜色（这里设置为红色作为示例）
+                pt_rgb.r = std::get<0>(mvObjectColors[pMO->GetRenderId() % mvObjectColors.size()]);
+                pt_rgb.g = std::get<1>(mvObjectColors[pMO->GetRenderId() % mvObjectColors.size()]);
+                pt_rgb.b = std::get<2>(mvObjectColors[pMO->GetRenderId() % mvObjectColors.size()]);
+
+                glPointSize( pointSize );
+                glBegin(GL_POINTS);
+
+                // std::cout<<"[debug]MapDrawer::drawPointCloudLists: size:"<< pPoints->size() <<" p.x = " << p.x << ", p.y = " << p.y << ", p.z = " << p.z;
+                // std::cout<<" --------------- color = " << p.r << ", " << p.g << ", " << p.b;
+                glColor3d(pt_rgb.r/255.0, pt_rgb.g/255.0, pt_rgb.b/255.0);
+                // std::cout<<"------------end"<<std::endl;
+                glVertex3d(pt_rgb.x, pt_rgb.y, pt_rgb.z);
+                glEnd();
+
+            }
+            glPointSize( pointSize );
+
+            glPopMatrix();
+        }
     }
 }
 

@@ -39,7 +39,7 @@ public:
     void SetRenderer(ObjectRenderer *pRenderer);
     void AddObject(MapObject *pMO);
     void ProcessNewObjects();
-    void DrawObjects(bool bFollow, const Eigen::Matrix4f &Tec);
+    void DrawObjects(bool bFollow, const Eigen::Matrix4f &Tec, bool show_inline_points=false, double pointSize = 2);
     void DrawCuboid(MapObject *pMO);
     void SetCurrentCameraPose(const Eigen::Matrix4f &Tcw);
     std::list<MapObject*> mlNewMapObjects;

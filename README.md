@@ -211,9 +211,14 @@ pybind11::handle::dec_ref() is being called while the GIL is either not held or 
     + TODO:将Sim3Two改为private，并且在dsp生成中改为使用椭球体Sim3Two
         + SetObjectPoseSim3中已经将椭球体位姿赋予了Sim3Two
 
+    + 展示物体内部的点云
+        + 
+        
     + 利用PCDCloud生成的物体，尺度有问题，不满足MHP约束
         + 用refine椭球体替代蓝色椭球体
         + 将椭球体顶点加入约束中。
+        + 为什么椅子和瓶子会是歪的
+
 # 第六阶段 椭球体节点约束
     + 如何实现
 
