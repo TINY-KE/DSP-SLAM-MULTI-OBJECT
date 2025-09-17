@@ -193,24 +193,23 @@ namespace ORB_SLAM2 {
 
 
     // TODO: 更新物体观测
-    void Tracking::UpdateObjectEllipsoidObservation(ORB_SLAM2::Frame *pFrame, KeyFrame* pKF, bool withAssociation) {
+    void Tracking::UpdateObjectEllipsoidObservation(ORB_SLAM2::Frame *pFrame, KeyFrame* pKF) {
         
         // [1] 尝试提取房间的主导曼哈顿平面，并开启Ellipsoid Extractor的物体点云曼哈顿过滤
         ExtractManhattanPlanes(pFrame);
 
         // [2] process single-frame ellipsoid estimation
         // 使用深度图像估计物体椭球体
-        UpdateDepthEllipsoidEstimation(pFrame, pKF, withAssociation);
+        UpdateDepthEllipsoidEstimation(pFrame, pKF);
 
-        // [3] 使用曼哈顿平面（当前只有地面和桌面）优化椭球体  //重要：其实没有用，因为椭球体生成中地面只是提供重力方向。
+
+        // // [3] Extract Relationship
+        // 构建椭球体与曼哈顿平面之间的关联关系
+        TaskRelationship(pFrame);
+
         int type = Config::Get<int>("Debug.EllipsoidExtraction.OpenRelations");
-
         if(type){
-            // // [4] Extract Relationship
-            // 构建椭球体与曼哈顿平面之间的关联关系
-            TaskRelationship(pFrame);
-
-            // [5] Use Relationship To Refine Ellipsoids
+            // [4] Use Relationship To Refine Ellipsoids
             RefineObjectsWithRelations(pFrame, pKF);
             std::cout << "Finish RefineObjectsWithRelations" << std::endl;
         }
@@ -241,7 +240,7 @@ namespace ORB_SLAM2 {
     // Finally, store 3d Ellipsoids into the member variable mpLocalObjects of pFrame.
     // 为当前帧中的每个包围框处理椭球体估计
     // 最后，将3D椭球体存储到每一帧的成员变量mpLocalObjects中
-    void Tracking::UpdateDepthEllipsoidEstimation(ORB_SLAM2::Frame* pFrame, KeyFrame* pKF, bool withAssociation)
+    void Tracking::UpdateDepthEllipsoidEstimation(ORB_SLAM2::Frame* pFrame, KeyFrame* pKF)
     {
         // 1. 初始化部分
         // 获取物体观测、位姿
@@ -358,7 +357,7 @@ namespace ORB_SLAM2 {
                     else{
                         det->setPcdPtr(pcd_ptr_of_frame);
                         ORB_SLAM2::PointCloud* pDeepPointsInObject = pclXYZToQuadricPointCloudPtr(pcd_ptr_of_frame); // normalized coordinate
-                        mpMap->AddPointCloudList("DeepPoints in object", pDeepPointsInObject, 0);
+                        mpMap->AddPointCloudList("ObjectPCDCloud - Newest Detection", pDeepPointsInObject, 0);
                     }
                 }
                 else if(type == 2)
@@ -594,52 +593,43 @@ namespace ORB_SLAM2 {
 
 
 
-    int Tracking::associateDetWithObject(ORB_SLAM2::KeyFrame *pKF, MapObject* pMO, int d_i, ObjectDetection* detKF1, vector<MapPoint*>& mvpMapPoints)
-    {
-        // 设置该帧的某个观测对应的物体
-        pKF->AddMapObject(pMO, d_i);
-        pMO->AddObjectObservation(pKF, d_i);
-        // pMO->AddmessutionsId(d_i);   此函数内自动加上原有的size
+    void Tracking::UpdateAssociatedObjectPoseAndScale(MapObject* pMO){
+        
+        mpEllipsoidExtractor->ClearPointCloudList(); 
 
-        // 设置物体所包含的观测
-        detKF1->isNew = false;
+        pcl::PointCloud<PointType>::Ptr pcd_ptr = pMO->GetDepthPointCloudPCL();
 
-        int associate_object_id = pMO->mnId;
-        // pMO
+        g2o::ellipsoid e_merged = mpEllipsoidExtractor->EstimateEllipsoidFromPCDCloud(pcd_ptr, &mGroundPlane);
 
-        // 将新观测的特征点，添加到物体中
-        int newly_matched_points = 0;
-        for (int k_i : detKF1->GetFeaturePoints()) {
-            auto pMP = mvpMapPoints[k_i];
-            if (pMP && !pMP->isBad())
-            {
-                // new map points
-                if (pMP->object_id < 0)
-                {
-                    pMP->in_any_object = true;
-                    pMP->object_id = associate_object_id;
-                    pMO->AddMapPoints(pMP);
-                    newly_matched_points++;
-                }
-                else
-                {
-                    // if pMP is already associate to a different object, set bad flag
-                    // 一个特征点在不同帧可以在不同物体的mask内
-                    if (pMP->object_id != associate_object_id)
-                        pMP->SetBadFlag();
-                }
-            }
-        }
+        double scale = Config::Get<double>("Mapping.ObjectScale");
+        std::cout << "[debug] UpdateAssociatedObjectPoseAndScale, 融合后的椭球体 scale:"<< e_merged.scale.transpose() << endl;
+        std::cout << "[debug] UpdateAssociatedObjectPoseAndScale, 融合后的椭球体 Pose:"<< e_merged.pose.translation().transpose() << endl;
+        e_merged.prob_3d = pMO->GetEllipsold()->prob_3d;
+        e_merged.prob = pMO->GetEllipsold()->prob;    // measurement_prob * symmetry_prob
+        e_merged.miLabel = pMO->GetEllipsold()->miLabel;
+        e_merged.bbox = pMO->GetEllipsold()->bbox;
+        e_merged.bPointModel = false;
 
-        return newly_matched_points;
-
-        // cout <<  "Matches: " << max_matches << ", New points: " << newly_matched_points << ", Keypoints: " <<
-        //     detKF1->mvKeysIndices.size() << ", Associated to object by projection " << object_id_max_matches
-        //     << endl << endl;
-        /*cout <<  "Matches: " << max_matches << ", New points: " << newly_matched_points << ", Keypoints: " <<
-            detKF1->mvKeysIndices.size() << ", Associated to object by projection " << object_id_max_matches
-            << endl << endl;*/
+        pMO->SetPoseByEllipsoid(&e_merged, scale);
     }
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
+
 
 
 

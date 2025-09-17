@@ -76,6 +76,8 @@ public:
     // API2.1: given a supporting plane(local coordinate)
     g2o::ellipsoid EstimateLocalEllipsoidWithSupportingPlane(cv::Mat& depth, Eigen::Vector4d& bbox, int label, double prob, Eigen::VectorXd &pose, camera_intrinsic& camera, g2o::plane* pSupPlane);
 
+    g2o::ellipsoid EstimateEllipsoidFromPCDCloud(pcl::PointCloud<PointType>::Ptr& pcd_ptr, g2o::plane* ground);
+
     void OpenVisualization(Map* pMap);   // if opened, the pointcloud during the process will be visualized 
     void ClearPointCloudList(); // clear the visualized point cloud 
 

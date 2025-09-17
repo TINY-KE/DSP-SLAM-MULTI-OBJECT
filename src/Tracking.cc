@@ -186,6 +186,7 @@ Tracking::Tracking(System *pSys, ORBVocabulary* pVoc, FrameDrawer *pFrameDrawer,
     mf_associate_IoU_thresold = Config::Get<double>("Tracking.AssociateIoUThresold");
     mf_associate_Dis_thresold = Config::Get<double>("Tracking.AssociateDisThresold");
     mb_associate_debug = Config::Get<int>("Tracking.AssociateDebug");
+    mb_use_depth_pcd_to_reconstruct = Config::Get<int>("Mapping.use_depth_pcd_to_reconstruct") > 0;  
     
     // 曼哈顿平面
     PlaneExtractorParam param; 
@@ -300,7 +301,7 @@ cv::Mat Tracking::GrabImageRGBD(const cv::Mat &imRGB,const cv::Mat &imD, const d
         mb_global_map_input = false;
         LoadPointcloud(Config::Get<string>("Dataset.Path.Map"), "background_world");
     }
-    
+
     return mCurrentFrame.mTcw.clone();
 }
 
@@ -1205,8 +1206,7 @@ void Tracking::CreateNewKeyFrame()
         
         // // ellipsoid-version
         // // 针对关键帧，根据物体检测的结果，提取椭球体
-        bool withAssociation = false;
-        UpdateObjectEllipsoidObservation(&mCurrentFrame, pKF, withAssociation);
+        UpdateObjectEllipsoidObservation(&mCurrentFrame, pKF);
 
 
         // 物体的数据关联，使用深度点云
@@ -1216,7 +1216,9 @@ void Tracking::CreateNewKeyFrame()
             // AssociateObjectsByProjection(pKF);
             AssociateObjectsByDistance(pKF);
         }
+
         
+
         std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();
 
         

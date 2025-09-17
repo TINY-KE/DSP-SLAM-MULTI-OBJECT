@@ -585,4 +585,59 @@ void Tracking::AssociateObjectsByDistance(ORB_SLAM2::KeyFrame *pKF)
 }
 
 
+int Tracking::associateDetWithObject(ORB_SLAM2::KeyFrame *pKF, MapObject* pMO, int d_i, ObjectDetection* detKF1, vector<MapPoint*>& mvpMapPoints)
+{
+    // 设置该帧的某个观测对应的物体
+    pKF->AddMapObject(pMO, d_i);
+    pMO->AddObjectObservation(pKF, d_i);
+    // pMO->AddmessutionsId(d_i);   此函数内自动加上原有的size
+
+    // 设置物体所包含的观测
+    detKF1->isNew = false;
+
+    int associate_object_id = pMO->mnId;
+    // pMO
+
+    // 将新观测的特征点，添加到物体中
+    int newly_matched_points = 0;
+    for (int k_i : detKF1->GetFeaturePoints()) {
+        auto pMP = mvpMapPoints[k_i];
+        if (pMP && !pMP->isBad())
+        {
+            // new map points
+            if (pMP->object_id < 0)
+            {
+                pMP->in_any_object = true;
+                pMP->object_id = associate_object_id;
+                pMO->AddMapPoints(pMP);
+                newly_matched_points++;
+            }
+            else
+            {
+                // if pMP is already associate to a different object, set bad flag
+                // 一个特征点在不同帧可以在不同物体的mask内
+                if (pMP->object_id != associate_object_id)
+                    pMP->SetBadFlag();
+            }
+        }
+    }
+
+    if(mb_use_depth_pcd_to_reconstruct){
+        // 融合PCD点云
+        pMO->AddDepthPointCloudFromObjectDetection(detKF1->getPcdPtr());
+        // 更新数据关联后的物体的位姿形状
+        UpdateAssociatedObjectPoseAndScale(pMO);
+    }
+    
+    return newly_matched_points;
+
+    // cout <<  "Matches: " << max_matches << ", New points: " << newly_matched_points << ", Keypoints: " <<
+    //     detKF1->mvKeysIndices.size() << ", Associated to object by projection " << object_id_max_matches
+    //     << endl << endl;
+    /*cout <<  "Matches: " << max_matches << ", New points: " << newly_matched_points << ", Keypoints: " <<
+        detKF1->mvKeysIndices.size() << ", Associated to object by projection " << object_id_max_matches
+        << endl << endl;*/
+}
+
+
 }

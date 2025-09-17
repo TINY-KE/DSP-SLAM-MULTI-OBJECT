@@ -119,7 +119,7 @@ add_library(${PROJECT_NAME} SHARED
         src/System.cc
         src/System_util.cc
         src/Tracking.cc
-        src/Tracking_util.cc
+        src/Tracking_associate.cc
         src/Tracking_ellipsoid.cc
         src/LocalMapping.cc
         src/LocalMapping_util.cc

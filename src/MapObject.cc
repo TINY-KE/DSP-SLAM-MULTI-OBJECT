@@ -1024,7 +1024,7 @@ void MapObject::SetPoseByEllipsoid(g2o::ellipsoid* e, double scale_manual)
 {
     Eigen::Matrix4f Two;
     {
-    if(mpEllipsold != NULL) {
+    if(mpEllipsold == NULL) {
         {
             // 这里遇到了一个死锁的问题
             unique_lock<mutex> lock(mMutexObject);

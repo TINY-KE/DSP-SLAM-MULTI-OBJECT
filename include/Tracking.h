@@ -113,9 +113,12 @@ public:
     cv::Mat GetCameraIntrinsics();
     void GetObjectDetectionsMono(KeyFrame *pKF);
     void GetObjectDetectionsRGBD(KeyFrame *pKF);
+
+private:
     void AssociateObjectsByProjection(KeyFrame *pKF);  // assocating detection to object by projecting map points
     void AssociateObjectsByDistance(ORB_SLAM2::KeyFrame *pKF);
-
+    void UpdateAssociatedObjectPoseAndScale(MapObject* pMO);
+    bool mb_use_depth_pcd_to_reconstruct;
 
 public:
 
@@ -289,13 +292,14 @@ public:
 
 
     // 用于生成椭球体模型
-private:
+public:
     EllipsoidExtractor* mpEllipsoidExtractor;  //椭球体提取器
+private:
     RelationExtractor* mpRelationExtractor;   //空间关系提取器
     PlaneExtractorManhattan* pPlaneExtractorManhattan; // Manhattan平面（目前只有水平面，例如地面、桌面）提取器
-    void UpdateObjectEllipsoidObservation(ORB_SLAM2::Frame *pFrame, KeyFrame* pKF, bool withAssociation);
+    void UpdateObjectEllipsoidObservation(ORB_SLAM2::Frame *pFrame, KeyFrame* pKF);
     void ExtractManhattanPlanes(ORB_SLAM2::Frame *pFrame);
-    void UpdateDepthEllipsoidEstimation(ORB_SLAM2::Frame* pFrame, KeyFrame* pKF, bool withAssociation);
+    void UpdateDepthEllipsoidEstimation(ORB_SLAM2::Frame* pFrame, KeyFrame* pKF);
     void TaskRelationship(ORB_SLAM2::Frame* pFrame);
     void RefineObjectsWithRelations(ORB_SLAM2::Frame *pFrame, KeyFrame* pKF);
     // bool calibrateMeasurement(Eigen::Vector4d &measure , int rows, int cols, int config_boarder = 10, int config_size = 100); 

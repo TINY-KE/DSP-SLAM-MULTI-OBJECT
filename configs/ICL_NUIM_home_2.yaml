@@ -124,7 +124,7 @@ EllipsoidExtractor.RefineEllipsoid.Border.y2.Pixels: 0
 EllipsoidExtractor_DEPTH_RANGE: 7
 
 Debug.EllipsoidExtraction.UsingMultiPlanes: 1 # 最终发现，两者没区别  # 1：使用多平面函数，2：使用支撑平面（输入的平面的local plane） 
-Debug.EllipsoidExtraction.OpenRelations: 1
+Debug.EllipsoidExtraction.OpenRelations: 0
 
 
 # 地平面提取参数： Ground Plane Extraction
@@ -152,7 +152,7 @@ Mapping.PcdCloudVoxelType: 1  #0 不降采样， 1 均匀， 2 近似
 Mapping.PcdCloudVoxelSize: 0.03
 Mapping.MinValidPoints: 50
 Mapping.MinValidRays: 1
-Mapping.ObjectScale: 0.8
+Mapping.ObjectScale: 1.1
 
 # use_object
 useObjectConstruct: 1
