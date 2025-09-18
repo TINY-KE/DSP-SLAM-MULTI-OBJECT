@@ -19,17 +19,9 @@ namespace ORB_SLAM2
     }
 
 
-    Relations RelationExtractor::ExtractRelations(std::vector<g2o::ellipsoid *> &vpEllips, std::vector<g2o::plane *> &vpPlanes, Frame* pFrame, std::vector<pcl::PointCloud<pcl::PointXYZRGB>>& vpPlanesPoints)
+    Relations RelationExtractor::ExtractRelations(std::vector<g2o::ellipsoid *> &vpEllips, std::vector<g2o::plane *> &vpPlanes, KeyFrame* pKF, std::vector<pcl::PointCloud<pcl::PointXYZRGB>>& vpPlanesPoints)
     {
-        int object_label = 57;  // 假设标签值
-        bool is_on_ground = false;
-        std::vector<int> Objects_on_ground_Labels = {56, 57, 13, 58, 59, 60, 72};
-        if (std::find(Objects_on_ground_Labels.begin(), Objects_on_ground_Labels.end(), object_label) != Objects_on_ground_Labels.end()) {
-            is_on_ground = true;
-        } else {
-            is_on_ground = false;
-        }
-        
+        auto mvpKeyframeGlobalEllipsolds = pKF->GetEllipsoldsGlobal();
         Relations relations_return;
         int obj_num = vpEllips.size();
         std::cout<< "[debug] RelationExtractor::ExtractRelations, obj_num: " << obj_num << ", plane_num: " << vpPlanes.size() << std::endl;
@@ -40,6 +32,18 @@ namespace ORB_SLAM2
                 // std::cout << "[Relation] NULL ellipsoid." << std::endl;
                 continue;
             }
+
+            // std::cout<<"debug: vpEllips[obj_id]->miLabel: ";
+            // std::cout<< vpEllips[obj_id]->miLabel <<std::endl;
+            int object_label = vpEllips[obj_id]->miLabel;  // 假设标签值
+            bool is_on_ground = false;
+            std::vector<int> Objects_on_ground_Labels = {56, 57/* 椅子，沙发 */ ,13 /* 板凳 */, 58 /* 盆栽植物 */, 59 /* 床 */, 60 /* 餐桌 */, 72 /* 冰箱 */};
+            if (std::find(Objects_on_ground_Labels.begin(), Objects_on_ground_Labels.end(), object_label) != Objects_on_ground_Labels.end()) {
+                is_on_ground = true;
+            } else {
+                is_on_ground = false;
+            }
+
             std::cout<< "[debug] RelationExtractor::ExtractRelations, obj_id: " << obj_id << std::endl;
             if(pEllip->mbBackingPlaneDefined || pEllip->mbSupportingPlaneDefined ) {
                 std::cerr << "[Error]: 已提前有MHP! "<< pEllip->mbSupportingPlaneDefined << ", "<< pEllip->mbBackingPlaneDefined << std::endl;
@@ -103,7 +107,7 @@ namespace ORB_SLAM2
 
                     if(is_on_ground){
                         g2o::plane* pPlaneGlobal = new g2o::plane(*pPlane);
-                        pPlaneGlobal->transform(pFrame->cam_pose_Twc);
+                        pPlaneGlobal->transform(pKF->cam_pose_Twc);
                         double height = -1 * pPlaneGlobal->param[3] / pPlaneGlobal->param[2];
                         if(height<0.1) {
                             supprortingPlaneDisVec.push_back(make_pair(min_xyz_distance, pPlane));
@@ -138,13 +142,23 @@ namespace ORB_SLAM2
                     rl.type = RELATION_TYPE::SUPPORTING;
                     rl.pPlane = pSupportingPlane_best;
                     rl.pEllipsoid = pEllip;
-                    rl.pFrame = pFrame;
+                    // rl.pFrame = pFrame;
                     relations_return.push_back(rl);
                     
+                    // 存入到frame中的local椭球体中
                     g2o::ConstrainPlane* mhp = new g2o::ConstrainPlane(pSupportingPlane_best);
                     mhp->type = CONSTRAINPLANE_STATE::SUPPORTING; 
                     pEllip->mpSupportingPlane = mhp;
                     pEllip->mbSupportingPlaneDefined = true;
+
+                    // 存入到KeyFrame的global椭球体中
+                    g2o::plane* p_global = new g2o::plane(*pSupportingPlane_best);
+                    p_global->transform(pKF->cam_pose_Twc);
+                    g2o::ConstrainPlane* mhp_global = new g2o::ConstrainPlane(p_global);
+                    mhp_global->type = CONSTRAINPLANE_STATE::SUPPORTING; 
+                    std::cout<<"[deubg] pSupportingPlane_best:"<< p_global->param.transpose() << std::endl;
+                    mvpKeyframeGlobalEllipsolds[obj_id]->mpSupportingPlane = mhp_global;
+                    mvpKeyframeGlobalEllipsolds[obj_id]->mbSupportingPlaneDefined = true;
                 }
             }
             
@@ -217,14 +231,23 @@ namespace ORB_SLAM2
                     rl.type = RELATION_TYPE::BACKING;
                     rl.pPlane = pBackingPlane_best;
                     rl.pEllipsoid = pEllip;
-                    rl.pFrame = pFrame;
+                    // rl.pFrame = pFrame;
                     relations_return.push_back(rl);
                     // pEllip->mRelations.push_back(rl);
 
+                    // 存入到frame中的local椭球体中
                     g2o::ConstrainPlane* mhp = new g2o::ConstrainPlane(pBackingPlane_best);
                     mhp->type = CONSTRAINPLANE_STATE::BACKING; 
                     pEllip->mpBackingPlane = mhp;
                     pEllip->mbBackingPlaneDefined = true;
+
+                    // 存入到KeyFrame的global椭球体中
+                    g2o::plane* p_global = new g2o::plane(*pBackingPlane_best);
+                    p_global->transform(pKF->cam_pose_Twc);
+                    g2o::ConstrainPlane* mhp_global = new g2o::ConstrainPlane(p_global);
+                    mhp_global->type = CONSTRAINPLANE_STATE::BACKING; 
+                    mvpKeyframeGlobalEllipsolds[obj_id]->mpBackingPlane = mhp_global;
+                    mvpKeyframeGlobalEllipsolds[obj_id]->mbBackingPlaneDefined = true;
                 }
             }
             

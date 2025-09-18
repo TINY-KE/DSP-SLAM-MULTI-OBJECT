@@ -215,19 +215,21 @@ pybind11::handle::dec_ref() is being called while the GIL is either not held or 
         + 已解决
 
     + 利用PCDCloud生成的物体，尺度有问题，不满足MHP约束
-        + 应该是执行了，为什么不能加入到global map中
-            + 第1把椅子为什么生成不了
-
+        + 关键帧中的椭球体不含有MH平面
+            + 
+        + 第1把椅子为什么生成不了
+            + 
         + 当前问题是物体还会有歪的,在多帧融合后重新估计椭球体位姿
-        + 用refine椭球体替代蓝色椭球体
         + 为什么椅子和瓶子会是歪的，
             + 预估解决方法：关闭dsp重建后，对物体位姿的修改
+
+
 
     + 将椭球体顶点加入约束中。
 
     + 去掉ellipsoid class中的label等
     + 去掉对花瓶的识别
-    
+
 # 第六阶段 椭球体节点约束
     + 如何实现
 

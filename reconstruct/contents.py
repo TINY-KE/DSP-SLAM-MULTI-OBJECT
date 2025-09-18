@@ -46,8 +46,9 @@ object_classes_redwood = ["bench", "chair"]
 
 object_classes_freiburg = ["car"]
 
-object_classes_icl_nuim = ["bench", "chair", "bed", "dining table", "refrigerator", \
-                           "vase", "cup", "bowl", "monitor"]
+# object_classes_icl_nuim = ["bench", "chair", "bed", "dining table", "refrigerator", \
+#                            "vase", "cup", "bowl", "monitor"]
+object_classes_icl_nuim = ["bench", "chair", "bed", "dining table", "refrigerator", "monitor"]
 
 # object_classes_on_ground = ["bench", "chair", "potted plant", "bed", "dining table", "refrigerator"]
 object_classes_on_ground = ["bench", "chair", "potted plant", "bed", "refrigerator"]

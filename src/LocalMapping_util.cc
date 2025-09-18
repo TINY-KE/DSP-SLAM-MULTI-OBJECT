@@ -198,13 +198,13 @@ void LocalMapping::Process_Multi_DetectedObjects_byPythonReconstruct()
 
         // 把深度点云加到地图物体中
         bool success_contruct = false;
-        if (mb_use_depth_pcd_to_reconstruct) {
+        if (mb_use_depth_pcd_to_reconstruct==1) {
             if ( mvpGlobalEllipsolds[det_i] != NULL ) {
                 std::cout<<"[debug] 开启基于PCD点云的DeepSDF建模"<<std::endl;
                 success_contruct = DeepSDFObjectConstruction_PcdCloud(det, pMO, det_i);
             }
         }
-        else{ 
+        else if(mb_use_depth_pcd_to_reconstruct==0) { 
             if ( mvpGlobalEllipsolds[det_i] != NULL ) {
                 std::cout<<"[debug] 开启基于ORB点云的DeepSDF建模"<<std::endl;
                 success_contruct = DeepSDFObjectConstruction(det, pMO, det_i);

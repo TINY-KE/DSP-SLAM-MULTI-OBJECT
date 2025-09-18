@@ -16,7 +16,8 @@ enum MANHATTAN_PLANE_TYPE
     HORIZONTAL = 1,
     VERTICAL = 2,
     GROUND = 3,
-    BBOX = 4
+    BBOX = 4,
+    MERGE_REFINE = 5
 };
 
 class plane {

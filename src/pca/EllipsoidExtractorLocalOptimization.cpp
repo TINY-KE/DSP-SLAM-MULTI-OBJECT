@@ -318,6 +318,192 @@ g2o::ellipsoid EllipsoidExtractor::OptimizeEllipsoidWithBboxPlanesAndMHPlanes(co
     return vEllipsoid->estimate();
 }
 
+g2o::ellipsoid EllipsoidExtractor::OptimizeEllipsoidWithMHPlanes(const g2o::ellipsoid &init_guess, 
+                                                                                g2o::plane &SupprotingPlane, double Supproting_Weight,
+                                                                                g2o::plane &BackingPlane, double Backing_Weight)
+{
+    // 基本参数的读取
+    double config_plane_angle_sigma = Config::Get<double>("EllipsoidExtractor.Optimizer.PlaneNormalAngle");
+    bool bUseGroundPlaneWeight = true;  // 请将地平面放在平面约束的第一个！
 
+    // initialize graph optimization.
+    g2o::SparseOptimizer graph;
+    g2o::BlockSolverX::LinearSolverType *linearSolver;
+    linearSolver = new g2o::LinearSolverDense<g2o::BlockSolverX::PoseMatrixType>();
+    g2o::BlockSolverX *solver_ptr = new g2o::BlockSolverX(linearSolver);
+    g2o::OptimizationAlgorithmLevenberg *solver = new g2o::OptimizationAlgorithmLevenberg(solver_ptr);
+    graph.setAlgorithm(solver);
+    graph.setVerbose(false); // Set output.
+
+    // 添加椭球体节点
+    // Add objects vertices
+    g2o::VertexEllipsoidXYZABCYaw *vEllipsoid;
+    // 注意单目版本和非单目版本区别
+    // if(bMonocularVersion)
+    //     vEllipsoid = new g2o::VertexEllipsoidXYABHeightYaw();
+    // else 
+    //     vEllipsoid = new g2o::VertexEllipsoidXYZABCYaw();
+    vEllipsoid = new g2o::VertexEllipsoidXYZABCYaw();
+    vEllipsoid->setEstimate(init_guess);
+    vEllipsoid->setId(graph.vertices().size());
+    vEllipsoid->setFixed(false);
+    graph.addVertex(vEllipsoid);
+
+    // 添加相机位姿节点（直接设置为Identity，且不参与优化）
+    // 这里的平面与椭球体已经位于同一个坐标系，所以创建一个单位变换作为SE3
+    g2o::VertexSE3Expmap *vSE3 = new g2o::VertexSE3Expmap();
+    vSE3->setId(graph.vertices().size());
+    vSE3->setEstimate(g2o::SE3Quat()); // Identity
+    vSE3->setFixed(true);
+    graph.addVertex(vSE3);
+
+
+    // 等会儿，是否对朝向做估计？ 要不只估计 x,y,z,a,b,c
+
+
+    
+
+
+
+    // 2) 支撑面 normal 边 ( 约束其朝向 ). 
+    int flag_valid_angle = 1;  // 关闭边约束的朝向!
+
+    g2o::EdgeSE3EllipsoidPlaneWithNormal* pEdge_sup = new g2o::EdgeSE3EllipsoidPlaneWithNormal;
+    pEdge_sup->setId(graph.edges().size());
+    pEdge_sup->setVertex(0, dynamic_cast<g2o::OptimizableGraph::Vertex *>( vSE3 ));
+    pEdge_sup->setVertex(1, dynamic_cast<g2o::OptimizableGraph::Vertex *>( vEllipsoid ));
+    pEdge_sup->setMeasurement(SupprotingPlane.param);
+
+    Matrix<double,2,1> inv_sigma;
+    inv_sigma << 1, 1/(config_plane_angle_sigma * 1 / 180.0 * M_PI) * flag_valid_angle;   // 距离, 角度标准差 ; 暂时不管
+
+    inv_sigma = inv_sigma * Supproting_Weight;
+    MatrixXd info = inv_sigma.cwiseProduct(inv_sigma).asDiagonal();
+    pEdge_sup->setInformation(info);
+    pEdge_sup->setRobustKernel( new g2o::RobustKernelHuber() );
+
+    graph.addEdge(pEdge_sup);
+
+
+
+
+    // 3) 倚靠面 normal 边 ( 约束其朝向 ). 
+    int flag_valid_angle_back = 1;  // 关闭边约束的朝向!
+
+    g2o::EdgeSE3EllipsoidPlaneWithNormal* pEdge_back = new g2o::EdgeSE3EllipsoidPlaneWithNormal;
+    pEdge_back->setId(graph.edges().size());
+    pEdge_back->setVertex(0, dynamic_cast<g2o::OptimizableGraph::Vertex *>( vSE3 ));
+    pEdge_back->setVertex(1, dynamic_cast<g2o::OptimizableGraph::Vertex *>( vEllipsoid ));
+    pEdge_back->setMeasurement(BackingPlane.param);
+
+    Matrix<double,2,1> inv_sigma_back;
+    inv_sigma_back << 1, 1/(config_plane_angle_sigma * 1 / 180.0 * M_PI) * flag_valid_angle_back;   // 距离, 角度标准差 ; 暂时不管
+
+    inv_sigma_back = inv_sigma_back * Backing_Weight;
+    MatrixXd info_back = inv_sigma_back.cwiseProduct(inv_sigma_back).asDiagonal();
+    pEdge_back->setInformation(info_back);
+    pEdge_back->setRobustKernel( new g2o::RobustKernelHuber() );
+
+    graph.addEdge(pEdge_back);
+
+
+
+
+    
+    // 开始优化
+    int num_opt = 10;
+    // std::cout << "Begin Optimization of ellipsoid with prior... x " << num_opt << std::endl;
+    graph.initializeOptimization();
+    graph.optimize( num_opt );  //optimization step
+    // std::cout << "Optimization done." << std::endl;
+
+    // // 保存最终 cost 
+    // mdCost = graph.chi2();
+
+    return vEllipsoid->estimate();
+}
+
+g2o::ellipsoid EllipsoidExtractor::OptimizeEllipsoidWithSupportingPlanes(const g2o::ellipsoid &init_guess, 
+                                                                                g2o::plane &SupprotingPlane, double Supproting_Weight)
+{
+    // 基本参数的读取
+    double config_plane_angle_sigma = Config::Get<double>("EllipsoidExtractor.Optimizer.PlaneNormalAngle");
+    bool bUseGroundPlaneWeight = true;  // 请将地平面放在平面约束的第一个！
+
+    // initialize graph optimization.
+    g2o::SparseOptimizer graph;
+    g2o::BlockSolverX::LinearSolverType *linearSolver;
+    linearSolver = new g2o::LinearSolverDense<g2o::BlockSolverX::PoseMatrixType>();
+    g2o::BlockSolverX *solver_ptr = new g2o::BlockSolverX(linearSolver);
+    g2o::OptimizationAlgorithmLevenberg *solver = new g2o::OptimizationAlgorithmLevenberg(solver_ptr);
+    graph.setAlgorithm(solver);
+    graph.setVerbose(false); // Set output.
+
+    // 添加椭球体节点
+    // Add objects vertices
+    g2o::VertexEllipsoidXYZABCYaw *vEllipsoid;
+    // 注意单目版本和非单目版本区别
+    // if(bMonocularVersion)
+    //     vEllipsoid = new g2o::VertexEllipsoidXYABHeightYaw();
+    // else 
+    //     vEllipsoid = new g2o::VertexEllipsoidXYZABCYaw();
+    vEllipsoid = new g2o::VertexEllipsoidXYZABCYaw();
+    vEllipsoid->setEstimate(init_guess);
+    vEllipsoid->setId(graph.vertices().size());
+    vEllipsoid->setFixed(false);
+    graph.addVertex(vEllipsoid);
+
+    // 添加相机位姿节点（直接设置为Identity，且不参与优化）
+    // 这里的平面与椭球体已经位于同一个坐标系，所以创建一个单位变换作为SE3
+    g2o::VertexSE3Expmap *vSE3 = new g2o::VertexSE3Expmap();
+    vSE3->setId(graph.vertices().size());
+    vSE3->setEstimate(g2o::SE3Quat()); // Identity
+    vSE3->setFixed(true);
+    graph.addVertex(vSE3);
+
+
+    // 等会儿，是否对朝向做估计？ 要不只估计 x,y,z,a,b,c
+
+
+    
+
+
+
+    // 2) 支撑面 normal 边 ( 约束其朝向 ). 
+    int flag_valid_angle = 1;  // 关闭边约束的朝向!
+
+    g2o::EdgeSE3EllipsoidPlaneWithNormal* pEdge_sup = new g2o::EdgeSE3EllipsoidPlaneWithNormal;
+    pEdge_sup->setId(graph.edges().size());
+    pEdge_sup->setVertex(0, dynamic_cast<g2o::OptimizableGraph::Vertex *>( vSE3 ));
+    pEdge_sup->setVertex(1, dynamic_cast<g2o::OptimizableGraph::Vertex *>( vEllipsoid ));
+    pEdge_sup->setMeasurement(SupprotingPlane.param);
+
+    Matrix<double,2,1> inv_sigma;
+    inv_sigma << 1, 1/(config_plane_angle_sigma * 1 / 180.0 * M_PI) * flag_valid_angle;   // 距离, 角度标准差 ; 暂时不管
+
+    inv_sigma = inv_sigma * Supproting_Weight;
+    MatrixXd info = inv_sigma.cwiseProduct(inv_sigma).asDiagonal();
+    pEdge_sup->setInformation(info);
+    pEdge_sup->setRobustKernel( new g2o::RobustKernelHuber() );
+
+    graph.addEdge(pEdge_sup);
+
+
+
+
+
+    
+    // 开始优化
+    int num_opt = 10;
+    // std::cout << "Begin Optimization of ellipsoid with prior... x " << num_opt << std::endl;
+    graph.initializeOptimization();
+    graph.optimize( num_opt );  //optimization step
+    // std::cout << "Optimization done." << std::endl;
+
+    // // 保存最终 cost 
+    // mdCost = graph.chi2();
+
+    return vEllipsoid->estimate();
+}
 
 }

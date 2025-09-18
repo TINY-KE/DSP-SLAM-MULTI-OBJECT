@@ -269,6 +269,10 @@ public :
     void AddEllipsoldsGlobal(g2o::ellipsoid* e);
     void ReplaceEllipsoldsGlobal(int obj_id, g2o::ellipsoid* e_global);
     std::vector<g2o::ellipsoid*> GetEllipsoldsGlobal();
+
+    g2o::SE3Quat cam_pose_Tcw;	     // optimized pose  world to cam
+    g2o::SE3Quat cam_pose_Twc;	     // optimized pose  cam to world
+    
 };
 
 } //namespace ORB_SLAM

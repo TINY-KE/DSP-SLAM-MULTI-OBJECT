@@ -37,6 +37,7 @@ namespace ORB_SLAM2
     // 该类在局部坐标系下计算, 匹配局部物体与局部平面之间的潜在约束关系。
     // 提取结果保存为  obj_id -> plane_id 的映射. 以及结构体.
     class Frame;
+    class KeyFrame;
     class Relation
     {
 
@@ -61,7 +62,7 @@ namespace ORB_SLAM2
     class RelationExtractor
     {
     public:
-        Relations ExtractRelations(std::vector<g2o::ellipsoid *> &vpEllips, std::vector<g2o::plane *> &vpPlanes, Frame* pFrame, std::vector<pcl::PointCloud<pcl::PointXYZRGB>>& vpPlanesPoints);
+        Relations ExtractRelations(std::vector<g2o::ellipsoid *> &vpEllips, std::vector<g2o::plane *> &vpPlanes, KeyFrame* pKF, std::vector<pcl::PointCloud<pcl::PointXYZRGB>>& vpPlanesPoints);
 
         Relations ExtractSupporttingRelations(std::vector<g2o::ellipsoid *> &vpEllips, std::vector<g2o::plane *> &vpPlanes, Frame* pFrame, int model = 1);
 

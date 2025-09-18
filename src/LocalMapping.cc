@@ -50,7 +50,7 @@ LocalMapping::LocalMapping(System *pSys, Map *pMap, ObjectDrawer* pObjectDrawer,
     mnNumKFsPassedSinceLastRecon_thresh = pSys->mnNumKFsPassedSinceLastRecon_thresh;
     mnNumKFsPassedSinceInit_thresh = pSys->mnNumKFsPassedSinceInit_thresh;
 
-    mb_use_depth_pcd_to_reconstruct = Config::Get<int>("Mapping.use_depth_pcd_to_reconstruct") > 0;  
+    mb_use_depth_pcd_to_reconstruct = Config::Get<int>("Mapping.use_depth_pcd_to_reconstruct");  
 
     // 多物体dsp模型导入
     auto& pyDecoders = pSys->mmPyDecoders;

@@ -300,7 +300,7 @@ private:
     void UpdateObjectEllipsoidObservation(ORB_SLAM2::Frame *pFrame, KeyFrame* pKF);
     void ExtractManhattanPlanes(ORB_SLAM2::Frame *pFrame);
     void UpdateDepthEllipsoidEstimation(ORB_SLAM2::Frame* pFrame, KeyFrame* pKF);
-    void TaskRelationship(ORB_SLAM2::Frame* pFrame);
+    void TaskRelationship(ORB_SLAM2::Frame* pFrame, KeyFrame* pKF);
     void RefineObjectsWithRelations(ORB_SLAM2::Frame *pFrame, KeyFrame* pKF);
     // bool calibrateMeasurement(Eigen::Vector4d &measure , int rows, int cols, int config_boarder = 10, int config_size = 100); 
     

@@ -86,6 +86,10 @@ void KeyFrame::SetPose(const cv::Mat &Tcw_)
     Ow.copyTo(Twc.rowRange(0,3).col(3));
     cv::Mat center = (cv::Mat_<float>(4,1) << mHalfBaseline, 0 , 0, 1);
     Cw = Twc*center;
+
+    // ellipsoid-version
+    cam_pose_Twc = Converter::toSE3Quat(Twc);
+    cam_pose_Tcw = Converter::toSE3Quat(Tcw);
 }
 
 cv::Mat KeyFrame::GetPose()

@@ -169,7 +169,7 @@ private:
     bool DeepSDFObjectConstruction(ObjectDetection *det, MapObject *pMO, int det_i);
     bool DeepSDFObjectConstruction_PcdCloud(ObjectDetection *det, MapObject *pMO, int det_i);
     
-    bool mb_use_depth_pcd_to_reconstruct;
+    int mb_use_depth_pcd_to_reconstruct;
 
 public:
     void InitSet();

@@ -205,7 +205,7 @@ namespace ORB_SLAM2 {
 
         // // [3] Extract Relationship
         // 构建椭球体与曼哈顿平面之间的关联关系
-        TaskRelationship(pFrame);
+        TaskRelationship(pFrame, pKF);
 
         int type = Config::Get<int>("Debug.EllipsoidExtraction.OpenRelations");
         if(type){
@@ -459,7 +459,7 @@ namespace ORB_SLAM2 {
     }
 
     // 构建椭球体与曼哈顿平面之间的关联关系
-    void Tracking::TaskRelationship(ORB_SLAM2::Frame *pFrame)
+    void Tracking::TaskRelationship(ORB_SLAM2::Frame *pFrame, KeyFrame* pKF)
     {
         std::vector<g2o::ellipsoid*>& vpEllipsoids = pFrame->mpLocalObjects;
 
@@ -469,8 +469,8 @@ namespace ORB_SLAM2 {
 
         // 检查曼哈顿平面与椭球体的关系
         // Relations rls = mpRelationExtractor->ExtractSupporttingRelations(vpEllipsoids, vpPlanes, pFrame, QUADRIC_MODEL);
-        Relations rls = mpRelationExtractor->ExtractRelations(vpEllipsoids, vpPlanes, pFrame, vPlanePoints);
-
+        Relations rls = mpRelationExtractor->ExtractRelations(vpEllipsoids, vpPlanes, pKF, vPlanePoints);
+        
         // ****************************
         //          可视化部分
         // ****************************
@@ -602,15 +602,143 @@ namespace ORB_SLAM2 {
         g2o::ellipsoid e_merged = mpEllipsoidExtractor->EstimateEllipsoidFromPCDCloud(pcd_ptr, &mGroundPlane);
 
         double scale = Config::Get<double>("Mapping.ObjectScale");
-        std::cout << "[debug] UpdateAssociatedObjectPoseAndScale, 融合后的椭球体 scale:"<< e_merged.scale.transpose() << endl;
-        std::cout << "[debug] UpdateAssociatedObjectPoseAndScale, 融合后的椭球体 Pose:"<< e_merged.pose.translation().transpose() << endl;
+        // std::cout << "[debug] UpdateAssociatedObjectPoseAndScale, 融合后的椭球体 scale:"<< e_merged.scale.transpose() << endl;
+        // std::cout << "[debug] UpdateAssociatedObjectPoseAndScale, 融合后的椭球体 Pose:"<< e_merged.pose.translation().transpose() << endl;
         e_merged.prob_3d = pMO->GetEllipsold()->prob_3d;
         e_merged.prob = pMO->GetEllipsold()->prob;    // measurement_prob * symmetry_prob
         e_merged.miLabel = pMO->GetEllipsold()->miLabel;
         e_merged.bbox = pMO->GetEllipsold()->bbox;
         e_merged.bPointModel = false;
 
-        pMO->SetPoseByEllipsoid(&e_merged, scale);
+        // // 通过曼哈顿平面优化
+        // const map<KeyFrame*,size_t> observations = pMO->GetObservations();
+        // for(map<KeyFrame*,size_t>::const_iterator it=observations.begin(), itend=observations.end(); it!=itend; it++){
+        //     // 关键帧中所有的椭球体
+        //     auto mvpGlobalEllipsolds = it->first->GetEllipsoldsGlobal();
+            
+        //     // 对应的椭球体
+        //     g2o::ellipsoid* e = mvpGlobalEllipsolds[it->second];
+
+        //     // 融合所有的MHP
+        // }
+
+        // int object_label = pMO->label; 
+        // bool is_on_ground = false;
+        // std::vector<int> Objects_on_ground_Labels = {56, 57/* 椅子，沙发 */ ,13 /* 板凳 */, 58 /* 盆栽植物 */, 59 /* 床 */, 60 /* 餐桌 */, 72 /* 冰箱 */};
+        // if (std::find(Objects_on_ground_Labels.begin(), Objects_on_ground_Labels.end(), object_label) != Objects_on_ground_Labels.end()) {
+        //     is_on_ground = true;
+        // } else {
+        //     is_on_ground = false;
+        // }
+        
+        // 通过曼哈顿平面优化
+        const map<KeyFrame*,size_t> observations = pMO->GetObservations();
+        bool bSupportingPlaneDefined = false;
+        ConstrainPlane* pSupportingPlane;
+        bool bBackingPlaneDefined = false;
+        ConstrainPlane* pBackingPlane;
+        int num = 0;
+        for(map<KeyFrame*,size_t>::const_iterator it=observations.begin(), itend=observations.end(); it!=itend; it++){
+            // 关键帧中所有的椭球体
+            auto mvpGlobalEllipsolds = it->first->GetEllipsoldsGlobal();
+
+
+            std::cout<<"[debug] UpdateAssociatedObjectPoseAndScale, 关键帧["<< it->first->mnId << "]的观测：" << it->second <<std::endl;
+            // 对应的椭球体
+            g2o::ellipsoid* e = mvpGlobalEllipsolds[it->second];
+            std:cout<< "            支撑面："<<e->mbSupportingPlaneDefined <<",倚靠面："<<e->mbBackingPlaneDefined<<std::endl;
+
+            // 提前曼哈顿平面，当前考虑到现在提取的MHP都挺好，直接随便选一个
+            if(e->mbSupportingPlaneDefined){
+                pSupportingPlane = e->mpSupportingPlane;
+                bSupportingPlaneDefined = true;
+            }
+
+            if(e->mbBackingPlaneDefined){
+                pBackingPlane = e->mpBackingPlane;
+                bBackingPlaneDefined = true;
+            }
+
+            num++;
+        }
+
+        std::cout<<"[debug] UpdateAssociatedObjectPoseAndScale1, 关键帧数量: "<< num <<std::endl;
+        std::cout<<"[debug] UpdateAssociatedObjectPoseAndScale2, flag: "<< bSupportingPlaneDefined << "/"<< bBackingPlaneDefined <<std::endl;
+        if(bSupportingPlaneDefined && bBackingPlaneDefined){
+            
+            double supproting_weight = Config::ReadValue<double>("EllipsoidExtractor.Optimizer.SupportingWeight");
+            g2o::plane* pSupPlane = pSupportingPlane->pPlane;
+            std::cout<<"[debug] UpdateAssociatedObjectPoseAndScale3-1, pSupPlane: "<< pSupPlane->param.transpose() << ", supproting_weight:" << supproting_weight <<std::endl;
+            double backing_weight = Config::ReadValue<double>("EllipsoidExtractor.Optimizer.BackingWeight");
+            g2o::plane* pBackPlane = pBackingPlane->pPlane;
+            std::cout<<"[debug] UpdateAssociatedObjectPoseAndScale3-2, pBackPlane: "<< pBackPlane->param.transpose() << ", backing_weight:" << backing_weight <<std::endl;
+
+            
+
+
+
+            g2o::ellipsoid e_refined = mpEllipsoidExtractor->OptimizeEllipsoidWithMHPlanes(
+                    e_merged, *pSupPlane, supproting_weight, *pBackPlane, backing_weight);
+            
+            // 可视化 Refined Object，并变换到世界坐标系下
+            // Visualize estimated ellipsoid
+            g2o::ellipsoid* pObjRefined = new g2o::ellipsoid(e_refined);
+            // pObjRefined->setColor(Vector3d(189/255.0, 183/255.0, 107/255.0), 1); 
+            pObjRefined->setColor(Vector3d(255/255.0, 255/255.0, 0/255.0), 1); 
+            mpMap->addRefinedEllipsoidVisual(pObjRefined);
+            
+            
+            
+            // 可视化
+            Vector3d center = e_merged.pose.translation();
+            Vector4d planeVec_1 = pSupPlane->param.head(4);
+            Vector3d color; double plane_size = 0.5;
+            color = Vector3d(0.7,0,0);  // 边界颜色
+            g2o::plane *pPlane_1 = new g2o::plane(planeVec_1, color);
+            pPlane_1->InitFinitePlane(center, plane_size);
+            pPlane_1->miMHType = g2o::MANHATTAN_PLANE_TYPE::MERGE_REFINE;
+            mpMap->addPlane(pPlane_1);
+            Vector4d planeVec_2 = pBackPlane->param.head(4);
+            color = Vector3d(0,0,0.7);  // 边界颜色
+            g2o::plane *pPlane_2 = new g2o::plane(planeVec_2, color);
+            pPlane_2->InitFinitePlane(center, plane_size);
+            pPlane_2->miMHType = g2o::MANHATTAN_PLANE_TYPE::MERGE_REFINE;
+            mpMap->addPlane(pPlane_2);
+            
+
+            std::cout<<"[debug] UpdateAssociatedObjectPoseAndScale3-3, e_merged: "<< e_merged.scale.transpose() <<std::endl;
+            std::cout<<"[debug] UpdateAssociatedObjectPoseAndScale3-4, pObjRefined: "<< pObjRefined->scale.transpose() <<std::endl;
+
+            pMO->SetPoseByEllipsoid(pObjRefined, scale);
+            std::cout<<"[debug] UpdateAssociatedObjectPoseAndScale3-5, ENd"<<std::endl;
+            
+        }
+        // 只使用支撑面进行优化
+        else if(bSupportingPlaneDefined){
+            double supproting_weight = Config::ReadValue<double>("EllipsoidExtractor.Optimizer.SupportingWeight");
+            g2o::plane* pSupPlane = &mGroundPlane;
+            std::cout<<"[debug] UpdateAssociatedObjectPoseAndScale4, pSupPlane: "<< pSupPlane->param.transpose() <<std::endl;
+
+            g2o::ellipsoid e_refined = mpEllipsoidExtractor->OptimizeEllipsoidWithSupportingPlanes( e_merged, *pSupPlane, supproting_weight);
+            
+            // 可视化 Refined Object，并变换到世界坐标系下
+            // Visualize estimated ellipsoid
+            g2o::ellipsoid* pObjRefined = new g2o::ellipsoid(e_refined);
+            // pObjRefined->setColor(Vector3d(189/255.0, 183/255.0, 107/255.0), 1); 
+            pObjRefined->setColor(Vector3d(255/255.0, 255/255.0, 0/255.0), 1); 
+            mpMap->addRefinedEllipsoidVisual(pObjRefined);
+            
+            // 用优化后的
+            // (*pFrame->mpLocalObjects[i]) = e_refined;
+
+            // g2o::ellipsoid e_global = e_refined.transform_from(pFrame->cam_pose_Twc);
+            // pKF->ReplaceEllipsoldsGlobal(i, &e_global);
+
+            pMO->SetPoseByEllipsoid(pObjRefined, scale);
+        }
+
+
+        
     }
 
 
