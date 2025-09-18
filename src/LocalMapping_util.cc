@@ -263,6 +263,9 @@ bool LocalMapping::DeepSDFObjectConstruction_PcdCloud(ObjectDetection *det, MapO
         if (n_valid_points >= min_valid_points && n_rays > min_valid_rays)
         // if (n_valid_points >= min_valid_points)  //这个判断有必要吗？  因为点云非常稠密
         {
+            if(use_ellipsoid_verticles)
+                n_valid_points += pMO->GetEllipsoidVertices().size();
+
             //！获取surface_points_cam
             Eigen::MatrixXf surface_points_cam = Eigen::MatrixXf::Zero(n_valid_points, 3);
             int p_i = 0;
@@ -286,9 +289,27 @@ bool LocalMapping::DeepSDFObjectConstruction_PcdCloud(ObjectDetection *det, MapO
             }
 
             // （2）将椭球体顶点，转换为DSP表面的点
+            std::cout<< "[debug] ellipsoid_verticles Start" << std::endl;
             if(use_ellipsoid_verticles){
+
+                std::vector<Eigen::Vector3f>  vertices = pMO->GetEllipsoidVertices();
                 
+                for(int i=0; i<vertices.size(); i=i+1)
+                {
+                    Eigen::Vector3f v = vertices[i];
+                    cv::Mat x3Dw = (cv::Mat_<float>(3,1) << v[0], v[1], v[2]);
+                    cv::Mat x3Dc = Rcw * x3Dw + tcw;
+                    float xc = x3Dc.at<float>(0);
+                    float yc = x3Dc.at<float>(1);
+                    float zc = x3Dc.at<float>(2);
+                    surface_points_cam(p_i, 0) = xc;
+                    surface_points_cam(p_i, 1) = yc;
+                    surface_points_cam(p_i, 2) = zc;
+                    p_i++;
+                }
+
             }
+            std::cout<< "[debug] ellipsoid_verticles End" << std::endl;
 
             // （3）获取ray_pixels和depth_obs
             Eigen::MatrixXf ray_pixels = Eigen::MatrixXf::Zero(n_rays, 2);

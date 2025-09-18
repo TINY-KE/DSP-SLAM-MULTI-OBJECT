@@ -703,44 +703,44 @@ std::vector<Vector3d> Tracking::getVerticesOfEllipsoid(ellipsoid* pEllipsoid, in
         Eigen::Vector3d sampled_point = p_e.head<3>();
         vertices.push_back(sampled_point);
     }
-    // 前面
-    for (int i = 0; i < num; ++i) {
-        double u = drand48();  // in [0,1)
-        double v = drand48();
+    // // 前面
+    // for (int i = 0; i < num; ++i) {
+    //     double u = drand48();  // in [0,1)
+    //     double v = drand48();
 
-        double theta = max_angle_rad * (u-0.5);    //// 方位角（绕 z 轴），与x轴的夹角
-        double phi = max_angle_rad * (v-0.5) + M_PI_2;   // 极角（与 z 轴夹角），限制在顶点附近的锥体区域
+    //     double theta = max_angle_rad * (u-0.5);    //// 方位角（绕 z 轴），与x轴的夹角
+    //     double phi = max_angle_rad * (v-0.5) + M_PI_2;   // 极角（与 z 轴夹角），限制在顶点附近的锥体区域
 
-        double x = sin(phi) * cos(theta);
-        double y = sin(phi) * sin(theta);
-        double z = cos(phi+M_PI);
+    //     double x = sin(phi) * cos(theta);
+    //     double y = sin(phi) * sin(theta);
+    //     double z = cos(phi+M_PI);
 
-        Eigen::Vector4d p_unit(x, y, z, 1.0);
-        Eigen::Vector4d p_e = S * p_unit;
+    //     Eigen::Vector4d p_unit(x, y, z, 1.0);
+    //     Eigen::Vector4d p_e = S * p_unit;
 
-        // 椭球表面点
-        Eigen::Vector3d sampled_point = p_e.head<3>();
-        vertices.push_back(sampled_point);
-    }
-    // 后面
-    for (int i = 0; i < num; ++i) {
-        double u = drand48();  // in [0,1)
-        double v = drand48();
+    //     // 椭球表面点
+    //     Eigen::Vector3d sampled_point = p_e.head<3>();
+    //     vertices.push_back(sampled_point);
+    // }
+    // // 后面
+    // for (int i = 0; i < num; ++i) {
+    //     double u = drand48();  // in [0,1)
+    //     double v = drand48();
 
-        double theta = max_angle_rad * (u-0.5) + M_PI;    //// 方位角（绕 z 轴），与x轴的夹角
-        double phi = max_angle_rad * (v-0.5) + M_PI_2;   // 极角（与 z 轴夹角），限制在顶点附近的锥体区域
+    //     double theta = max_angle_rad * (u-0.5) + M_PI;    //// 方位角（绕 z 轴），与x轴的夹角
+    //     double phi = max_angle_rad * (v-0.5) + M_PI_2;   // 极角（与 z 轴夹角），限制在顶点附近的锥体区域
 
-        double x = sin(phi) * cos(theta);
-        double y = sin(phi) * sin(theta);
-        double z = cos(phi+M_PI);
+    //     double x = sin(phi) * cos(theta);
+    //     double y = sin(phi) * sin(theta);
+    //     double z = cos(phi+M_PI);
 
-        Eigen::Vector4d p_unit(x, y, z, 1.0);
-        Eigen::Vector4d p_e = S * p_unit;
+    //     Eigen::Vector4d p_unit(x, y, z, 1.0);
+    //     Eigen::Vector4d p_e = S * p_unit;
 
-        // 椭球表面点
-        Eigen::Vector3d sampled_point = p_e.head<3>();
-        vertices.push_back(sampled_point);
-    }
+    //     // 椭球表面点
+    //     Eigen::Vector3d sampled_point = p_e.head<3>();
+    //     vertices.push_back(sampled_point);
+    // }
     // 右面
     for (int i = 0; i < num; ++i) {
         double u = drand48();  // in [0,1)
