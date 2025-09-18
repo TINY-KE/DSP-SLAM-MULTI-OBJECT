@@ -627,16 +627,160 @@ int Tracking::associateDetWithObject(ORB_SLAM2::KeyFrame *pKF, MapObject* pMO, i
         pMO->AddDepthPointCloudFromObjectDetection(detKF1->getPcdPtr());
         // 更新数据关联后的物体的位姿形状
         UpdateAssociatedObjectPoseAndScale(pMO);
+
+        bool use_ellipsoid_verticles = Config::Get<int>("Mapping.use_ellipsoid_verticles");
+        double ellipsoid_verticles_scale = Config::Get<double>("Mapping.ellipsoid_verticles_scale");
+        
+        if(use_ellipsoid_verticles){
+            pMO->EraseEllipsoidVertices();
+            auto SE3Two = pMO->GetEllipsold()->pose;
+            double verticles_num = std::ceil(pMO->GetPointCloud()->size()*ellipsoid_verticles_scale);
+            double verticles_degree = Config::Get<double>("Mapping.ellipsoid_verticles_degree");
+
+            std::vector<Vector3d> verticles = getVerticesOfEllipsoid(pMO->GetEllipsold(), verticles_num, verticles_degree);
+            int num = 1;
+            std::vector<Vector3f> verticles_in_camera;
+            for(auto p_o: verticles){
+                Vector3d p_w = SE3Two * p_o;
+                // Eigen::Vector3f p_w_3 = p_w.head<3>();
+                pMO->AddEllipsoidVertices(p_w.cast<float>());
+                num++;
+            }
+        }
     }
     
     return newly_matched_points;
+}
 
-    // cout <<  "Matches: " << max_matches << ", New points: " << newly_matched_points << ", Keypoints: " <<
-    //     detKF1->mvKeysIndices.size() << ", Associated to object by projection " << object_id_max_matches
-    //     << endl << endl;
-    /*cout <<  "Matches: " << max_matches << ", New points: " << newly_matched_points << ", Keypoints: " <<
-        detKF1->mvKeysIndices.size() << ", Associated to object by projection " << object_id_max_matches
-        << endl << endl;*/
+
+
+
+std::vector<Vector3d> Tracking::getVerticesOfEllipsoid(ellipsoid* pEllipsoid, int num, double verticles_degree) {
+
+    std::vector<Vector3d> vertices;
+    Eigen::Matrix4d S = Eigen::Matrix4d::Identity();
+    S(0,0) = pEllipsoid->scale(0);
+    S(1,1) = pEllipsoid->scale(1);
+    S(2,2) = pEllipsoid->scale(2);
+
+    double max_angle_deg = verticles_degree;
+    double max_angle_rad = max_angle_deg * M_PI / 180.0;
+    // // 顶面
+    // for (int i = 0; i < num; ++i) {
+    //     double u = drand48();  // in [0,1)
+    //     double v = drand48();
+
+    //     double theta = 2 * M_PI * u;    //// 方位角（绕 z 轴），与x轴的夹角
+    //     double phi = max_angle_rad * (v-1);   // 极角（与 z 轴夹角），限制在顶点附近的锥体区域
+
+    //     double x = sin(phi) * cos(theta);
+    //     double y = sin(phi) * sin(theta);
+    //     double z = cos(phi);
+
+    //     Eigen::Vector4d p_unit(x, y, z, 1.0);
+    //     Eigen::Vector4d p_e = S * p_unit;
+
+    //     // 椭球表面点
+    //     Eigen::Vector3d sampled_point = p_e.head<3>();
+    //     vertices.push_back(sampled_point);
+    // }
+    // 地面
+    for (int i = 0; i < num; ++i) {
+        double u = drand48();  // in [0,1)
+        double v = drand48();
+
+        double theta = 2 * M_PI * u;    //// 方位角（绕 z 轴），与x轴的夹角
+        double phi = M_PI - max_angle_rad * (v-1);   // 极角（与 z 轴夹角），限制在顶点附近的锥体区域
+
+        double x = sin(phi) * cos(theta);
+        double y = sin(phi) * sin(theta);
+        double z = cos(phi);
+
+        Eigen::Vector4d p_unit(x, y, z, 1.0);
+        Eigen::Vector4d p_e = S * p_unit;
+
+        // 椭球表面点
+        Eigen::Vector3d sampled_point = p_e.head<3>();
+        vertices.push_back(sampled_point);
+    }
+    // 前面
+    for (int i = 0; i < num; ++i) {
+        double u = drand48();  // in [0,1)
+        double v = drand48();
+
+        double theta = max_angle_rad * (u-0.5);    //// 方位角（绕 z 轴），与x轴的夹角
+        double phi = max_angle_rad * (v-0.5) + M_PI_2;   // 极角（与 z 轴夹角），限制在顶点附近的锥体区域
+
+        double x = sin(phi) * cos(theta);
+        double y = sin(phi) * sin(theta);
+        double z = cos(phi+M_PI);
+
+        Eigen::Vector4d p_unit(x, y, z, 1.0);
+        Eigen::Vector4d p_e = S * p_unit;
+
+        // 椭球表面点
+        Eigen::Vector3d sampled_point = p_e.head<3>();
+        vertices.push_back(sampled_point);
+    }
+    // 后面
+    for (int i = 0; i < num; ++i) {
+        double u = drand48();  // in [0,1)
+        double v = drand48();
+
+        double theta = max_angle_rad * (u-0.5) + M_PI;    //// 方位角（绕 z 轴），与x轴的夹角
+        double phi = max_angle_rad * (v-0.5) + M_PI_2;   // 极角（与 z 轴夹角），限制在顶点附近的锥体区域
+
+        double x = sin(phi) * cos(theta);
+        double y = sin(phi) * sin(theta);
+        double z = cos(phi+M_PI);
+
+        Eigen::Vector4d p_unit(x, y, z, 1.0);
+        Eigen::Vector4d p_e = S * p_unit;
+
+        // 椭球表面点
+        Eigen::Vector3d sampled_point = p_e.head<3>();
+        vertices.push_back(sampled_point);
+    }
+    // 右面
+    for (int i = 0; i < num; ++i) {
+        double u = drand48();  // in [0,1)
+        double v = drand48();
+
+        double theta = max_angle_rad * (u-0.5) - M_PI_2;    //// 方位角（绕 z 轴），与x轴的夹角
+        double phi = max_angle_rad * (v-0.5) + M_PI_2;   // 极角（与 z 轴夹角），限制在顶点附近的锥体区域
+
+        double x = sin(phi) * cos(theta);
+        double y = sin(phi) * sin(theta);
+        double z = cos(phi+M_PI);
+
+        Eigen::Vector4d p_unit(x, y, z, 1.0);
+        Eigen::Vector4d p_e = S * p_unit;
+
+        // 椭球表面点
+        Eigen::Vector3d sampled_point = p_e.head<3>();
+        vertices.push_back(sampled_point);
+    }
+    // 左面
+    for (int i = 0; i < num; ++i) {
+        double u = drand48();  // in [0,1)
+        double v = drand48();
+
+        double theta = max_angle_rad * (u-0.5) + M_PI_2;    //// 方位角（绕 z 轴），与x轴的夹角
+        double phi = max_angle_rad * (v-0.5) + M_PI_2;   // 极角（与 z 轴夹角），限制在顶点附近的锥体区域
+
+        double x = sin(phi) * cos(theta);
+        double y = sin(phi) * sin(theta);
+        double z = cos(phi+M_PI);
+
+        Eigen::Vector4d p_unit(x, y, z, 1.0);
+        Eigen::Vector4d p_e = S * p_unit;
+
+        // 椭球表面点
+        Eigen::Vector3d sampled_point = p_e.head<3>();
+        vertices.push_back(sampled_point);
+    }
+
+    return vertices;
 }
 
 

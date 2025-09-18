@@ -926,6 +926,24 @@ void MapObject::EraseMapPoint(MapPoint *pMP)
     pMP->SetBadFlag();
 }
 
+void MapObject::AddEllipsoidVertices(Eigen::Vector3f pMV)
+{
+    unique_lock<mutex> lock(mMutexEllipsoidVertices);
+    ellipsoid_vertices.push_back(pMV);
+}
+
+void MapObject::EraseEllipsoidVertices()
+{
+    unique_lock<mutex> lock(mMutexEllipsoidVertices);
+    ellipsoid_vertices.clear();
+}
+
+std::vector<Eigen::Vector3f> MapObject::GetEllipsoidVertices()
+{
+    unique_lock<mutex> lock(mMutexEllipsoidVertices);
+    // return vector<Eigen::Vector3f>(ellipsoid_vertices.begin(), ellipsoid_vertices.end());
+    return ellipsoid_vertices;  // 自动调用拷贝构造函数
+}
 
 void MapObject::SetVelocity(const Eigen::Vector3f &v)
 {

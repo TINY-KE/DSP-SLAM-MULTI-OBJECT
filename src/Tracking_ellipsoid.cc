@@ -759,8 +759,6 @@ namespace ORB_SLAM2 {
 
 
 
-
-
     void Tracking::DenseBuild()
     {
         bool mbOpenBuilder = Config::Get<int>("Visualization.Builder.Open") > 0;

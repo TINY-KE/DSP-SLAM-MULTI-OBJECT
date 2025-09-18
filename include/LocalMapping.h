@@ -28,7 +28,7 @@
 #include "KeyFrameDatabase.h"
 #include "System.h"
 #include <mutex>
-
+#include "Converter.h"
 // LJ修改
 #define PYBIND11_NO_ASSERT_GIL_HELD_INCREF_DECREF
 #include <pybind11/embed.h>
@@ -174,6 +174,7 @@ private:
 public:
     void InitSet();
     bool RunOneTime();
+    std::vector<Vector3d> getVerticesOfEllipsoid(ellipsoid* pEllipsoid, int num);
 };
 
 } //namespace ORB_SLAM

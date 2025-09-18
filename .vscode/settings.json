@@ -78,6 +78,8 @@
         "shared_mutex": "cpp",
         "regex": "cpp",
         "fft": "cpp",
-        "numericaldiff": "cpp"
+        "numericaldiff": "cpp",
+        "*.expression": "cpp",
+        "alignedvector3": "cpp"
     }
 }

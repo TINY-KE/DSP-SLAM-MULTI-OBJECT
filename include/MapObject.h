@@ -111,6 +111,14 @@ public:
     bool reconstructed;
     std::set<MapPoint*> map_points;
 
+private:
+    std::vector<Eigen::Vector3f> ellipsoid_vertices;
+
+public:
+    void AddEllipsoidVertices(Eigen::Vector3f pMV);
+    void EraseEllipsoidVertices();
+    std::vector<Eigen::Vector3f> GetEllipsoidVertices();
+
     // cuboid
     float w;
     float h;
@@ -131,6 +139,7 @@ public:
 
     std::mutex mMutexObject;
     std::mutex mMutexFeatures;
+    std::mutex mMutexEllipsoidVertices;
 
     static bool lId(MapObject* pMO1, MapObject* pMO2){
         return pMO1->mnId < pMO2->mnId;

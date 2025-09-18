@@ -258,6 +258,8 @@ bool LocalMapping::DeepSDFObjectConstruction_PcdCloud(ObjectDetection *det, MapO
         
         int min_valid_points = Config::Get<int>("Mapping.MinValidPoints");
         int min_valid_rays = Config::Get<int>("Mapping.MinValidRays");
+        bool use_ellipsoid_verticles = Config::Get<int>("Mapping.use_ellipsoid_verticles");
+        
         if (n_valid_points >= min_valid_points && n_rays > min_valid_rays)
         // if (n_valid_points >= min_valid_points)  //这个判断有必要吗？  因为点云非常稠密
         {
@@ -283,8 +285,12 @@ bool LocalMapping::DeepSDFObjectConstruction_PcdCloud(ObjectDetection *det, MapO
                 p_i++;
             }
 
+            // （2）将椭球体顶点，转换为DSP表面的点
+            if(use_ellipsoid_verticles){
+                
+            }
 
-            // （2）获取ray_pixels和depth_obs
+            // （3）获取ray_pixels和depth_obs
             Eigen::MatrixXf ray_pixels = Eigen::MatrixXf::Zero(n_rays, 2);
             Eigen::VectorXf depth_obs = Eigen::VectorXf::Zero(n_rays);
             int k_i = 0;
@@ -849,5 +855,137 @@ void LocalMapping::UpdateObjectsToMap()
     // cout << " - pc_num_valid = " << pc_num_valid << endl;
     // cout << " - ellip_num_valid = " << ellip_num_valid << endl;
 }
+
+
+
+
+std::vector<Vector3d> LocalMapping::getVerticesOfEllipsoid(ellipsoid* pEllipsoid, int num) {
+
+    std::vector<Vector3d> vertices;
+    Eigen::Matrix4d S = Eigen::Matrix4d::Identity();
+    S(0,0) = pEllipsoid->scale(0);
+    S(1,1) = pEllipsoid->scale(1);
+    S(2,2) = pEllipsoid->scale(2);
+
+    double max_angle_deg = 20.0;
+    double max_angle_rad = max_angle_deg * M_PI / 180.0;
+    // // 顶面
+    // for (int i = 0; i < num; ++i) {
+    //     double u = drand48();  // in [0,1)
+    //     double v = drand48();
+
+    //     double theta = 2 * M_PI * u;    //// 方位角（绕 z 轴），与x轴的夹角
+    //     double phi = max_angle_rad * (v-1);   // 极角（与 z 轴夹角），限制在顶点附近的锥体区域
+
+    //     double x = sin(phi) * cos(theta);
+    //     double y = sin(phi) * sin(theta);
+    //     double z = cos(phi);
+
+    //     Eigen::Vector4d p_unit(x, y, z, 1.0);
+    //     Eigen::Vector4d p_e = S * p_unit;
+
+    //     // 椭球表面点
+    //     Eigen::Vector3d sampled_point = p_e.head<3>();
+    //     vertices.push_back(sampled_point);
+    // }
+    // 地面
+    for (int i = 0; i < num; ++i) {
+        double u = drand48();  // in [0,1)
+        double v = drand48();
+
+        double theta = 2 * M_PI * u;    //// 方位角（绕 z 轴），与x轴的夹角
+        double phi = M_PI - max_angle_rad * (v-1);   // 极角（与 z 轴夹角），限制在顶点附近的锥体区域
+
+        double x = sin(phi) * cos(theta);
+        double y = sin(phi) * sin(theta);
+        double z = cos(phi);
+
+        Eigen::Vector4d p_unit(x, y, z, 1.0);
+        Eigen::Vector4d p_e = S * p_unit;
+
+        // 椭球表面点
+        Eigen::Vector3d sampled_point = p_e.head<3>();
+        vertices.push_back(sampled_point);
+    }
+    // 前面
+    for (int i = 0; i < num; ++i) {
+        double u = drand48();  // in [0,1)
+        double v = drand48();
+
+        double theta = max_angle_rad * (u-0.5);    //// 方位角（绕 z 轴），与x轴的夹角
+        double phi = max_angle_rad * (v-0.5) + M_PI_2;   // 极角（与 z 轴夹角），限制在顶点附近的锥体区域
+
+        double x = sin(phi) * cos(theta);
+        double y = sin(phi) * sin(theta);
+        double z = cos(phi+M_PI);
+
+        Eigen::Vector4d p_unit(x, y, z, 1.0);
+        Eigen::Vector4d p_e = S * p_unit;
+
+        // 椭球表面点
+        Eigen::Vector3d sampled_point = p_e.head<3>();
+        vertices.push_back(sampled_point);
+    }
+    // 后面
+    for (int i = 0; i < num; ++i) {
+        double u = drand48();  // in [0,1)
+        double v = drand48();
+
+        double theta = max_angle_rad * (u-0.5) + M_PI;    //// 方位角（绕 z 轴），与x轴的夹角
+        double phi = max_angle_rad * (v-0.5) + M_PI_2;   // 极角（与 z 轴夹角），限制在顶点附近的锥体区域
+
+        double x = sin(phi) * cos(theta);
+        double y = sin(phi) * sin(theta);
+        double z = cos(phi+M_PI);
+
+        Eigen::Vector4d p_unit(x, y, z, 1.0);
+        Eigen::Vector4d p_e = S * p_unit;
+
+        // 椭球表面点
+        Eigen::Vector3d sampled_point = p_e.head<3>();
+        vertices.push_back(sampled_point);
+    }
+    // 右面
+    for (int i = 0; i < num; ++i) {
+        double u = drand48();  // in [0,1)
+        double v = drand48();
+
+        double theta = max_angle_rad * (u-0.5);    //// 方位角（绕 z 轴），与x轴的夹角
+        double phi = max_angle_rad * (v-0.5) + M_PI_2;   // 极角（与 z 轴夹角），限制在顶点附近的锥体区域
+
+        double x = sin(phi) * cos(theta);
+        double y = sin(phi) * sin(theta);
+        double z = cos(phi+M_PI);
+
+        Eigen::Vector4d p_unit(x, y, z, 1.0);
+        Eigen::Vector4d p_e = S * p_unit;
+
+        // 椭球表面点
+        Eigen::Vector3d sampled_point = p_e.head<3>();
+        vertices.push_back(sampled_point);
+    }
+    // 左面
+    for (int i = 0; i < num; ++i) {
+        double u = drand48();  // in [0,1)
+        double v = drand48();
+
+        double theta = max_angle_rad * (u-0.5) + M_PI_2;    //// 方位角（绕 z 轴），与x轴的夹角
+        double phi = max_angle_rad * (v-0.5) + M_PI_2;   // 极角（与 z 轴夹角），限制在顶点附近的锥体区域
+
+        double x = sin(phi) * cos(theta);
+        double y = sin(phi) * sin(theta);
+        double z = cos(phi+M_PI);
+
+        Eigen::Vector4d p_unit(x, y, z, 1.0);
+        Eigen::Vector4d p_e = S * p_unit;
+
+        // 椭球表面点
+        Eigen::Vector3d sampled_point = p_e.head<3>();
+        vertices.push_back(sampled_point);
+    }
+
+    return vertices;
+}
+
 
 }

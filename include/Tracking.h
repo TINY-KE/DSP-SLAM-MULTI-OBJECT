@@ -118,6 +118,8 @@ private:
     void AssociateObjectsByProjection(KeyFrame *pKF);  // assocating detection to object by projecting map points
     void AssociateObjectsByDistance(ORB_SLAM2::KeyFrame *pKF);
     void UpdateAssociatedObjectPoseAndScale(MapObject* pMO);
+    std::vector<Vector3d> getVerticesOfEllipsoid(ellipsoid* pEllipsoid, int num, double verticles_degree);
+
     bool mb_use_depth_pcd_to_reconstruct;
 
 public:

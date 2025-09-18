@@ -95,6 +95,7 @@ void Viewer::Run()
     pangolin::Var<bool> menuShowLastestEllipsoids("menu.Show Newest Ellipsoids One Frame Visual", true, true);
     pangolin::Var<bool> menuShowLastestRefinedEllipsoids("menu.Show Refined Ellipsoids One Frame Visual", true, true);
     pangolin::Var<bool> menuShowGlobalEllipsoids("menu.Show Global Ellipsoids", true, true);
+    pangolin::Var<bool> menuShowEllipsoidVertices("menu.Show Ellipsoid Vertices", true, true);
     pangolin::Var<double> SliderEllipsoidProbThresh("menu.Ellipsoid Prob", 0.3, 0.0, 1.0);
     pangolin::Var<double> SliderEllipsoidLineWidth("menu.EllipsoidLine Width", 1.0, 0.5, 3.0);
     pangolin::Var<bool> menuShowSdfObjects("menu.Show SDF Objects",true,true);
@@ -219,6 +220,7 @@ void Viewer::Run()
                 double ellipsoidLineWidth = SliderEllipsoidLineWidth;
                 mpMapDrawer->drawGlobalEllipsoids(ellipsoidProbThresh,ellipsoidLineWidth);
             }
+
             // if(menuShowDepthPoints)
             // {
             //     float pointcloudSize = SliderPointCloudListSize;
@@ -276,7 +278,12 @@ void Viewer::Run()
             mpMapDrawer->drawPointCloudWithOptions(mmPointCloudOptionMap, pointcloudSize);
             // end
 
-            
+            if(menuShowEllipsoidVertices){
+                float pointcloudSize = SliderPointCloudListSize;
+                double ellipsoidProbThresh = SliderEllipsoidProbThresh;
+                mpMapDrawer->drawEllipsoidVertices(ellipsoidProbThresh,pointcloudSize);
+            }
+
             pangolin::FinishFrame();
         }
 

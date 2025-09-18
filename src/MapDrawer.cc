@@ -398,6 +398,7 @@ bool MapDrawer::drawLastestEllipsoidsVisual(double prob_thresh, double ellipsoid
     if(pE->prob > prob_thresh ){
         ellipsoids_prob.push_back(pE);
         // std::cout << "[MapDrawer::drawEllipsoidsVisual] Ellipsoid with prob: " << pE->prob << std::endl;
+        // drawVerticesOfEllipsoid(pE,10,ellipsoidLineWidth);
     }
     else{
         // std::cout << "[MapDrawer::drawEllipsoidsVisual] Ellipsoid with prob: " << pE->prob << " is filtered out." << std::endl;
@@ -407,6 +408,168 @@ bool MapDrawer::drawLastestEllipsoidsVisual(double prob_thresh, double ellipsoid
 
     return true;
 }
+
+bool MapDrawer::drawVerticesOfEllipsoid(ellipsoid* pEllipsoid, int num, double pointSize) {
+    // // std::cout<<"[debug] MapDrawer::drawVerticesOfEllipsoid start."<<std::endl;
+    // // 半轴长度
+    // double a = pEllipsoid->scale(0);    // x轴半轴长度，物体正向
+    // double b = pEllipsoid->scale(1);    // y轴半轴长度，物体侧向
+    // double c = pEllipsoid->scale(2);    // z轴半轴长度，物体竖向
+    // // std::cout<<"[debug] MapDrawer::drawVerticesOfEllipsoid 1."<<std::endl;
+
+    // // 顶点
+    // std::vector<Vector3d> vertices;
+    // Vector3d front = Vector3d(a, 0, 0);   vertices.push_back(front);// 前
+    // Vector3d back = Vector3d(-a, 0, 0);   vertices.push_back(back);// 后
+    // Vector3d left = Vector3d(0, b, 0);    vertices.push_back(left); // 左
+    // Vector3d right = Vector3d(0, -b, 0);  vertices.push_back(right); // 右
+    // Vector3d top = Vector3d(0, 0, c);   vertices.push_back(top);  // 上
+    // Vector3d bottom = Vector3d(0, 0, -c); vertices.push_back(bottom);   // 下
+    // // std::cout<<"[debug] MapDrawer::drawVerticesOfEllipsoid 2."<<std::endl;
+
+    std::vector<Vector3d> vertices;
+    Eigen::Matrix4d S = Eigen::Matrix4d::Identity();
+    S(0,0) = pEllipsoid->scale(0);
+    S(1,1) = pEllipsoid->scale(1);
+    S(2,2) = pEllipsoid->scale(2);
+
+    double max_angle_deg = 20.0;
+    double max_angle_rad = max_angle_deg * M_PI / 180.0;
+    // 顶面
+    for (int i = 0; i < num; ++i) {
+        double u = drand48();  // in [0,1)
+        double v = drand48();
+
+        double theta = 2 * M_PI * u;    //// 方位角（绕 z 轴），与x轴的夹角
+        double phi = max_angle_rad * (v-1);   // 极角（与 z 轴夹角），限制在顶点附近的锥体区域
+
+        double x = sin(phi) * cos(theta);
+        double y = sin(phi) * sin(theta);
+        double z = cos(phi);
+
+        Eigen::Vector4d p_unit(x, y, z, 1.0);
+        Eigen::Vector4d p_e = S * p_unit;
+
+        // 椭球表面点
+        Eigen::Vector3d sampled_point = p_e.head<3>();
+        vertices.push_back(sampled_point);
+    }
+    // 地面
+    for (int i = 0; i < num; ++i) {
+        double u = drand48();  // in [0,1)
+        double v = drand48();
+
+        double theta = 2 * M_PI * u;    //// 方位角（绕 z 轴），与x轴的夹角
+        double phi = M_PI - max_angle_rad * (v-1);   // 极角（与 z 轴夹角），限制在顶点附近的锥体区域
+
+        double x = sin(phi) * cos(theta);
+        double y = sin(phi) * sin(theta);
+        double z = cos(phi);
+
+        Eigen::Vector4d p_unit(x, y, z, 1.0);
+        Eigen::Vector4d p_e = S * p_unit;
+
+        // 椭球表面点
+        Eigen::Vector3d sampled_point = p_e.head<3>();
+        vertices.push_back(sampled_point);
+    }
+    // 前面
+    for (int i = 0; i < num; ++i) {
+        double u = drand48();  // in [0,1)
+        double v = drand48();
+
+        double theta = max_angle_rad * (u-0.5);    //// 方位角（绕 z 轴），与x轴的夹角
+        double phi = max_angle_rad * (v-0.5) + M_PI_2;   // 极角（与 z 轴夹角），限制在顶点附近的锥体区域
+
+        double x = sin(phi) * cos(theta);
+        double y = sin(phi) * sin(theta);
+        double z = cos(phi+M_PI);
+
+        Eigen::Vector4d p_unit(x, y, z, 1.0);
+        Eigen::Vector4d p_e = S * p_unit;
+
+        // 椭球表面点
+        Eigen::Vector3d sampled_point = p_e.head<3>();
+        vertices.push_back(sampled_point);
+    }
+    // 后面
+    for (int i = 0; i < num; ++i) {
+        double u = drand48();  // in [0,1)
+        double v = drand48();
+
+        double theta = max_angle_rad * (u-0.5) + M_PI;    //// 方位角（绕 z 轴），与x轴的夹角
+        double phi = max_angle_rad * (v-0.5) + M_PI_2;   // 极角（与 z 轴夹角），限制在顶点附近的锥体区域
+
+        double x = sin(phi) * cos(theta);
+        double y = sin(phi) * sin(theta);
+        double z = cos(phi+M_PI);
+
+        Eigen::Vector4d p_unit(x, y, z, 1.0);
+        Eigen::Vector4d p_e = S * p_unit;
+
+        // 椭球表面点
+        Eigen::Vector3d sampled_point = p_e.head<3>();
+        vertices.push_back(sampled_point);
+    }
+    // 右面
+    for (int i = 0; i < num; ++i) {
+        double u = drand48();  // in [0,1)
+        double v = drand48();
+
+        double theta = max_angle_rad * (u-0.5);    //// 方位角（绕 z 轴），与x轴的夹角
+        double phi = max_angle_rad * (v-0.5) + M_PI_2;   // 极角（与 z 轴夹角），限制在顶点附近的锥体区域
+
+        double x = sin(phi) * cos(theta);
+        double y = sin(phi) * sin(theta);
+        double z = cos(phi+M_PI);
+
+        Eigen::Vector4d p_unit(x, y, z, 1.0);
+        Eigen::Vector4d p_e = S * p_unit;
+
+        // 椭球表面点
+        Eigen::Vector3d sampled_point = p_e.head<3>();
+        vertices.push_back(sampled_point);
+    }
+    // 左面
+    for (int i = 0; i < num; ++i) {
+        double u = drand48();  // in [0,1)
+        double v = drand48();
+
+        double theta = max_angle_rad * (u-0.5) + M_PI_2;    //// 方位角（绕 z 轴），与x轴的夹角
+        double phi = max_angle_rad * (v-0.5) + M_PI_2;   // 极角（与 z 轴夹角），限制在顶点附近的锥体区域
+
+        double x = sin(phi) * cos(theta);
+        double y = sin(phi) * sin(theta);
+        double z = cos(phi+M_PI);
+
+        Eigen::Vector4d p_unit(x, y, z, 1.0);
+        Eigen::Vector4d p_e = S * p_unit;
+
+        // 椭球表面点
+        Eigen::Vector3d sampled_point = p_e.head<3>();
+        vertices.push_back(sampled_point);
+    }
+
+    // 绘制
+    glPushMatrix();
+    for(auto p:vertices){
+        // 世界坐标系下的点
+        Vector3d pw = pEllipsoid->pose * p;
+        glPointSize( pointSize *20.0 );
+        glBegin(GL_POINTS);
+        glColor3d(1.0, 0.0, 0.0);
+        glVertex3d(pw(0), pw(1), pw(2));
+        glEnd();
+    }
+    // std::cout<<"[debug] MapDrawer::drawVerticesOfEllipsoid 3."<<std::endl;
+
+    glPointSize( 1 );
+    glPopMatrix(); 
+    // std::cout<<"[debug] MapDrawer::drawVerticesOfEllipsoid 4."<<std::endl;
+    return true;
+}
+
+
 bool MapDrawer::drawLastestRefinedEllipsoidsVisual(double prob_thresh, double ellipsoidLineWidth) {
 
     std::vector<ellipsoid*> ellipsoidsVisual = mpMap->GetAllRefinedEllipsoidsVisual();
@@ -461,6 +624,46 @@ bool MapDrawer::drawGlobalEllipsoids(double prob_thresh, double ellipsoidLineWid
     return true;
 }
 
+bool MapDrawer::drawEllipsoidVertices(double prob_thresh, double pointcloudSize) {
+
+    auto mvpMapObjects = mpMap->GetAllMapObjects();
+    std::vector<ellipsoid*> ellipsoids_prob;
+
+    for (MapObject *pMO : mvpMapObjects)
+    {
+        bool not_exist = !pMO ? true : false;
+        // std::cout<<"not exist:"<< not_exist << ", bad:" << pMO->isBad()<< std::endl;
+
+        if (!pMO)
+            continue;
+        if (pMO->isBad())
+            continue;
+
+        auto pE = pMO->GetEllipsold();
+
+        if(pE->prob < prob_thresh ){
+            continue;
+        }
+
+        // 绘制
+        std::vector<Eigen::Vector3f>  vertices = pMO->GetEllipsoidVertices();
+        glPushMatrix();
+        for(auto pw:vertices){
+            // 世界坐标系下的点
+            glPointSize( pointcloudSize *2.0 );
+            glBegin(GL_POINTS);
+            glColor3d(0.0, 0.0, 0.0);
+            glVertex3d(pw(0), pw(1), pw(2));
+            glEnd();
+        }
+        // std::cout<<"[debug] MapDrawer::drawVerticesOfEllipsoid 3."<<std::endl;
+
+        glPointSize( 1 );
+        glPopMatrix(); 
+    }
+    
+    return true;
+}
 
 // 加入了 transform
 void MapDrawer::drawAllEllipsoidsInVector(std::vector<ellipsoid*>& ellipsoids, int color_mode, double ellipsoidLineWidth)

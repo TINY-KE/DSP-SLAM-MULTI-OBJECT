@@ -153,7 +153,9 @@ Mapping.PcdCloudVoxelSize: 0.03
 Mapping.MinValidPoints: 50
 Mapping.MinValidRays: 1
 Mapping.ObjectScale: 1.1
-
+Mapping.use_ellipsoid_verticles: 1
+Mapping.ellipsoid_verticles_scale: 0.05
+Mapping.ellipsoid_verticles_degree: 18
 # use_object
 useObjectConstruct: 1
 ComputeCuboidType: 3    #3：椭球体

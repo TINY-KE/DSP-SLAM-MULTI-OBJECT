@@ -72,6 +72,9 @@ public:
     bool drawGlobalEllipsoids(double prob_thresh, double ellipsoidLineWidth=1.0);
     bool drawLastestEllipsoidsVisual(double prob_thresh, double ellipsoidLineWidth=1.0);
     bool drawLastestRefinedEllipsoidsVisual(double prob_thresh, double ellipsoidLineWidth=1.0);
+    bool drawEllipsoidVertices(double prob_thresh, double pointcloudSize=1.0);
+
+    bool drawVerticesOfEllipsoid(ellipsoid* pEllipsoid, int num=10,  double pointSize=1);
     
     void drawAllEllipsoidsInVector(std::vector<ellipsoid*>& ellipsoids, int color_mode = 0, double ellipsoidLineWidth=1.0);
     void drawEllipsoidInVector(ellipsoid* e, int color_mode = 0, double ellipsoidLineWidth=1.0); // 0: Red, 1: Green, 2:Blue
