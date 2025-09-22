@@ -10,12 +10,17 @@
         // "program": "${workspaceFolder}/label_tool",
         // "program": "${workspaceFolder}/instanceAnnotation",
         "args": [
-
           "Vocabulary/ORBvoc.bin",
-          "configs/replica_room1.yaml",
-          "/home/robotlab/dataset/Replica_room1",
-          "/home/robotlab/dataset/Replica_room1/associations.txt",
+          "configs/self_allobject_ground.yaml",
+          "/home/robotlab/dataset/MySimDataset/GroundObjects",
+          "/home/robotlab/dataset/MySimDataset/GroundObjects/associations.txt",
           "map/self/GroundObjects"
+
+          // "Vocabulary/ORBvoc.bin",
+          // "configs/replica_room1.yaml",
+          // "/home/robotlab/dataset/Replica_room1",
+          // "/home/robotlab/dataset/Replica_room1/associations.txt",
+          // "map/self/GroundObjects"
           
           // "Vocabulary/ORBvoc.bin",
           // "configs/ICL_NUIM_home_2.yaml",

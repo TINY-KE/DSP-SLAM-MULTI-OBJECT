@@ -156,7 +156,10 @@ int main(int argc, char **argv)
         }
     }
 
-    for(int ni = 0; ni < nImages; ni++)
+
+    int step = ORB_SLAM2::Config::Get<int>("Dataset.step");
+
+    for(int ni = 0; ni < nImages; ni+=step)
     {
         std::cout << "\n========================================" << std::endl;
         std::cout << "=> Inputting Image " << ni << "/" << nImages << std::endl;

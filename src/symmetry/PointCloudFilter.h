@@ -26,6 +26,8 @@ typedef pcl::PointCloud<PointT> PointCloudPCL;
 Vector2d getXYCenterOfPointCloud(ORB_SLAM2::PointCloud* pPoints);
 ORB_SLAM2::PointCloud getPointCloudInRect(cv::Mat &depth, cv::Mat &rgb, const VectorXd &detect, ORB_SLAM2::camera_intrinsic &camera, double range=100);
 ORB_SLAM2::PointCloud getPointCloudInRect(cv::Mat &depth, const VectorXd &detect, ORB_SLAM2::camera_intrinsic &camera, double range=100);
+ORB_SLAM2::PointCloud getPointCloudInMask(cv::Mat &depth, const VectorXd &detect, cv::Mat& mask_cv, ORB_SLAM2::camera_intrinsic &camera, double range);
+
 void filterGround(ORB_SLAM2::PointCloud** ppCloud);
 void outputCloud(ORB_SLAM2::PointCloud *pCloud, int num = 10);
 ORB_SLAM2::PointCloud pclToQuadricPointCloud(PointCloudPCL& cloud);

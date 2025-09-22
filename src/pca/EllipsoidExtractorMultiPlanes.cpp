@@ -885,6 +885,142 @@ g2o::ellipsoid EllipsoidExtractor::EstimateLocalEllipsoidUsingMultiPlanes(cv::Ma
     return e_local_normalized;
 }
 
+
+g2o::ellipsoid EllipsoidExtractor::EstimateLocalEllipsoidUsingNormalVoters(cv::Mat& depth, Eigen::Vector4d& bbox, cv::Mat& mask_cv, int label, double prob, Eigen::VectorXd &pose,  \
+                                camera_intrinsic &camera, pcl::PointCloud<PointType>::Ptr& pcd_ptr){
+
+    g2o::ellipsoid e;
+    miSystemState = 0;  // reset the state
+    mSymmetryOutputData.result = false; // reset
+    mResult = false;
+
+    if(!mbSetPlane)
+    {
+        std::cerr << " Please set ground plane first." << std::endl;
+        return e;
+    }
+
+    clock_t time_start = clock();
+    // 1. Get the object points after supporting plane filter and euclidean filter in the world coordinate
+    // 注意: 该过程由于进行了与世界平面的操作, 所以位于世界坐标系下.
+    pcl::PointCloud<PointType>::Ptr pCloudPCL = ExtractPointCloud(depth,bbox,mask_cv,pose,camera);
+
+    //  2"<< std::endl;
+
+    // std::cout<< " [debug] EstimateLocalEllipsoidUsingNormalVoters 1" << std::endl;
+    if (pCloudPCL == NULL) {
+        // std::cerr << "ExtractPointCloud, pCloudPCL == NULL, 强制退出" << endl;
+        std::cerr << "ExtractPointCloud, pCloudPCL == NULL" << endl;
+        pcd_ptr = NULL;
+        // exit(1);
+    }
+    else{
+        // 此处可能需要重新   
+        // 报错，不知道为什么
+        *pcd_ptr = *pCloudPCL;
+        // pcd_ptr = NULL;
+    }
+
+    // std::cout<< " [debug] EstimateLocalEllipsoidUsingNormalVoters 2" << std::endl;
+    clock_t time_1_ExtractPointCloud = clock();
+    if(miSystemState > 0 )
+        return e;
+
+    // ✅ 4. 构建重力坐标系
+    // 搭建世界系描述下的物体重力坐标系
+    // gravity 系: 位于物体中心, Z轴与重力方向对齐.
+    // 转化之后，点云的正方向即z轴, 即世界系重力方向.
+    // get supporting plane
+    // std::cout<< " [debug] EstimateLocalEllipsoidUsingNormalVoters 2-1" << std::endl;
+    // 获取默认支撑平面（地面）；
+    VectorXd sup_plane = mpDefaultSupportingPlane->param;    
+    // 计算物体点云中心；
+    Eigen::Vector4d centroid; pcl::compute3DCentroid(*pCloudPCL, centroid);
+    // 构造从世界坐标系到重力坐标系的变换 Twg：
+    g2o::SE3Quat Twg = GenerateGravityCoordinate(centroid.head(3), sup_plane.head(3));
+
+    // ✅ 5. 将点云转换到重力坐标系
+    // 获得该系下的点云.
+    // std::cout<< " [debug] EstimateLocalEllipsoidUsingNormalVoters 2-2, 当前帧中的物体点云中心:"<< centroid.transpose() << std::endl;
+    g2o::SE3Quat SE3Tgw = Twg.inverse();
+    Eigen::Matrix4d transform_gw = SE3Tgw.to_homogeneous_matrix();
+    pcl::PointCloud<PointType>::Ptr pCloudPCLGravity(new pcl::PointCloud<PointType>);
+    pcl::transformPointCloud (*pCloudPCL, *pCloudPCLGravity, transform_gw);
+
+    // 可视化: 重力系下的物体
+    ORB_SLAM2::PointCloud* pObjectCloudGravity = pclXYZToQuadricPointCloudPtr(pCloudPCLGravity); // normalized coordinate
+    mpMap->AddPointCloudList("cloud_gravity", pObjectCloudGravity, 0);
+    // delete pObjectCloudGravity; pObjectCloudGravity = NULL;
+
+    // ✅ 6. 估计物体主方向（Yaw角）
+    // 开始计算朝向: 使用法向量投票器    
+    // 计算该点云的 normal voters
+    // std::cout<< " [debug] EstimateLocalEllipsoidUsingNormalVoters 3" << std::endl;
+    double yaw = NormalVoter(pCloudPCLGravity);  // 该函数获得一个位于 XY 平面内的, 三维法向量. 可与 Z轴组完整旋转矩阵.
+    // 通过yaw角度将 Gravity - > normalized 
+    g2o::SE3Quat Tgn = GenerateTransformNormalToGravity(yaw); 
+
+    // ✅ 7. 点云变换到归一化坐标系
+    Eigen::Matrix4d transform_ng = Tgn.inverse().to_homogeneous_matrix();
+    pcl::PointCloud<PointType>::Ptr pCloudPCLNormalized(new pcl::PointCloud<PointType>);
+    pcl::transformPointCloud (*pCloudPCLGravity, *pCloudPCLNormalized, transform_ng);
+    ORB_SLAM2::PointCloud* pObjectCloudNormalized = pclXYZToQuadricPointCloudPtr(pCloudPCLNormalized); // normalized coordinate
+
+    // 可视化: 物体重力坐标系下，转角对齐后的点云
+    // std::cout<< " [debug] EstimateLocalEllipsoidUsingNormalVoters 3-1, " << std::endl;
+    // mpMap->AddPointCloudList("cloud_normalized", pObjectCloudNormalized, 0);
+    // std::cout<< " [debug] EstimateLocalEllipsoidUsingNormalVoters 3-2, " << std::endl;
+
+    // ✅ 8. 椭球建模（归一化坐标系下）
+    // 基于PCA结果生成最小包围盒顶点. 位于相机坐标系内.
+    // std::cout<< " [debug] EstimateLocalEllipsoidUsingNormalVoters 4" << std::endl;
+    g2o::ellipsoid e_zero_normalized = GetEllipsoidFromNomalizedPointCloud(pObjectCloudNormalized);
+    delete pObjectCloudNormalized; pObjectCloudNormalized = NULL;
+
+    // ✅ 9. 椭球体变换回相机坐标系
+    // 变换回局部坐标系
+    g2o::SE3Quat campose_wc; campose_wc.fromVector(pose);
+    g2o::SE3Quat Twn = Twg * Tgn;
+    g2o::SE3Quat Tcn = campose_wc.inverse() * Twn;
+    g2o::ellipsoid e_local_normalized = e_zero_normalized.transform_from(Tcn);
+    
+    // -------------- 到此已获得相机坐标系下的椭球体!
+
+    // ✅ 10. 添加bbox约束平面（提升精度）
+    Matrix3d calib = CameraToCalibMatrix(camera);
+    GenerateConstrainPlanesToEllipsoid(e_local_normalized, bbox, depth, campose_wc, calib);
+    VisualizeConstrainPlanes(e_local_normalized, campose_wc, mpMap); // 中点定在全局坐标系
+
+    // 评估本次提取的概率 : 投影回来的矩形与 bbox 的 IoU 作为规律.
+    double prob_3d = CalculateProbability(e_local_normalized, bbox, calib);
+
+    // calculate the probability of the single-frame ellipsoid estimation
+    // std::cout<< " [debug] EstimateLocalEllipsoidUsingNormalVoters 6" << std::endl;
+    e_local_normalized.prob_3d = prob_3d;
+    e_local_normalized.prob = prob * prob_3d;    // measurement_prob * symmetry_prob
+    e_local_normalized.miLabel = label;
+    e_local_normalized.bbox = bbox;
+    e_local_normalized.bPointModel = false;
+    mResult = true;
+    clock_t time_2_fullProcess = clock();
+    
+    // // output the main running time
+    // cout << "\t -- System Time [EllipsoidExtractor.cpp] :" << endl ;
+    // cout << "\t \t ---- time_ExtractPointCloud: " <<(double)(time_1_ExtractPointCloud - time_start) / CLOCKS_PER_SEC << "s" << endl;
+    // cout << "\t \t ---- total_ellipsoidExtraction: " <<(double)(time_2_fullProcess - time_start) / CLOCKS_PER_SEC << "s" << endl;
+    // cout << endl;
+
+    // 此处添加一个判断, 若 尺寸过小 则舍弃
+    if(e_local_normalized.scale(0) <= 0.05 || e_local_normalized.scale(1) <= 0.05 || e_local_normalized.scale(2) <= 0.05)
+    {
+        mResult = false;
+    }
+    else 
+        mResult = true;
+
+    return e_local_normalized;
+}
+
 Vector3d Get3DPointFromDepth(int x, int y, const cv::Mat& depth_, const camera_intrinsic& camera)
 {
     cv::Mat depth = depth_;
@@ -904,6 +1040,8 @@ Vector3d Get3DPointFromDepth(int x, int y, const cv::Mat& depth_, const camera_i
     center_3d << p.x, p.y, p.z;
     return center_3d;
 }
+
+
 
 ConstrainPlane* GenerateCenterConstrainPlane(const Vector4d& bbox, const cv::Mat& depth, const camera_intrinsic& camera)
 {

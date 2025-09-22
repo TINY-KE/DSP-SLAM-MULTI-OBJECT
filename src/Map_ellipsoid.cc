@@ -75,7 +75,9 @@ bool Map::AddPointCloudList(const string &name, std::vector<pcl::PointCloud<pcl:
 }
 
 bool Map::AddPointCloudList(const string& name, PointCloud* pCloud, int type){  //默认是 REPLACE_POINT_CLOUD（0）
+    std::cout<<"[debug] Map::AddPointCloudList 1: "<<name<<std::endl;
     unique_lock<mutex> lock(mMutexMap);
+    std::cout<<"[debug] Map::AddPointCloudList 2: "<<std::endl;
     if(pCloud == NULL)
     {
         std::cout << "NULL point cloud." << std::endl;

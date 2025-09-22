@@ -360,15 +360,22 @@ namespace ORB_SLAM2 {
                         mpMap->AddPointCloudList("ObjectPCDCloud - Newest Detection", pDeepPointsInObject, 0);
                     }
                 }
-                else if(type == 2)
-                {
-                    // // std::cout<<"[debug] Tracking::UpdateDepthEllipsoidEstimation, Using Supporting Planes" << std::endl;
-                    // g2o::plane* pSupPlaneLocal = new g2o::plane(mGroundPlane);
-                    // pSupPlaneLocal->transform(pFrame->cam_pose_Twc.inverse());
-                    // e_extractByFitting_newSym = \
-                    //     mpEllipsoidExtractor->EstimateLocalEllipsoidWithSupportingPlane( \
-                    //         pFrame->pointcloud_img, measurement, label, measurement_prob, pose, mCamera, pSupPlaneLocal);
-                    // auto det = mvpObjectDetections[i];  det->isValidPcd = true;
+                else if(type == 2){
+                    cv::Mat mask_cv = mvImObjectMasks[i];
+                    pcl::PointCloud<PointType>::Ptr pcd_ptr_of_frame(new pcl::PointCloud<PointType>);
+                    e_extractByFitting_newSym = \
+                        mpEllipsoidExtractor->EstimateLocalEllipsoidUsingNormalVoters(\
+                            pFrame->pointcloud_img, measurement, mask_cv, label, measurement_prob, pose, mCamera, pcd_ptr_of_frame);
+                    auto det = mvpObjectDetections[i];
+                    if (pcd_ptr_of_frame==NULL){
+                        std::cerr << "[Tracking::UpdateDepthEllipsoid Estimation]  椭球体提取中，当前帧点云为空" << std::endl;
+                        det->isValidPcd = false;
+                    }
+                    else{
+                        det->setPcdPtr(pcd_ptr_of_frame);
+                        ORB_SLAM2::PointCloud* pDeepPointsInObject = pclXYZToQuadricPointCloudPtr(pcd_ptr_of_frame); // normalized coordinate
+                        mpMap->AddPointCloudList("ObjectPCDCloud - Newest Detection", pDeepPointsInObject, 0);
+                    }
                 }
 
                 

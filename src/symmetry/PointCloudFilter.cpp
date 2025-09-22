@@ -60,6 +60,60 @@ ORB_SLAM2::PointCloud getPointCloudInRect(cv::Mat &depth, const VectorXd &detect
     return getPointCloudInRect(depth, rgb, detect, camera, range);
 }
 
+
+ORB_SLAM2::PointCloud getPointCloudInMask(cv::Mat &depth, const VectorXd &detect, cv::Mat& mask_cv, ORB_SLAM2::camera_intrinsic &camera, double range) {
+    cv::Mat rgb = cv::Mat(depth.rows, depth.cols, CV_8UC3, cv::Scalar(0,0,0));    
+
+        // detect : x1 y1 x2 y2 
+    ORB_SLAM2::PointCloud cloud;
+
+    // scan the points in the mask
+    int x1 = int(detect(0));
+    int y1 = int(detect(1));
+    int x2 = int(detect(2));
+    int y2 = int(detect(3));
+
+    double maskErrosion = 5.0;
+    cv::Mat mask_erro = mask_cv.clone();
+    cv::Mat kernel = getStructuringElement(cv::MORPH_ELLIPSE,
+            cv::Size(2 * maskErrosion + 1, 2 * maskErrosion + 1),
+            cv::Point(maskErrosion, maskErrosion));
+    cv::erode(mask_cv, mask_erro, kernel);
+    
+    for (int y = y1; y < y2; y = y+3)
+    {
+        for (int x = x1; x < x2; x = x+3)
+        {
+            int val = (int)mask_erro.at<float>(y, x);
+            if (val <= 0)  // outside the mask
+            {
+                continue;
+            }
+
+            ushort *ptd = depth.ptr<ushort>(y);
+            ushort d = ptd[x];
+
+            ORB_SLAM2::PointXYZRGB p;
+            p.z = d / camera.scale;
+            if (p.z <= 0.1 || p.z > range)    // if the depth is valid
+                continue;
+
+            p.x = (x - camera.cx) * p.z / camera.fx;
+            p.y = (y - camera.cy) * p.z / camera.fy;
+
+            p.b = rgb.ptr<uchar>(y)[x * 3];
+            p.g = rgb.ptr<uchar>(y)[x * 3 + 1];
+            p.r = rgb.ptr<uchar>(y)[x * 3 + 2];
+
+            p.size = 1;
+
+            cloud.push_back(p);
+        }
+    }
+
+    return cloud;
+}
+
 void filterGround(ORB_SLAM2::PointCloud** ppCloud)
 {
     ORB_SLAM2::PointCloud *pCloudFiltered = new ORB_SLAM2::PointCloud;

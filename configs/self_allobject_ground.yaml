@@ -16,7 +16,7 @@ Camera.p1: 0.0
 Camera.p2: 0.0
 
 # Camera frames per second
-Camera.fps: 30.0
+Camera.fps: 15.0
 Camera.bf: 40.0  # IR projector baseline times fx (aprox.)
 # Color order of the images (0: BGR, 1: RGB. It is ignored if images are grayscale)
 Camera.RGB: 1
@@ -76,6 +76,7 @@ DecoderPaths: ["weights/deepsdf/chairs_64",
 use_ros: 0   # 1：读取存贮在本地的ros.png   0：根据association.txt读取图片
 DatasetPathRoot: "no use"
 Dataset.Path.Map: "no use"
+Dataset.step: 1
 Dataset.Type: "AllObjectsOnGround"
 Visualization.Map.Filter.DisThresh: 1
 Minimux_Points_To_Judge_Good: 5  #20  #视情况，看是否要减小到5
@@ -119,7 +120,7 @@ EllipsoidExtractor.RefineEllipsoid.Border.y2.Pixels: 0
 
 EllipsoidExtractor_DEPTH_RANGE: 7
 
-Debug.EllipsoidExtraction.UsingMultiPlanes: 1 # 最终发现，两者没区别  # 1：使用多平面函数，2：使用支撑平面（输入的平面的local plane） 
+Debug.EllipsoidExtraction.UsingMultiPlanes: 2  # 1：bbox过滤点云，2：掩码过滤点云
 Debug.EllipsoidExtraction.OpenRelations: 0
 
 Ellipsoid.VisualzeDepthPoints: 1
@@ -184,4 +185,4 @@ Tworld_camera.qz:  0.4335
 Tworld_camera.qw:  -0.4335
 Tworld_camera.tx: 0.0
 Tworld_camera.ty: 0.0
-Tworld_camera.tz: 1.17
+Tworld_camera.tz: 1.0

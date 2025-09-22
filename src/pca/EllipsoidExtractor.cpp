@@ -268,6 +268,169 @@ pcl::PointCloud<PointType>::Ptr EllipsoidExtractor::ExtractPointCloud(cv::Mat& d
     return clear_cloud_ptr;
 }
 
+
+
+pcl::PointCloud<PointType>::Ptr EllipsoidExtractor::ExtractPointCloud(cv::Mat& depth, Eigen::Vector4d& bbox, cv::Mat& mask_cv, Eigen::VectorXd &pose, camera_intrinsic& camera)
+{    
+    clock_t time_1_start = clock();
+
+    assert( mbSetPlane && "Please set the supporting plane first.");
+
+    double depth_range = Config::ReadValue<double>("EllipsoidExtractor_DEPTH_RANGE", 6); 
+    // std::cout<< "[debug]EllipsoidExtractor::ExtractPointCloud: depth_range = " << depth_range << std::endl;
+    g2o::SE3Quat campose_wc; campose_wc.fromVector(pose.head(7));
+
+    PointCloud* pPoints_local = new PointCloud(getPointCloudInMask(depth, bbox, mask_cv, camera, depth_range));
+
+    // downsample points with small grid
+    // PointCloud* pPoints_local_downsample = new PointCloud;
+    // DownSamplePointCloudOnly(*pPoints_local, *pPoints_local_downsample, 0.02);
+
+    // 产生两组可视化点云 world, world_downsample
+    PointCloud* pPoints_world = transformPointCloud(pPoints_local, &campose_wc);
+    // PointCloud* pPoints_world_downsample = transformPointCloud(pPoints_local_downsample, &campose_wc);
+    // std::cout<<"[debug]EllipsoidExtractor::ExtractPointCloud 1: 可视化物体的深度点云[过滤前]"<<std::endl;
+    // VisualizePointCloud("Points_world", pPoints_world, Vector3d(0,0.5,0), 2);
+    // VisualizePointCloud("Points_world_downsample", pPoints_world_downsample, Vector3d(0,0.8,0), 2);
+
+    // 在此滤除离群点
+    clock_t time_1_1_outliers_filter_start = clock();
+    auto inputPclPtr = QuadricPointCloudToPclXYZ(*pPoints_local);
+
+
+    // /*半径滤波器*/
+    // int Config_MinNeighborsInRadius = Config::Get<int>("EllipsoidExtractor.MinNeighborsInRadius");
+    // pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_after_filter(new pcl::PointCloud<pcl::PointXYZ>);
+    // pcl::RadiusOutlierRemoval<pcl::PointXYZ> ror;  //创建滤波器
+    // ror.setInputCloud(inputPclPtr);    //设置输入点云
+    // ror.setRadiusSearch(0.1);     //设置半径为100的范围内找临近点
+    // ror.setMinNeighborsInRadius(Config_MinNeighborsInRadius); //设置查询点的邻域点集数小于2的删除
+    // ror.filter(*cloud_after_filter);
+    // std::cout << "debug: Config_MinNeighborsInRadius: " << Config_MinNeighborsInRadius << std::endl;
+
+    /* 统计滤波器 (慢?) */
+    // Create the filtering object
+    int Config_MeanK = Config::Get<int>("EllipsoidExtractor.StatisticalOutlierRemoval.MeanK");
+    pcl::PointCloud<pcl::PointXYZ>::Ptr cloud_after_filter(new pcl::PointCloud<pcl::PointXYZ>);
+    pcl::StatisticalOutlierRemoval<pcl::PointXYZ> sor;
+    sor.setInputCloud (inputPclPtr);
+    sor.setMeanK (Config_MeanK);
+    sor.setStddevMulThresh (1.0);
+    sor.filter (*cloud_after_filter);
+
+    // std::cout << "filter before/after points: " << inputPclPtr->points.size() << " / " << cloud_after_filter->points.size() << std::endl;
+    ORB_SLAM2::PointCloud* pCloudFiltered = pclXYZToQuadricPointCloudPtr(cloud_after_filter);
+    clock_t time_1_1_outliers_filter_end = clock();
+    
+    // transform to the world coordinate.
+    PointCloud* pPoints_global = transformPointCloud(pCloudFiltered, &campose_wc);
+    delete pPoints_local; pPoints_local = NULL;
+    // delete pPoints_local_downsample; pPoints_local_downsample = NULL;
+
+    // 新添加的可视化: 滤波后
+    // std::cout<<"[debug]EllipsoidExtractor::ExtractPointCloud 2: 可视化物体的深度点云[过滤后]"<<std::endl;
+    PointCloud* pCloudFilteredWorld = transformPointCloud(pCloudFiltered, &campose_wc);
+    // VisualizePointCloud("CloudFiltered", pCloudFilteredWorld, Vector3d(0,1.0,0), 2);
+    delete pCloudFiltered; pCloudFiltered = NULL;
+    
+    mpPointsDebug = pPoints_global;
+    clock_t time_2_getPointsDownsampleTransToWorld = clock();
+
+    PointCloud* pPoints_planeFiltered;
+
+    if(!mbOpenMHPlanesFilter){   //如果当前帧中提取曼哈顿平面成功，则开启
+        // std::cout << "[debug] 物体物体点云过滤，仅使用地平面进行滤波，" << std::endl;
+        pPoints_planeFiltered = ApplySupportingPlaneFilter(pPoints_global);
+    }
+    else 
+    {
+        // std::cout << "[debug] 物体物体点云过滤，使用曼哈顿支撑平面进行滤波，" ;
+        std::vector<g2o::plane*> vMHPlanes = mvpHomeDominantMHPlanes;
+        vMHPlanes.push_back(mpDefaultSupportingPlane);
+        pPoints_planeFiltered = ApplyMHPlanesFilter(pPoints_global, vMHPlanes);
+    }
+    clock_t time_3_SupportingPlaneFilter = clock();
+    // std::cout<<"[debug]EllipsoidExtractor::ExtractPointCloud 3: 可视化物体所处的水平面"<<std::endl;
+
+
+    VisualizePointCloud("planeFiltered", pPoints_planeFiltered, Vector3d(1.0,0,0), 2);
+    clock_t time_4_VisualizePointCloud = clock();
+
+    if( pPoints_planeFiltered->size() < 1 )
+    {
+        std::cout << "No point left." << std::endl;
+        std::cout << "pPoints_global points: " << pPoints_global->size() << std::endl;    
+        std::cout << "No enough point cloud after Filtering. Num:  " << pPoints_planeFiltered->size() << std::endl;
+        miSystemState = 4;
+        return NULL;
+    }
+
+    // // 防止内部都是 NaN
+    // std::vector<int> indices; //保存去除的点的索引
+    // pcl::PointCloud<PointType>::Ptr pPoints_planeFiltered_pcl = QuadricPointCloudToPclXYZ(*pPoints_planeFiltered);
+    // pcl::removeNaNFromPointCloud(*pPoints_planeFiltered_pcl,*pPoints_planeFiltered_pcl, indices); //去除点云中的NaN点，（m是个结构体对象，参数１是输入，参数二是输出。indices一般不用）
+    // if( pPoints_planeFiltered_pcl->size() < 1 )
+    // {
+    //     std::cout << "No point left AFTER REMOVING NAN." << std::endl;
+    //     miSystemState = 4;
+    //     return NULL;
+    // }
+
+    PointCloud* pPoints_sampled = pPoints_planeFiltered;
+
+    if( pPoints_sampled->size() < 1 ) 
+    {
+        std::cout << "No enough point cloud after sampling. Num:  " << pPoints_sampled->size() << std::endl;
+        miSystemState = 3;
+        return NULL;
+    }
+
+    // 计算中点
+    Vector3d center;
+    bool bCenter = GetCenter(depth, bbox, pose, camera, center);
+    if(!bCenter) {
+        miSystemState = 1;
+
+        std::cout << "Can't Find Center. Bbox: " << bbox.transpose() << std::endl;
+        return NULL;   
+    }
+    clock_t time_5_GetCenter = clock();
+
+    // 使用快速欧几里德聚类进行滤波
+    mDebugCenter = center;
+    PointCloud* pPointsEuFiltered = ApplyEuclideanFilter(pPoints_sampled, center);   //获取miEuclideanFilterState（欧几里得过滤的结果）
+    // delete pPoints_sampled; pPoints_sampled = NULL;
+
+    if( miEuclideanFilterState > 0 )
+    {
+        miSystemState = 2;  // fail to filter
+        std::cout<<"fail to filter"<<std::endl;
+        return NULL;
+    }
+    clock_t time_6_ApplyEuclideanFilter = clock();
+
+    // we have gotten the object points in the world coordinate
+    pcl::PointCloud<PointType>::Ptr clear_cloud_ptr = QuadricPointCloudToPclXYZ(*pPointsEuFiltered);
+
+    mpPoints = pPointsEuFiltered;
+
+    // std::cout<<"[debug]EllipsoidExtractor::ExtractPointCloud 4: 可视化欧几里得聚类后的结果"<<std::endl;
+    VisualizePointCloud("EuclideanFiltered", mpPoints, Vector3d(0.4,0,1.0), 2);;
+    clock_t time_7_VisualizePointCloud = clock();
+
+    // output: time efficiency
+    // cout << "****** System Time [ExtractPoints.cpp] ******" << endl ;
+    // cout << "time_2_getPointsDownsampleTransToWorld: " <<(double)(time_2_getPointsDownsampleTransToWorld - time_1_start) / CLOCKS_PER_SEC << "s" << endl;
+    // cout << "time_3_SupportingPlaneFilter: " <<(double)(time_3_SupportingPlaneFilter - time_2_getPointsDownsampleTransToWorld) / CLOCKS_PER_SEC << "s" << endl;
+    // cout << "time_4_VisualizePointCloud: " <<(double)(time_4_VisualizePointCloud - time_3_SupportingPlaneFilter) / CLOCKS_PER_SEC << "s" << endl;
+    // cout << "time_5_GetCenter: " <<(double)(time_5_GetCenter - time_4_VisualizePointCloud) / CLOCKS_PER_SEC << "s" << endl;
+    // cout << "time_6_ApplyEuclideanFilter: " <<(double)(time_6_ApplyEuclideanFilter - time_5_GetCenter) / CLOCKS_PER_SEC << "s" << endl;
+    // cout << "time_7_VisualizePointCloud: " <<(double)(time_7_VisualizePointCloud - time_6_ApplyEuclideanFilter) / CLOCKS_PER_SEC << "s" << endl;
+    cout << "[debug] EllipsoidExtractor::ExtractPointCloud End, Time: " << (double)(time_1_1_outliers_filter_end - time_1_1_outliers_filter_start) / CLOCKS_PER_SEC << "s" << endl;
+    return clear_cloud_ptr;
+}
+
+
 PCAResult EllipsoidExtractor::ProcessPCA(pcl::PointCloud<PointType>::Ptr &pCloudPCL)
 {
     pcl::PointCloud<PointType>::Ptr cloud = pCloudPCL;
