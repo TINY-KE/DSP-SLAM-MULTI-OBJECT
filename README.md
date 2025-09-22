@@ -225,6 +225,9 @@ pybind11::handle::dec_ref() is being called while the GIL is either not held or 
 
         + 将顶点导入到DSP模型中，判断sdf值是否大于阈值，
 
+    + MySimDataset自制数据集
+        + 运行成功了一次MySimDataset,但不知还能否复现,其中有几把椅子不错, 可以存储下来
+        + 
 
     + TODO: 要不要把orb点也加入到dsp表面点中，从而弥补沙发的缺陷
     + 第1把椅子为什么生成不了
