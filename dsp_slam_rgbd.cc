@@ -46,6 +46,8 @@ using namespace std;
 void LoadImages(const string &strAssociationFilename, vector<string> &vstrImageFilenamesRGB,
                 vector<string> &vstrImageFilenamesD, vector<double> &vTimestamps, bool order_rgb_depth = 1);
 
+bool check_order_rgb_depth();
+
 int main(int argc, char **argv)
 {
     ros::init(argc, argv, "RGBD");
@@ -88,7 +90,8 @@ int main(int argc, char **argv)
 
     std::cout<< "System Init 6-2: "<<strAssociationFilename << std::endl;
 
-    LoadImages(strAssociationFilename, vstrImageFilenamesRGB, vstrImageFilenamesD, vTimestamps, false);
+
+    LoadImages(strAssociationFilename, vstrImageFilenamesRGB, vstrImageFilenamesD, vTimestamps, check_order_rgb_depth());
 
     std::cout<< "System Init 6" << std::endl;
 
@@ -338,7 +341,24 @@ void LoadImages(const string &strAssociationFilename, vector<string> &vstrImageF
                 vstrImageFilenamesRGB.push_back(sRGB);
             }
         }
+        // std::cout<<"sRGB: "<< vstrImageFilenamesRGB.front() <<std::endl;
+        // std::cout<<"sD: "<< vstrImageFilenamesD.front() <<std::endl;
     }
 }
 
 
+bool check_order_rgb_depth(){
+    string dataset_type = ORB_SLAM2::Config::Get<string>("Dataset.Type");
+
+    if(dataset_type == "ICL-NUIM" || dataset_type == "REPLICA"){
+            return false;
+    }
+    else if(dataset_type == "AllObjectsOnGround")// TUM 
+    {
+            return true;
+    }
+    else{
+        std::cerr << "Error: check_order_rgb_depth" <<std::endl;
+        std::exit(0);
+    }
+}

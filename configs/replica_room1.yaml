@@ -5,10 +5,10 @@
 #--------------------------------------------------------------------------------------------
 
 # Camera calibration and distortion parameters (OpenCV)
-Camera.fx: 554.254691191187
-Camera.fy: 554.254691191187
-Camera.cx: 320.5
-Camera.cy: 240.5
+Camera.fx: 600.0
+Camera.fy: 600.0
+Camera.cx: 599.5
+Camera.cy: 339.5
 
 Camera.k1: 0.0
 Camera.k2: 0.0
@@ -16,14 +16,14 @@ Camera.p1: 0.0
 Camera.p2: 0.0
 
 # Camera frames per second
-Camera.fps: 30.0
+Camera.fps: 25.0
 Camera.bf: 40.0  # IR projector baseline times fx (aprox.)
 # Color order of the images (0: BGR, 1: RGB. It is ignored if images are grayscale)
 Camera.RGB: 1
 
 # Config path for Python detectors
-DetectorConfigPath: configs/config_self_allobject_ground.json
-Objects.maskErrosion: 5
+DetectorConfigPath: configs/config_replica_room1.json
+Objects.maskErrosion: 15
 
 #--------------------------------------------------------------------------------------------
 # ORB Parameters
@@ -42,7 +42,7 @@ ORBextractor.nLevels: 8
 # Image is divided in a grid. At each cell FAST are extracted imposing a minimum response.
 # Firstly we impose iniThFAST. If no corners are detected we impose a lower value minThFAST
 # You can lower these values if your images have low contrast
-ORBextractor.iniThFAST: 12
+ORBextractor.iniThFAST: 20
 ORBextractor.minThFAST: 7
 
 #--------------------------------------------------------------------------------------------
@@ -53,13 +53,17 @@ Viewer.KeyFrameLineWidth: 2
 Viewer.GraphLineWidth: 4
 Viewer.PointSize: 2
 Viewer.CameraSize: 0.15  # originally 0.7
-Viewer.CameraLineWidth:  3
+Viewer.CameraLineWidth:  6
 Viewer.ViewpointX: 0
 Viewer.ViewpointY: -10   # originally -10
 Viewer.ViewpointZ: -0.1
 Viewer.ViewpointF: 2000
 Viewer.UsePangolin: 1
 
+
+#--------------------------------------------------------------------------------------------
+# EDSP
+#--------------------------------------------------------------------------------------------
 
 YoloClasses: [56, 57, 2, 75, 60, 59, 62, 63, 73]
 DecoderPaths: ["weights/deepsdf/chairs_64",
@@ -74,15 +78,15 @@ DecoderPaths: ["weights/deepsdf/chairs_64",
 
 # ros
 use_ros: 0   # 1：读取存贮在本地的ros.png   0：根据association.txt读取图片
-DatasetPathRoot: "no use"
-Dataset.Path.Map: "no use"
-Dataset.Type: "AllObjectsOnGround"
+DatasetPathRoot: "./build/"  # 存储ros.png的地方
+Dataset.Path.Map: "/home/robotlab/dataset/ICL-NUIM/living_room_traj2n_frei_png/map/dataset.pcd"  # 用于可视化的全局地图
+Dataset.Type: "REPLICA"
 Visualization.Map.Filter.DisThresh: 1
 Minimux_Points_To_Judge_Good: 5  #20  #视情况，看是否要减小到5
 
 # camera
-Camera.width: 640
-Camera.height: 480
+Camera.width: 1200
+Camera.height: 680
 
 # Close/Far threshold. Baseline times.
 ThDepth: 40.0
@@ -155,7 +159,6 @@ Mapping.ObjectScale: 1.1
 Mapping.use_ellipsoid_verticles: 1
 Mapping.ellipsoid_verticles_scale: 0.05
 Mapping.ellipsoid_verticles_degree: 18
-Mapping.FillterGroundPCD: 1
 
 # use_object
 useObjectConstruct: 1
@@ -176,12 +179,13 @@ Visualization.Builder.VoxelSize: 0.05
 
 # #  相机俯视20度   对应gazebo相机移动参数3.5 1 20.0  1
 # # https://www.andre-gaschler.com/rotationconverter/
-# # Euler angles (degrees) ZYX   [ x: -90.00, y: 0, z: -90 ]
-# # Quaternion [x, y, z, w]  [ -0.5, 0.5, -0.5, 0.5 ]
-Tworld_camera.qx: 0.5585
-Tworld_camera.qy: -0.5585
-Tworld_camera.qz:  0.4335
-Tworld_camera.qw:  -0.4335
-Tworld_camera.tx: 0.0
-Tworld_camera.ty: 0.0
-Tworld_camera.tz: 1.17
+# double angle_deg = -75.0;
+Tworld_camera.qx: -0.608761     
+Tworld_camera.qy: 0.
+Tworld_camera.qz: 0.
+Tworld_camera.qw: 0.793353
+
+
+Tworld_camera.tx: -2.235586
+Tworld_camera.ty: -0.463938
+Tworld_camera.tz: 2.186805

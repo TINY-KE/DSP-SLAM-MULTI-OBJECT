@@ -1201,22 +1201,27 @@ void Tracking::CreateNewKeyFrame()
     else if (mSensor == System::RGBD)
     {
         std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now();
-        GetObjectDetectionsRGBD(pKF);
-        //DetectObjects(pKF);
         
-        // // ellipsoid-version
-        // // 针对关键帧，根据物体检测的结果，提取椭球体
-        UpdateObjectEllipsoidObservation(&mCurrentFrame, pKF);
+        
+            GetObjectDetectionsRGBD(pKF);
+            //DetectObjects(pKF);
+            
+        bool run_object_detection = Config::Get<int>("Tracking.run_object_detection");
+        if(run_object_detection)
+        {   
+            // // ellipsoid-version
+            // // 针对关键帧，根据物体检测的结果，提取椭球体
+            UpdateObjectEllipsoidObservation(&mCurrentFrame, pKF);
 
 
-        // 物体的数据关联，使用深度点云
-        if (!mpMap->GetAllMapObjects().empty())
-        {
-            // AssociateObjects(pKF);
-            // AssociateObjectsByProjection(pKF);
-            AssociateObjectsByDistance(pKF);
+            // 物体的数据关联，使用深度点云
+            if (!mpMap->GetAllMapObjects().empty())
+            {
+                // AssociateObjects(pKF);
+                // AssociateObjectsByProjection(pKF);
+                AssociateObjectsByDistance(pKF);
+            }
         }
-
         
 
         std::chrono::steady_clock::time_point t2 = std::chrono::steady_clock::now();

@@ -11,16 +11,17 @@
         // "program": "${workspaceFolder}/instanceAnnotation",
         "args": [
 
-        // "Vocabulary/ORBvoc.bin",
-        // "configs/freiburg_001.yaml", 
-        // "/home/robotlab/dataset/ICL-NUIM/living_room_traj2n_frei_png/associations.txt ", 
-        // "map/freiburg/001"
-
-        "Vocabulary/ORBvoc.bin",
-        "configs/ICL_NUIM_home_2.yaml",
-        "/home/robotlab/dataset/ICL-NUIM/living_room_traj2n_frei_png",
-        "/home/robotlab/dataset/ICL-NUIM/living_room_traj2n_frei_png/associations.txt",
-        "map/self/GroundObjects"
+          "Vocabulary/ORBvoc.bin",
+          "configs/replica_room1.yaml",
+          "/home/robotlab/dataset/Replica_room1",
+          "/home/robotlab/dataset/Replica_room1/associations.txt",
+          "map/self/GroundObjects"
+          
+          // "Vocabulary/ORBvoc.bin",
+          // "configs/ICL_NUIM_home_2.yaml",
+          // "/home/robotlab/dataset/ICL-NUIM/living_room_traj2n_frei_png",
+          // "/home/robotlab/dataset/ICL-NUIM/living_room_traj2n_frei_png/associations.txt",
+          // "map/self/GroundObjects"
             
           // "Vocabulary/ORBvoc.bin",
           // "configs/self_allobject_ground.yaml",

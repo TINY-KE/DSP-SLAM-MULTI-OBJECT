@@ -626,7 +626,7 @@ int Tracking::associateDetWithObject(ORB_SLAM2::KeyFrame *pKF, MapObject* pMO, i
         // 融合PCD点云
         pMO->AddDepthPointCloudFromObjectDetection(detKF1->getPcdPtr());
         // 更新数据关联后的物体的位姿形状
-        UpdateAssociatedObjectPoseAndScale(pMO);
+        // UpdateAssociatedObjectPoseAndScale(pMO);
 
         bool use_ellipsoid_verticles = Config::Get<int>("Mapping.use_ellipsoid_verticles");
         double ellipsoid_verticles_scale = Config::Get<double>("Mapping.ellipsoid_verticles_scale");

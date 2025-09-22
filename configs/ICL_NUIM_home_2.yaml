@@ -58,13 +58,12 @@ Viewer.ViewpointX: 0
 Viewer.ViewpointY: -10   # originally -10
 Viewer.ViewpointZ: -0.1
 Viewer.ViewpointF: 2000
+Viewer.UsePangolin: 1
 
 
 #--------------------------------------------------------------------------------------------
 # EDSP
 #--------------------------------------------------------------------------------------------
-Viewer.UsePangolin: 1
-Ellipsoid.VisualzeDepthPoints: 1
 
 YoloClasses: [56, 57, 2, 75, 60, 59, 62, 63, 73]
 DecoderPaths: ["weights/deepsdf/chairs_64",
@@ -79,8 +78,9 @@ DecoderPaths: ["weights/deepsdf/chairs_64",
 
 # ros
 use_ros: 0   # 1：读取存贮在本地的ros.png   0：根据association.txt读取图片
-DatasetPathRoot: "/home/robotlab/dataset/ICL-NUIM/living_room_traj2n_frei_png"
+DatasetPathRoot: "./build/"
 Dataset.Path.Map: "/home/robotlab/dataset/ICL-NUIM/living_room_traj2n_frei_png/dataset.pcd"
+Dataset.Type: "ICL-NUIM"
 Visualization.Map.Filter.DisThresh: 1
 Minimux_Points_To_Judge_Good: 5  #20  #视情况，看是否要减小到5
 
@@ -126,6 +126,8 @@ EllipsoidExtractor_DEPTH_RANGE: 7
 Debug.EllipsoidExtraction.UsingMultiPlanes: 1 # 最终发现，两者没区别  # 1：使用多平面函数，2：使用支撑平面（输入的平面的local plane） 
 Debug.EllipsoidExtraction.OpenRelations: 0
 
+Ellipsoid.VisualzeDepthPoints: 1
+
 
 # 地平面提取参数： Ground Plane Extraction
 Plane.MinSize: 100  #1000
@@ -139,6 +141,7 @@ Tracking.AssociateObjectWithEllipsold: 1
 Tracking.AssociateDebug: 0
 Tracking.AssociateIoUThresold: 0.42
 Tracking.AssociateDisThresold: 0.5
+Tracking.run_object_detection: 1
 
 # Bounding box filter
 Measurement.Border.Pixels: 10
@@ -156,6 +159,7 @@ Mapping.ObjectScale: 1.1
 Mapping.use_ellipsoid_verticles: 1
 Mapping.ellipsoid_verticles_scale: 0.05
 Mapping.ellipsoid_verticles_degree: 18
+
 # use_object
 useObjectConstruct: 1
 ComputeCuboidType: 3    #3：椭球体

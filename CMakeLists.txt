@@ -36,6 +36,7 @@ set(PYTHON_LIBRARIES  "/home/robotlab/anaconda3/envs/dsp-slam-lj/lib/libpython3.
 set(PYTHON_INCLUDE_DIRS  "/home/robotlab/anaconda3/envs/dsp-slam-lj/include/python3.7m")
 set(PYTHON_EXECUTABLE  "/home/robotlab/anaconda3/envs/dsp-slam-lj/bin/python3.7")
 set(PCL_DIR  /home/robotlab/thirdparty_install/pcl-1.13/share/pcl-1.13)
+message(STATUS "Found Pangolin: ${Pangolin_INCLUDE_DIRS}")
 
 find_package(OpenCV 3.2 REQUIRED)
 find_package(Eigen3 3.4.0 REQUIRED)
@@ -222,3 +223,11 @@ target_link_libraries(dsp_slam_ros ${PROJECT_NAME})
 #         ${PCL_LIBRARY_DIRS}
 #         EllipsoidExtractor
 # )
+
+
+
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR})
+add_executable(rpy rpy.cpp)
+target_link_libraries(rpy 
+                ${EIGEN3_LIBS}
+                )       
