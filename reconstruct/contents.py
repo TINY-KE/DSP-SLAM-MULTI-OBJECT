@@ -11,7 +11,7 @@ object_class_table = {
 "cup":[41],"fork":[42],"knife":[43],"spoon":[44],"bowl":[45],
 "banana":[46],"apple":[47],"sandwich":[48],"orange":[49],"broccoli":[50],
 "carrot":[51],"hot dog":[52],"pizza":[53],"donut":[54],"cake":[55],
-"chair":[56, 57],"couch":[13,56,57],"potted plant":[58],"bed":[59],"dining table":[60],
+"chair":[56],"couch":[13,57],"potted plant":[58],"bed":[59],"dining table":[60],
 "toilet":[61],"monitor":[62],"laptop":[63],"mouse":[64],"remote":[65],
 "keyboard":[66],"cell phone":[67],"microwave":[68],"oven":[69],"toaster":[70],
 "sink":[71],"refrigerator":[72],"book":[73],"clock":[74],"vase":[75],
@@ -48,10 +48,11 @@ object_classes_freiburg = ["car"]
 
 # object_classes_icl_nuim = ["bench", "chair", "bed", "dining table", "refrigerator", \
 #                            "vase", "cup", "bowl", "monitor"]
-object_classes_icl_nuim = ["bench", "chair", "bed", "dining table", "refrigerator", "monitor"]
+object_classes_icl_nuim = ["bench", "couch", "chair", "bed", "dining table", "refrigerator", "monitor"]
 # object_classes_icl_nuim = [c for c in object_classes]
 # object_classes_icl_nuim = ["bed", "dining table"]
 
 # object_classes_on_ground = ["bench", "chair", "potted plant", "bed", "dining table", "refrigerator"]
 object_classes_on_ground = ["bench", "chair", "potted plant", "bed", "refrigerator"]
+object_classes_on_ground = ["dining table", "chair", "couch"]
 object_classes_on_table = [c for c in object_classes if c not in object_classes_on_ground ]

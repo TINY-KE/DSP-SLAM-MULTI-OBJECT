@@ -33,7 +33,7 @@ namespace ORB_SLAM2 {
         int num = rls.size();
         // std::cout << "Relation Num: " << num << std::endl;
         
-        int mode = 0;   //clear
+        int mode = 0;   //REPLACE_POINT_CLOUD = 0, ADD_POINT_CLOUD = 1
 
         pMap->clearArrows();
         for(int i=0;i<num;i++)
@@ -77,41 +77,37 @@ namespace ORB_SLAM2 {
 
             
 
-            // 高亮对应平面的点云
-            int plane_id = rl.plane_id;
-            if(plane_id >= 0 && plane_id < vPlanePoints.size())
-            {
-                PointCloudPCL::Ptr pCloudPCL(new PointCloudPCL(vPlanePoints[rl.plane_id]));
-                ORB_SLAM2::PointCloud cloudQuadri = pclToQuadricPointCloud(pCloudPCL);
-                ORB_SLAM2::PointCloud* pCloudGlobal = transformPointCloud(&cloudQuadri, &Twc);
+            // // 高亮对应平面的点云
+            // int plane_id = rl.plane_id;
+            // if(plane_id >= 0 && plane_id < vPlanePoints.size())
+            // {
+            //     PointCloudPCL::Ptr pCloudPCL(new PointCloudPCL(vPlanePoints[rl.plane_id]));
+            //     ORB_SLAM2::PointCloud cloudQuadri = pclToQuadricPointCloud(pCloudPCL);
+            //     ORB_SLAM2::PointCloud* pCloudGlobal = transformPointCloud(&cloudQuadri, &Twc);
                 
 
-                if(rl.type == RELATION_TYPE::SUPPORTING){    // 支撑
-                    int r = 0;
-                    int g = 255;
-                    int b = 255;
-                    SetPointCloudProperty(pCloudGlobal, r, g, b, 4);
-                    pMap->AddPointCloudList(string("Relationship.Activiate Sup-Planes"), pCloudGlobal, mode);
-                }
-                else if(rl.type == RELATION_TYPE::BACKING){ // 倚靠
-                    int r = 255;
-                    int g = 0;
-                    int b = 255;
-                    SetPointCloudProperty(pCloudGlobal, r, g, b, 4);
-                    pMap->AddPointCloudList(string("Relationship.Activiate Back-Planes"), pCloudGlobal, mode);
-                }
+            //     if(rl.type == RELATION_TYPE::SUPPORTING){    // 支撑
+            //         int r = 0;
+            //         int g = 255;
+            //         int b = 255;
+            //         SetPointCloudProperty(pCloudGlobal, r, g, b, 4);
+            //         pMap->AddPointCloudList(string("Relationship.Activiate Sup-Planes"), pCloudGlobal, mode);
+            //     }
+            //     else if(rl.type == RELATION_TYPE::BACKING){ // 倚靠
+            //         int r = 255;
+            //         int g = 0;
+            //         int b = 255;
+            //         SetPointCloudProperty(pCloudGlobal, r, g, b, 4);
+            //         pMap->AddPointCloudList(string("Relationship.Activiate Back-Planes"), pCloudGlobal, mode);
+            //     }
 
-                if(mode == 1){
-                    delete pCloudGlobal;    // 该指针对应的点云已被拷贝到另一个指针点云,清除多余的一个
-                    pCloudGlobal = NULL;
-                }
-
-                mode = 1;   // 仅仅第一次清除.
-            }
-            else 
-            {
-                std::cout << "Invalid plane_id : " << plane_id << std::endl;
-            }
+            //     delete pCloudGlobal;    // 该指针对应的点云已被拷贝到另一个指针点云,清除多余的一个
+            //     pCloudGlobal = NULL;
+            // }
+            // else 
+            // {
+            //     std::cout << "Invalid plane_id : " << plane_id << std::endl;
+            // }
             
         }
     }

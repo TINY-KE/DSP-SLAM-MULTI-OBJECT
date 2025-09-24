@@ -16,11 +16,11 @@ find_package(catkin REQUIRED COMPONENTS
 )
 catkin_package()   #for ros
 
-# SET(CMAKE_BUILD_TYPE Debug)
 
 IF(NOT CMAKE_BUILD_TYPE)
     SET(CMAKE_BUILD_TYPE Release)
 ENDIF()
+# SET(CMAKE_BUILD_TYPE Debug)
 
 
 MESSAGE("Build type: " ${CMAKE_BUILD_TYPE})

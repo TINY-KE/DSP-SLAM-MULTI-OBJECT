@@ -75,19 +75,20 @@ bool Map::AddPointCloudList(const string &name, std::vector<pcl::PointCloud<pcl:
 }
 
 bool Map::AddPointCloudList(const string& name, PointCloud* pCloud, int type){  //默认是 REPLACE_POINT_CLOUD（0）
-    std::cout<<"[debug] Map::AddPointCloudList 1: "<<name<<std::endl;
+    // std::cout<<"[debug] Map::AddPointCloudList Start, name: "<<name<<std::endl;
     unique_lock<mutex> lock(mMutexMap);
-    std::cout<<"[debug] Map::AddPointCloudList 2: "<<std::endl;
+    // std::cout<<"[debug] Map::AddPointCloudList 1, name: "<<name<<std::endl;
     if(pCloud == NULL)
     {
         std::cout << "NULL point cloud." << std::endl;
         return false;
     }
-
+    // std::cout<<"[debug] Map::AddPointCloudList 2, name: "<<name<<std::endl;
     // Check repetition
     if(mmPointCloudLists.find(name) != mmPointCloudLists.end() )
     {
         // Exist
+        // std::cout<<"[debug] Map::AddPointCloudList 3-1, name: "<<name<<std::endl;
         auto pCloudInMap = mmPointCloudLists[name];
         if(pCloudInMap==NULL){
             std::cout << "Error: the cloud " << name << " has been deleted." << std::endl;
@@ -95,25 +96,32 @@ bool Map::AddPointCloudList(const string& name, PointCloud* pCloud, int type){  
         }
 
         if( type == REPLACE_POINT_CLOUD){
+            // std::cout<<"[debug] Map::AddPointCloudList 4-1, name: "<<name<<", cloud size: "<<pCloud->size()<<std::endl;
             // replace it.
             pCloudInMap->clear(); // release it
             mmPointCloudLists[name] = pCloud;
         }
         else if( type == ADD_POINT_CLOUD )
         {
+            // std::cout<<"[debug] Map::AddPointCloudList 4-2, name: "<<name<<", cloud size: "<<pCloud->size()<<std::endl;
             // add together
-            for( auto &p : *pCloud )
+            for( auto &p : *pCloud ){
+                // std::cout<<"[debug] Map::AddPointCloudList 4-2-1, name: "<<name<<", point: "<<p.x<<","<<p.y<<","<<p.z<<std::endl;
                 pCloudInMap->push_back(p);
+            }
         }
         else 
         {
+            // std::cout<<"[debug] Map::AddPointCloudList 4-3, name: "<<name<<std::endl;
             std::cout << "Wrong type : " << type << std::endl;
         }
-
+        // std::cout<<"[debug] Map::AddPointCloudList End, name: "<<name<<std::endl;
         return false;
     }
     else{
+        // std::cout<<"[debug] Map::AddPointCloudList 3-2, name: "<<name<<", cloud size: "<<pCloud->size()<<std::endl;
         mmPointCloudLists.insert(make_pair(name, pCloud));
+        // std::cout<<"[debug] Map::AddPointCloudList End, name: "<<name<<", cloud size: "<<pCloud->size()<<std::endl;
         return true;
     }
         

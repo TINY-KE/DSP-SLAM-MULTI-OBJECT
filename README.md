@@ -227,6 +227,12 @@ pybind11::handle::dec_ref() is being called while the GIL is either not held or 
 
     + MySimDataset自制数据集
         + 运行成功了一次MySimDataset,但不知还能否复现,其中有几把椅子不错, 可以存储下来
+        + 重新设置场景，一张床，两个沙发，三个椅子，一张桌子
+            + 椅子 床 沙发 沙发
+        + 设置只有一个床
+        + 问题还真是MHP的点云？
+        + 提取竖直MHP时，最小点云数量还得提高，现在
+        + 关闭欧几里得过滤，直接使用地面过滤
         + 
 
     + TODO: 要不要把orb点也加入到dsp表面点中，从而弥补沙发的缺陷

@@ -1207,13 +1207,13 @@ void Tracking::CreateNewKeyFrame()
             //DetectObjects(pKF);
             
         bool run_object_detection = Config::Get<int>("Tracking.run_object_detection");
-        if(run_object_detection)
-        {   
+           
             // // ellipsoid-version
             // // 针对关键帧，根据物体检测的结果，提取椭球体
             UpdateObjectEllipsoidObservation(&mCurrentFrame, pKF);
 
-
+        if(run_object_detection)
+        {
             // 物体的数据关联，使用深度点云
             if (!mpMap->GetAllMapObjects().empty())
             {

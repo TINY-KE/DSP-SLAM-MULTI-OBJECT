@@ -5,10 +5,10 @@
 #--------------------------------------------------------------------------------------------
 
 # Camera calibration and distortion parameters (OpenCV)
-Camera.fx: 481.20
-Camera.fy: 480.00
-Camera.cx: 319.50
-Camera.cy: 239.50
+Camera.fx: 554.254691191187
+Camera.fy: 554.254691191187
+Camera.cx: 320.5
+Camera.cy: 240.5
 
 Camera.k1: 0.0
 Camera.k2: 0.0
@@ -16,21 +16,21 @@ Camera.p1: 0.0
 Camera.p2: 0.0
 
 # Camera frames per second
-Camera.fps: 25.0
+Camera.fps: 15.0
 Camera.bf: 40.0  # IR projector baseline times fx (aprox.)
 # Color order of the images (0: BGR, 1: RGB. It is ignored if images are grayscale)
 Camera.RGB: 1
 
 # Config path for Python detectors
-DetectorConfigPath: configs/config_ICL_NUIM_home_2.json
-Objects.maskErrosion: 15
+DetectorConfigPath: configs/config_self_allobject_ground.json
+Objects.maskErrosion: 5
 
 #--------------------------------------------------------------------------------------------
 # ORB Parameters
 #--------------------------------------------------------------------------------------------
 
 # ORB Extractor: Number of features per image
-ORBextractor.nFeatures: 4000
+ORBextractor.nFeatures: 3000
 
 # ORB Extractor: Scale factor between levels in the scale pyramid
 ORBextractor.scaleFactor: 1.2
@@ -42,28 +42,24 @@ ORBextractor.nLevels: 8
 # Image is divided in a grid. At each cell FAST are extracted imposing a minimum response.
 # Firstly we impose iniThFAST. If no corners are detected we impose a lower value minThFAST
 # You can lower these values if your images have low contrast
-ORBextractor.iniThFAST: 20
+ORBextractor.iniThFAST: 12
 ORBextractor.minThFAST: 7
 
 #--------------------------------------------------------------------------------------------
 # Viewer Parameters
 #--------------------------------------------------------------------------------------------
-Viewer.KeyFrameSize: 0.1  # originally 0.6
+Viewer.KeyFrameSize: 0.06  # originally 0.6
 Viewer.KeyFrameLineWidth: 2
 Viewer.GraphLineWidth: 4
 Viewer.PointSize: 2
 Viewer.CameraSize: 0.15  # originally 0.7
-Viewer.CameraLineWidth:  6
+Viewer.CameraLineWidth:  3
 Viewer.ViewpointX: 0
 Viewer.ViewpointY: -10   # originally -10
 Viewer.ViewpointZ: -0.1
 Viewer.ViewpointF: 2000
 Viewer.UsePangolin: 1
 
-
-#--------------------------------------------------------------------------------------------
-# EDSP
-#--------------------------------------------------------------------------------------------
 
 YoloClasses: [56, 57, 2, 75, 60, 59, 62, 63, 73]
 DecoderPaths: ["weights/deepsdf/chairs_64",
@@ -78,11 +74,11 @@ DecoderPaths: ["weights/deepsdf/chairs_64",
 
 # ros
 use_ros: 0   # 1：读取存贮在本地的ros.png   0：根据association.txt读取图片
-DatasetPathRoot: "./build/"
-Dataset.Path.Map: "/home/robotlab/dataset/ICL-NUIM/living_room_traj2n_frei_png/dataset.pcd"
-Dataset.step: 1
-Dataset.sleep_time: 0.3   #TODO:
-Dataset.Type: "ICL-NUIM"
+DatasetPathRoot: "no use"
+Dataset.Path.Map: "no use"
+Dataset.step: 3
+Dataset.sleep_time: 0.5   #TODO:
+Dataset.Type: "AllObjectsOnGround"
 Visualization.Map.Filter.DisThresh: 1
 Minimux_Points_To_Judge_Good: 5  #20  #视情况，看是否要减小到5
 
@@ -91,10 +87,10 @@ Camera.width: 640
 Camera.height: 480
 
 # Close/Far threshold. Baseline times.
-ThDepth: 40.0
+ThDepth: 8.0   # 单位米
 
 # Deptmap values factor  
-DepthMapFactor: 5000  #对应
+DepthMapFactor: 5000.0  #对应
 
 # 保存本地
 saveobjects: 0
@@ -125,7 +121,7 @@ EllipsoidExtractor.RefineEllipsoid.Border.y2.Pixels: 0
 
 EllipsoidExtractor_DEPTH_RANGE: 7
 
-Debug.EllipsoidExtraction.UsingMultiPlanes: 2 # 最终发现，两者没区别  # 1：使用多平面函数，2：使用支撑平面（输入的平面的local plane） 
+Debug.EllipsoidExtraction.UsingMultiPlanes: 2  # 1：bbox过滤点云，2：掩码过滤点云
 Debug.EllipsoidExtraction.OpenRelations: 0
 
 Ellipsoid.VisualzeDepthPoints: 1
@@ -143,7 +139,7 @@ Tracking.AssociateObjectWithEllipsold: 1
 Tracking.AssociateDebug: 0
 Tracking.AssociateIoUThresold: 0.42
 Tracking.AssociateDisThresold: 0.5
-Tracking.run_object_detection: 1
+Tracking.run_object_detection: 0   # TODO: 
 
 # Bounding box filter
 Measurement.Border.Pixels: 10
@@ -161,9 +157,10 @@ Mapping.ObjectScale: 1.1
 Mapping.use_ellipsoid_verticles: 1
 Mapping.ellipsoid_verticles_scale: 0.05
 Mapping.ellipsoid_verticles_degree: 18
+Mapping.FillterGroundPCD: 1
 
 # use_object
-useObjectConstruct: 1
+useObjectConstruct: 0   # TODO: 
 ComputeCuboidType: 3    #3：椭球体
 NumKFsPassedSinceInit_thresh: 1  #一个物体被检测的次数，大于该值，才进行一次重建，从而节约运算资源
 NumKFsPassedSinceLastRecon_thresh: 4  #自上次重建后经过的最少关键帧数量，如果小于阈值，则跳过重建，从而节约运算资源
@@ -189,4 +186,4 @@ Tworld_camera.qz: -0.5
 Tworld_camera.qw: 0.5
 Tworld_camera.tx: 0.0
 Tworld_camera.ty: 0.0
-Tworld_camera.tz: 1.17
+Tworld_camera.tz: 1.0

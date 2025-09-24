@@ -349,8 +349,18 @@ void Optimizer::LocalJointBundleAdjustment_forLocalMapping(KeyFrame *pKF, bool *
                 {
                     if (pMP->mnBALocalForKF != pKF->mnId)
                     {
-                        lLocalMapPoints.push_back(pMP);
+                        // lLocalMapPoints.push_back(pMP);  // FIXME: 报错 
+                        // std::cout << "[debug] LocalJointBundleAdjustment_forLocalMapping, START: pMP valid: " << pMP << ", is good: " << !pMP->isBad()  << std::endl;
+
+                        // 可能加一个 try catch
+                        try {
+                            lLocalMapPoints.push_back(pMP);
+                        } catch (std::exception& e) {
+                            std::cerr << "[debug] LocalJointBundleAdjustment_forLocalMapping: Exception during push_back: " << e.what() << std::endl;
+                        }
                         pMP->mnBALocalForKF = pKF->mnId;
+                        // std::cout << "[debug] LocalJointBundleAdjustment_forLocalMapping, END " << std::endl;
+
                     }
                 }
             }

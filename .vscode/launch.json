@@ -11,10 +11,17 @@
         // "program": "${workspaceFolder}/instanceAnnotation",
         "args": [
           "Vocabulary/ORBvoc.bin",
-          "configs/self_allobject_ground.yaml",
-          "/home/robotlab/dataset/MySimDataset/GroundObjects",
-          "/home/robotlab/dataset/MySimDataset/GroundObjects/associations.txt",
+          "configs/self_allobject_ground_3.yaml",
+          "/home/robotlab/dataset/MySimDataset/gazebo_dataset_4",
+          "/home/robotlab/dataset/MySimDataset/gazebo_dataset_4/associations.txt",
           "map/self/GroundObjects"
+
+
+          // "Vocabulary/ORBvoc.bin",
+          // "configs/self_allobject_ground.yaml",
+          // "/home/robotlab/dataset/MySimDataset/GroundObjects",
+          // "/home/robotlab/dataset/MySimDataset/GroundObjects/associations.txt",
+          // "map/self/GroundObjects"
 
           // "Vocabulary/ORBvoc.bin",
           // "configs/replica_room1.yaml",

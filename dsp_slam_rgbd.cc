@@ -156,20 +156,20 @@ int main(int argc, char **argv)
         }
     }
 
+    double sleep_time = ORB_SLAM2::Config::Get<double>("Dataset.sleep_time");
 
-    int step = ORB_SLAM2::Config::Get<int>("Dataset.step");
-
-    for(int ni = 0; ni < nImages; ni+=step)
+    for(int ni = 0; ni < nImages; ni++)
     {
         std::cout << "\n========================================" << std::endl;
         std::cout << "=> Inputting Image " << ni << "/" << nImages << std::endl;
 
         std::chrono::steady_clock::time_point t1_read = std::chrono::steady_clock::now();
-
         //! 读取图像
+        std::cout<< " 读取 RGB   Image: "<<string(argv[3])+"/"+vstrImageFilenamesRGB[ni] << std::endl;
         imRGB = cv::imread(string(argv[3])+"/"+vstrImageFilenamesRGB[ni], CV_LOAD_IMAGE_UNCHANGED);
+        std::cout<< " 读取 Depth Image: "<<string(argv[3])+"/"+vstrImageFilenamesD[ni] << std::endl;
         imD = cv::imread(string(argv[3])+"/"+vstrImageFilenamesD[ni], CV_LOAD_IMAGE_UNCHANGED);
-
+        std::cout<< " 读取 Image Done." << std::endl;
         // cv::imshow ("RGB", imRGB);
         // cv::imshow ("D", imD);
         // cv::waitKey(5000);
@@ -191,8 +191,8 @@ int main(int argc, char **argv)
 
         std::chrono::steady_clock::time_point t1 = std::chrono::steady_clock::now();
 
-        // cout << "imRGB.type() = " << imRGB.type() << endl;
-        // cout << "imD.type() = " << imD.type() << endl;
+        cout << "imRGB.type() = " << imRGB.type() << endl;
+        cout << "imD.type() = " << imD.type() << endl;
 
         assert(imRGB.type()==16);
         assert(imD.type()==2);
@@ -206,19 +206,20 @@ int main(int argc, char **argv)
 
         cout << " - [ total_frame: " << (double) ttrack  << "s ]" << endl;
 
+
         vTimesTrack[ni]=ttrack;
 
-        // // Wait to load the next frame
+        // Wait to load the next frame
         // double T = 0.0;
         // if(ni<nImages-1)
         //     T = vTimestamps[ni+1]-tframe;
         // else if(ni>0)
         //     T = tframe-vTimestamps[ni-1];
-
         // if(ttrack<T)
         // {
         //     std::this_thread::sleep_for(std::chrono::microseconds(static_cast<size_t>((T- ttrack)*1e6)));
         // }
+        std::this_thread::sleep_for(std::chrono::microseconds(static_cast<size_t>(0.5*1e6)));
 
         images_numbers_to_pass_over --;
         if(images_numbers_to_pass_over<=0)
@@ -299,53 +300,52 @@ void LoadImages(const string &strAssociationFilename, vector<string> &vstrImageF
 {
     std::cout<< "Load Images From: "<<strAssociationFilename << std::endl;
 
+    int step_default = ORB_SLAM2::Config::Get<int>("Dataset.step");
+
     //输入文件流
     ifstream fAssociation;
     //打开关联文件
     fAssociation.open(strAssociationFilename.c_str());
 
     //一直读取,知道文件结束
+    int step = 0;
     while(!fAssociation.eof())
     {
         string s;
-        //读取一行的内容到字符串s中
-        getline(fAssociation,s);
-        //如果不是空行就可以分析数据了
+        getline(fAssociation, s);
+
         if(!s.empty())
         {
-            //字符串流
-            stringstream ss;
-            if (order_rgb_depth)
+            step++;  // 每读取一行就递增计数
+
+            //  每隔 n 行处理一次
+            if (step % step_default == 0)
             {
-                ss << s;
-                //字符串格式:  时间戳 rgb图像路径 时间戳 深度图像路径
+                stringstream ss;
                 double t;
                 string sRGB, sD;
-                ss >> t;
+
+                if (order_rgb_depth)
+                {
+                    // 格式: 时间戳 rgb图像路径 时间戳 深度图像路径
+                    ss << s;
+                    ss >> t >> sRGB >> t >> sD;
+                }
+                else
+                {
+                    // 格式: 时间戳 深度图像路径 时间戳 rgb图像路径
+                    ss << s;
+                    ss >> t >> sD >> t >> sRGB;
+                }
+
                 vTimestamps.push_back(t);
-                ss >> sRGB;
                 vstrImageFilenamesRGB.push_back(sRGB);
-                ss >> t;
-                ss >> sD;
                 vstrImageFilenamesD.push_back(sD);
-            }
-            else
-            {
-                //字符串格式:  时间戳 深度图像路径 时间戳 rgb图像路径
-                ss << s;
-                double t;
-                string sD, sRGB;
-                ss >> t;
-                vTimestamps.push_back(t);
-                ss >> sD;
-                vstrImageFilenamesD.push_back(sD);
-                ss >> t;
-                ss >> sRGB;
-                vstrImageFilenamesRGB.push_back(sRGB);
+
+                // 可选调试输出
+                // std::cout << "Line " << step << ": " << sRGB << ", " << sD << std::endl;
             }
         }
-        // std::cout<<"sRGB: "<< vstrImageFilenamesRGB.front() <<std::endl;
-        // std::cout<<"sD: "<< vstrImageFilenamesD.front() <<std::endl;
     }
 }
 

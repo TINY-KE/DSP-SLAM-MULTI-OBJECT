@@ -81,6 +81,7 @@ use_ros: 0   # 1：读取存贮在本地的ros.png   0：根据association.txt�
 DatasetPathRoot: "./build/"  # 存储ros.png的地方
 Dataset.Path.Map: "/home/robotlab/dataset/ICL-NUIM/living_room_traj2n_frei_png/map/dataset.pcd"  # 用于可视化的全局地图
 Dataset.step: 1
+Dataset.sleep_time: 0.3   #TODO:
 Dataset.Type: "REPLICA"
 Visualization.Map.Filter.DisThresh: 1
 Minimux_Points_To_Judge_Good: 5  #20  #视情况，看是否要减小到5
