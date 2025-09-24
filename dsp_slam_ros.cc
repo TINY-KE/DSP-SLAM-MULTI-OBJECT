@@ -100,15 +100,15 @@ int main(int argc, char **argv)
     SLAM.Shutdown();
 
     // (5) Save camera trajectory
-    SLAM.SaveKeyFrameTrajectoryTUM("/home/robotlab/ws_3d_vp/src/QSP-SLAM-my/eval/temp/");
+    SLAM.SaveKeyFrameTrajectoryTUM("/home/robotlab/dataset/MySimDataset/gazebo_dataset_10/save/");
     int SaveLocalObjects = fSettings["saveobjects"];
     if (SaveLocalObjects){
         bool move_to_origin = true;
-        SLAM.SaveObjects( "/home/robotlab/ws_3d_vp/src/QSP-SLAM-my/eval/temp/objects/", move_to_origin);
+        SLAM.SaveObjects( "/home/robotlab/dataset/MySimDataset/gazebo_dataset_10/save/objects/", move_to_origin);
     }
     int SavePoints = fSettings["savepoints"];
     if (SavePoints)
-        SLAM.SavePoints( "/home/robotlab/ws_3d_vp/src/QSP-SLAM-my/eval/temp/points/");
+        SLAM.SavePoints( "/home/robotlab/dataset/MySimDataset/gazebo_dataset_10/save/points/");
 
     ros::shutdown();
 

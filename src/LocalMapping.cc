@@ -45,7 +45,9 @@ LocalMapping::LocalMapping(System *pSys, Map *pMap, ObjectDrawer* pObjectDrawer,
     mbChair2counch = pSys->mbChair2counch;
 
     // 控制是否使用物体建模.
-    mbUseObjectConstruct = pSys->mbUseObjectConstruct;
+    mbObjectInit = Config::Get<int>("Debug.LocalMapping.ObjectInit");
+    mbSDFConstruct = Config::Get<int>("Debug.LocalMapping.SDFConstruct");
+
     mnComputeCuboidType = pSys->mnComputeCuboidType;
     mnNumKFsPassedSinceLastRecon_thresh = pSys->mnNumKFsPassedSinceLastRecon_thresh;
     mnNumKFsPassedSinceInit_thresh = pSys->mnNumKFsPassedSinceInit_thresh;
@@ -152,23 +154,26 @@ bool LocalMapping::RunOneTime()
             {
                 if (mpTracker->mState != Tracking::NOT_INITIALIZED)
                 {
-                    if(mbUseObjectConstruct)
+                    if(mbObjectInit)
                     {
                         Create_Multi_NewObjectsFromDetections();
+                    }
 
-                        // TODO: 在此处增加一个合并相近同类物体的操作
-                        // AssociateObjects3D();
-
+                    // TODO: 在此处增加一个合并相近同类物体的操作
+                    // AssociateObjects3D();
+                    
+                    if(mbSDFConstruct)
+                    {
                         /* FIXME，在处理已经检测到的物体时，需要考虑是否增加的新的观测
                         * 这个函数中增加一个是否需要进行隐式位形优化的判断
                         * 看看有无必要使用隐式位形优化结果中的Loss对物体点云进行剔除
                         */
                         Process_Multi_DetectedObjects_byPythonReconstruct();
-
-                        // 处理完检测到的物体之后，要把它们更新到地图中
-                        UpdateObjectsToMap();
-
                     }
+                
+                    // 处理完检测到的物体之后，要把它们更新到地图中
+                    UpdateObjectsToMap();
+
 
                 }
             }
@@ -299,7 +304,7 @@ void LocalMapping::Run()
             {
                 if (mpTracker->mState != Tracking::NOT_INITIALIZED)
                 {
-                    if(mbUseObjectConstruct)
+                    if(mbObjectInit)
                     {
                         Create_Multi_NewObjectsFromDetections();
 

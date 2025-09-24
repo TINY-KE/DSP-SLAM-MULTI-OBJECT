@@ -159,7 +159,9 @@ private:
     void MergeMapObject(MapObject* pMO_i, MapObject* pMO_j); // Merge pMO_j into pMO_i
 
     int mbChair2counch = 0;  //控制，在localmapping物体建模时，是否将椅子转换为沙发
-    int mbUseObjectConstruct = 1;  //控制是否使用物体建模
+    int mbObjectInit = 1;  //控制是否全局物体初始化
+    int mbSDFConstruct = 1;   //控制是否DeepSDF建模
+
     int mnComputeCuboidType = 0; //  // 0: 原版dspslam中的PCA,  1: 指定方向, 2: 椭球体
     int mnNumKFsPassedSinceLastRecon_thresh = 8;  // 自上次重建后经过的最少关键帧数量，如果小于阈值，则跳过重建，从而节约运算资源
     int mnNumKFsPassedSinceInit_thresh = 5;  // 一个物体被检测的次数，大于该值，才进行一次重建，从而节约运算资源

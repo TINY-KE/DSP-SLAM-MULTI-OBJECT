@@ -233,7 +233,7 @@ pybind11::handle::dec_ref() is being called while the GIL is either not held or 
         + 问题还真是MHP的点云？
         + 提取竖直MHP时，最小点云数量还得提高，现在
         + 关闭欧几里得过滤，直接使用地面过滤
-        + 
+        + 利用MySimDataset/gazebo_dataset_10数据集实现了单帧椭球体提取
 
     + TODO: 要不要把orb点也加入到dsp表面点中，从而弥补沙发的缺陷
     + 第1把椅子为什么生成不了

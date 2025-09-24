@@ -289,7 +289,7 @@ bool LocalMapping::DeepSDFObjectConstruction_PcdCloud(ObjectDetection *det, MapO
             }
 
             // （2）将椭球体顶点，转换为DSP表面的点
-            std::cout<< "[debug] ellipsoid_verticles Start" << std::endl;
+            // std::cout<< "[debug] ellipsoid_verticles Start" << std::endl;
             if(use_ellipsoid_verticles){
 
                 std::vector<Eigen::Vector3f>  vertices = pMO->GetEllipsoidVertices();
@@ -309,7 +309,7 @@ bool LocalMapping::DeepSDFObjectConstruction_PcdCloud(ObjectDetection *det, MapO
                 }
 
             }
-            std::cout<< "[debug] ellipsoid_verticles End" << std::endl;
+            // std::cout<< "[debug] ellipsoid_verticles End" << std::endl;
 
             // （3）获取ray_pixels和depth_obs
             Eigen::MatrixXf ray_pixels = Eigen::MatrixXf::Zero(n_rays, 2);
@@ -371,12 +371,12 @@ bool LocalMapping::DeepSDFObjectConstruction_PcdCloud(ObjectDetection *det, MapO
                 optimizer_ptr = optimizer_ptr_local;
             }
 
-            cout << " [debug] Before reconstruct_object from detection ["<< det_i << "]"<< std::endl;
+            // cout << " [debug] Before reconstruct_object from detection ["<< det_i << "]"<< std::endl;
 
             auto pyMapObject = optimizer_ptr->attr("reconstruct_object")
                     (SE3Tcw * pMO->Sim3Two, surface_points_cam, rays, depth_obs, pMO->vShapeCode);
 
-            cout << " [debug] reconstruct_object 1, class id = "<<  class_id << std::endl;
+            // cout << " [debug] reconstruct_object 1, class id = "<<  class_id << std::endl;
 
             // If not initialized, duplicate optimization to resolve orientation ambiguity
             // 翻转物体朝向。这对椭球体来时是非常有必要的
@@ -390,7 +390,7 @@ bool LocalMapping::DeepSDFObjectConstruction_PcdCloud(ObjectDetection *det, MapO
             if (pyMapObject.attr("loss").cast<float>() > pyMapObjectFlipped.attr("loss").cast<float>())
                 pyMapObject = pyMapObjectFlipped;
             
-            cout << " [debug] reconstruct_object 2, class id = "<<  class_id << std::endl;
+            // cout << " [debug] reconstruct_object 2, class id = "<<  class_id << std::endl;
             
             auto Sim3Tco = pyMapObject.attr("t_cam_obj").cast<Eigen::Matrix4f>();
 
@@ -416,12 +416,12 @@ bool LocalMapping::DeepSDFObjectConstruction_PcdCloud(ObjectDetection *det, MapO
             }
 
             
-            cout << " [debug] Before extract_mesh_from_code for object labe:"<< class_id << ", labe:"<< class_id << std::endl;
+            // cout << " [debug] Before extract_mesh_from_code for object labe:"<< class_id << ", labe:"<< class_id << std::endl;
 
             // 获取mesh提取器
             py::object* mesh_extracter_ptr;
             if(mmPyOptimizers.count(class_id) > 0) {
-                cout << " [debug] ProcessDetectedObjects_byPythonReconstruct class " << class_id << " is in yolo_classes" << endl;
+                // cout << " [debug] ProcessDetectedObjects_byPythonReconstruct class " << class_id << " is in yolo_classes" << endl;
                 py::object* mesh_extracter_ptr_local = &(mmPyMeshExtractors[class_id]);
                 mesh_extracter_ptr = mesh_extracter_ptr_local;
             }
@@ -432,20 +432,19 @@ bool LocalMapping::DeepSDFObjectConstruction_PcdCloud(ObjectDetection *det, MapO
                 mesh_extracter_ptr = mesh_extracter_ptr_local;
             }
 
-            cout << " [debug] reconstruct_object 3, class id = "<<  class_id << std::endl;
+            // cout << " [debug] reconstruct_object 3, class id = "<<  class_id << std::endl;
 
             pMO->UpdateReconstruction(Sim3Two, code);
-            cout << " [debug] reconstruct_object 3-1, class id = "<<  class_id << std::endl;
+            // cout << " [debug] reconstruct_object 3-1, class id = "<<  class_id << std::endl;
             auto pyMesh = mesh_extracter_ptr->attr("extract_mesh_from_code")(code);
-            cout << " [debug] reconstruct_object 3-2, class id = "<<  class_id << std::endl;
+            // cout << " [debug] reconstruct_object 3-2, class id = "<<  class_id << std::endl;
             pMO->vertices = pyMesh.attr("vertices").cast<Eigen::MatrixXf>();
-            cout << " [debug] reconstruct_object 3-3, class id = "<<  class_id << std::endl;
+            // cout << " [debug] reconstruct_object 3-3, class id = "<<  class_id << std::endl;
             pMO->faces = pyMesh.attr("faces").cast<Eigen::MatrixXi>();
-            cout << " [debug] reconstruct_object 3-4, class id = "<<  class_id << std::endl;
+            // cout << " [debug] reconstruct_object 3-4, class id = "<<  class_id << std::endl;
             pMO->reconstructed = true;
-            cout << " [debug] reconstruct_object 3-5, class id = "<<  class_id << std::endl;
         }
-        cout << " [debug] End DeepSDFObjectConstruction_PcdCloud" << std::endl;
+        // cout << " [debug] End DeepSDFObjectConstruction_PcdCloud" << std::endl;
 
         return true;
 }

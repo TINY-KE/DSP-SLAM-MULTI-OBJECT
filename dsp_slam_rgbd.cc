@@ -210,16 +210,16 @@ int main(int argc, char **argv)
         vTimesTrack[ni]=ttrack;
 
         // Wait to load the next frame
-        // double T = 0.0;
-        // if(ni<nImages-1)
-        //     T = vTimestamps[ni+1]-tframe;
-        // else if(ni>0)
-        //     T = tframe-vTimestamps[ni-1];
-        // if(ttrack<T)
-        // {
-        //     std::this_thread::sleep_for(std::chrono::microseconds(static_cast<size_t>((T- ttrack)*1e6)));
-        // }
-        std::this_thread::sleep_for(std::chrono::microseconds(static_cast<size_t>(0.5*1e6)));
+        double T = 0.0;
+        if(ni<nImages-1)
+            T = vTimestamps[ni+1]-tframe;
+        else if(ni>0)
+            T = tframe-vTimestamps[ni-1];
+        if(ttrack<T)
+        {
+            std::this_thread::sleep_for(std::chrono::microseconds(static_cast<size_t>((T- ttrack)*1e6)));
+        }
+        // std::this_thread::sleep_for(std::chrono::microseconds(static_cast<size_t>(0.5*1e6)));
 
         images_numbers_to_pass_over --;
         if(images_numbers_to_pass_over<=0)
@@ -258,11 +258,20 @@ int main(int argc, char **argv)
 
     SLAM.SaveEntireMap(save_map_dir);
 
-    string traj_path = data_source_dir  + "KeyFrameTrajectory.txt";
+    string traj_path = data_source_dir  + "/eval/temp/KeyFrameTrajectory.txt";
     
+    
+    // Save Objects and Points
     SLAM.SaveKeyFrameTrajectoryTUM(traj_path);
+    int SaveLocalObjects = fSettings["saveobjects"];
+    if (SaveLocalObjects){
+        bool move_to_origin = true;
+        SLAM.SaveObjects( data_source_dir  + "/eval/temp/objects/", move_to_origin);
+    }
+    int SavePoints = fSettings["savepoints"];
+    if (SavePoints)
+        SLAM.SavePoints( data_source_dir  + "/eval/temp/points/");
 
-    
 
     // Tracking time statistics
     sort(vTimesTrack.begin(),vTimesTrack.end());
@@ -284,6 +293,7 @@ int main(int argc, char **argv)
         key = getchar();
     }
 
+    
     cv::destroyAllWindows();
 
     // Stop all threads

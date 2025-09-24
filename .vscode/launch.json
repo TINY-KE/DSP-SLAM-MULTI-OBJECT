@@ -12,8 +12,8 @@
         "args": [
           "Vocabulary/ORBvoc.bin",
           "configs/self_allobject_ground_3.yaml",
-          "/home/robotlab/dataset/MySimDataset/gazebo_dataset_4",
-          "/home/robotlab/dataset/MySimDataset/gazebo_dataset_4/associations.txt",
+          "/home/robotlab/dataset/MySimDataset/gazebo_dataset_7",
+          "/home/robotlab/dataset/MySimDataset/gazebo_dataset_7/associations.txt",
           "map/self/GroundObjects"
 
 

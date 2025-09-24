@@ -338,8 +338,8 @@ namespace ORB_SLAM2 {
                 // 同时提取点云，存入pcd_ptr_of_frame中
                 // std::cout<< "[Tracking::UpdateDepthEllipsoid Estimation] 利用地面和bbox切面估计椭球体" << std::endl;
                 g2o::ellipsoid e_extractByFitting_newSym;
-                int type = Config::Get<int>("Debug.EllipsoidExtraction.UsingMultiPlanes");
-                if(type == 1){
+                int DetectSource = Config::Get<int>("Debug.EllipsoidExtraction.DetectSource");
+                if(DetectSource == 1){
                     // std::cout<<"[debug] Tracking::UpdateDepthEllipsoidEstimation, Using Multi Planes" << std::endl;
                     pcl::PointCloud<PointType>::Ptr pcd_ptr_of_frame(new pcl::PointCloud<PointType>);
                     e_extractByFitting_newSym = \
@@ -356,7 +356,7 @@ namespace ORB_SLAM2 {
                         mpMap->AddPointCloudList("ObjectPCDCloud - Newest Detection", pDeepPointsInObject, 0);
                     }
                 }
-                else if(type == 2){
+                else if(DetectSource == 2){
                     cv::Mat mask_cv = mvImObjectMasks[i];
                     pcl::PointCloud<PointType>::Ptr pcd_ptr_of_frame(new pcl::PointCloud<PointType>);
                     e_extractByFitting_newSym = \

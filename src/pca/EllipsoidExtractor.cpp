@@ -203,16 +203,6 @@ pcl::PointCloud<PointType>::Ptr EllipsoidExtractor::ExtractPointCloud(cv::Mat& d
         return NULL;
     }
 
-    // // 防止内部都是 NaN
-    // std::vector<int> indices; //保存去除的点的索引
-    // pcl::PointCloud<PointType>::Ptr pPoints_planeFiltered_pcl = QuadricPointCloudToPclXYZ(*pPoints_planeFiltered);
-    // pcl::removeNaNFromPointCloud(*pPoints_planeFiltered_pcl,*pPoints_planeFiltered_pcl, indices); //去除点云中的NaN点，（m是个结构体对象，参数１是输入，参数二是输出。indices一般不用）
-    // if( pPoints_planeFiltered_pcl->size() < 1 )
-    // {
-    //     std::cout << "No point left AFTER REMOVING NAN." << std::endl;
-    //     miSystemState = 4;
-    //     return NULL;
-    // }
 
     PointCloud* pPoints_sampled = pPoints_planeFiltered;
 
@@ -223,49 +213,62 @@ pcl::PointCloud<PointType>::Ptr EllipsoidExtractor::ExtractPointCloud(cv::Mat& d
         return NULL;
     }
 
-    // 计算中点
-    Vector3d center;
-    bool bCenter = GetCenter(depth, bbox, pose, camera, center);
-    if(!bCenter) {
-        miSystemState = 1;
+    bool EuclideanFilterOpen = Config::Get<int>("EllipsoidExtractor.EuclideanFilter.Open");
 
-        std::cout << "Can't Find Center. Bbox: " << bbox.transpose() << std::endl;
-        return NULL;   
+    if(EuclideanFilterOpen){
+        // 计算中点
+        Vector3d center;
+        bool bCenter = GetCenter(depth, bbox, pose, camera, center);
+        if(!bCenter) {
+            miSystemState = 1;
+
+            std::cout << "Can't Find Center. Bbox: " << bbox.transpose() << std::endl;
+            return NULL;   
+        }
+        clock_t time_5_GetCenter = clock();
+
+        // 使用快速欧几里德聚类进行滤波
+        mDebugCenter = center;
+        PointCloud* pPointsEuFiltered = ApplyEuclideanFilter(pPoints_sampled, center);   //获取miEuclideanFilterState（欧几里得过滤的结果）
+        // delete pPoints_sampled; pPoints_sampled = NULL;
+
+        if( miEuclideanFilterState > 0 )
+        {
+            miSystemState = 2;  // fail to filter
+            std::cout<<"fail to filter"<<std::endl;
+            return NULL;
+        }
+        clock_t time_6_ApplyEuclideanFilter = clock();
+
+        // we have gotten the object points in the world coordinate
+        pcl::PointCloud<PointType>::Ptr clear_cloud_ptr = QuadricPointCloudToPclXYZ(*pPointsEuFiltered);
+
+        mpPoints = pPointsEuFiltered;
+
+        // std::cout<<"[debug]EllipsoidExtractor::ExtractPointCloud 4: 可视化欧几里得聚类后的结果"<<std::endl;
+        VisualizePointCloud("EuclideanFiltered", mpPoints, Vector3d(0.4,0,1.0), 2);;
+        clock_t time_7_VisualizePointCloud = clock();
+
+        // output: time efficiency
+        // cout << "****** System Time [ExtractPoints.cpp] ******" << endl ;
+        // cout << "time_2_getPointsDownsampleTransToWorld: " <<(double)(time_2_getPointsDownsampleTransToWorld - time_1_start) / CLOCKS_PER_SEC << "s" << endl;
+        // cout << "time_3_SupportingPlaneFilter: " <<(double)(time_3_SupportingPlaneFilter - time_2_getPointsDownsampleTransToWorld) / CLOCKS_PER_SEC << "s" << endl;
+        // cout << "time_4_VisualizePointCloud: " <<(double)(time_4_VisualizePointCloud - time_3_SupportingPlaneFilter) / CLOCKS_PER_SEC << "s" << endl;
+        // cout << "time_5_GetCenter: " <<(double)(time_5_GetCenter - time_4_VisualizePointCloud) / CLOCKS_PER_SEC << "s" << endl;
+        // cout << "time_6_ApplyEuclideanFilter: " <<(double)(time_6_ApplyEuclideanFilter - time_5_GetCenter) / CLOCKS_PER_SEC << "s" << endl;
+        // cout << "time_7_VisualizePointCloud: " <<(double)(time_7_VisualizePointCloud - time_6_ApplyEuclideanFilter) / CLOCKS_PER_SEC << "s" << endl;
+        cout << "[debug] EllipsoidExtractor::ExtractPointCloud End, Time: " << (double)(time_1_1_outliers_filter_end - time_1_1_outliers_filter_start) / CLOCKS_PER_SEC << "s" << endl;
+        return clear_cloud_ptr;
     }
-    clock_t time_5_GetCenter = clock();
+    else{  
 
-    // 使用快速欧几里德聚类进行滤波
-    mDebugCenter = center;
-    PointCloud* pPointsEuFiltered = ApplyEuclideanFilter(pPoints_sampled, center);   //获取miEuclideanFilterState（欧几里得过滤的结果）
-    // delete pPoints_sampled; pPoints_sampled = NULL;
+        mpPoints = pPoints_sampled;
 
-    if( miEuclideanFilterState > 0 )
-    {
-        miSystemState = 2;  // fail to filter
-        std::cout<<"fail to filter"<<std::endl;
-        return NULL;
+        pcl::PointCloud<PointType>::Ptr clear_cloud_ptr = QuadricPointCloudToPclXYZ(*pPoints_sampled);
+
+        return clear_cloud_ptr;
     }
-    clock_t time_6_ApplyEuclideanFilter = clock();
 
-    // we have gotten the object points in the world coordinate
-    pcl::PointCloud<PointType>::Ptr clear_cloud_ptr = QuadricPointCloudToPclXYZ(*pPointsEuFiltered);
-
-    mpPoints = pPointsEuFiltered;
-
-    // std::cout<<"[debug]EllipsoidExtractor::ExtractPointCloud 4: 可视化欧几里得聚类后的结果"<<std::endl;
-    VisualizePointCloud("EuclideanFiltered", mpPoints, Vector3d(0.4,0,1.0), 2);;
-    clock_t time_7_VisualizePointCloud = clock();
-
-    // output: time efficiency
-    // cout << "****** System Time [ExtractPoints.cpp] ******" << endl ;
-    // cout << "time_2_getPointsDownsampleTransToWorld: " <<(double)(time_2_getPointsDownsampleTransToWorld - time_1_start) / CLOCKS_PER_SEC << "s" << endl;
-    // cout << "time_3_SupportingPlaneFilter: " <<(double)(time_3_SupportingPlaneFilter - time_2_getPointsDownsampleTransToWorld) / CLOCKS_PER_SEC << "s" << endl;
-    // cout << "time_4_VisualizePointCloud: " <<(double)(time_4_VisualizePointCloud - time_3_SupportingPlaneFilter) / CLOCKS_PER_SEC << "s" << endl;
-    // cout << "time_5_GetCenter: " <<(double)(time_5_GetCenter - time_4_VisualizePointCloud) / CLOCKS_PER_SEC << "s" << endl;
-    // cout << "time_6_ApplyEuclideanFilter: " <<(double)(time_6_ApplyEuclideanFilter - time_5_GetCenter) / CLOCKS_PER_SEC << "s" << endl;
-    // cout << "time_7_VisualizePointCloud: " <<(double)(time_7_VisualizePointCloud - time_6_ApplyEuclideanFilter) / CLOCKS_PER_SEC << "s" << endl;
-    cout << "[debug] EllipsoidExtractor::ExtractPointCloud End, Time: " << (double)(time_1_1_outliers_filter_end - time_1_1_outliers_filter_start) / CLOCKS_PER_SEC << "s" << endl;
-    return clear_cloud_ptr;
 }
 
 
@@ -385,49 +388,60 @@ pcl::PointCloud<PointType>::Ptr EllipsoidExtractor::ExtractPointCloud(cv::Mat& d
         return NULL;
     }
 
-    // 计算中点
-    Vector3d center;
-    bool bCenter = GetCenter(depth, bbox, pose, camera, center);
-    if(!bCenter) {
-        miSystemState = 1;
+    bool EuclideanFilterOpen = Config::Get<int>("EllipsoidExtractor.EuclideanFilter.Open");
 
-        std::cout << "Can't Find Center. Bbox: " << bbox.transpose() << std::endl;
-        return NULL;   
+    if(EuclideanFilterOpen){
+        // 计算中点
+        Vector3d center;
+        bool bCenter = GetCenter(depth, bbox, pose, camera, center);
+        if(!bCenter) {
+            miSystemState = 1;
+
+            std::cout << "Can't Find Center. Bbox: " << bbox.transpose() << std::endl;
+            return NULL;   
+        }
+        clock_t time_5_GetCenter = clock();
+
+        // 使用快速欧几里德聚类进行滤波
+        mDebugCenter = center;
+        PointCloud* pPointsEuFiltered = ApplyEuclideanFilter(pPoints_sampled, center);   //获取miEuclideanFilterState（欧几里得过滤的结果）
+        // delete pPoints_sampled; pPoints_sampled = NULL;
+
+        if( miEuclideanFilterState > 0 )
+        {
+            miSystemState = 2;  // fail to filter
+            std::cout<<"fail to filter"<<std::endl;
+            return NULL;
+        }
+        clock_t time_6_ApplyEuclideanFilter = clock();
+
+        // we have gotten the object points in the world coordinate
+        pcl::PointCloud<PointType>::Ptr clear_cloud_ptr = QuadricPointCloudToPclXYZ(*pPointsEuFiltered);
+
+        mpPoints = pPointsEuFiltered;
+
+        // std::cout<<"[debug]EllipsoidExtractor::ExtractPointCloud 4: 可视化欧几里得聚类后的结果"<<std::endl;
+        VisualizePointCloud("EuclideanFiltered", mpPoints, Vector3d(0.4,0,1.0), 2);;
+        clock_t time_7_VisualizePointCloud = clock();
+
+        // output: time efficiency
+        // cout << "****** System Time [ExtractPoints.cpp] ******" << endl ;
+        // cout << "time_2_getPointsDownsampleTransToWorld: " <<(double)(time_2_getPointsDownsampleTransToWorld - time_1_start) / CLOCKS_PER_SEC << "s" << endl;
+        // cout << "time_3_SupportingPlaneFilter: " <<(double)(time_3_SupportingPlaneFilter - time_2_getPointsDownsampleTransToWorld) / CLOCKS_PER_SEC << "s" << endl;
+        // cout << "time_4_VisualizePointCloud: " <<(double)(time_4_VisualizePointCloud - time_3_SupportingPlaneFilter) / CLOCKS_PER_SEC << "s" << endl;
+        // cout << "time_5_GetCenter: " <<(double)(time_5_GetCenter - time_4_VisualizePointCloud) / CLOCKS_PER_SEC << "s" << endl;
+        // cout << "time_6_ApplyEuclideanFilter: " <<(double)(time_6_ApplyEuclideanFilter - time_5_GetCenter) / CLOCKS_PER_SEC << "s" << endl;
+        // cout << "time_7_VisualizePointCloud: " <<(double)(time_7_VisualizePointCloud - time_6_ApplyEuclideanFilter) / CLOCKS_PER_SEC << "s" << endl;
+        cout << "[debug] EllipsoidExtractor::ExtractPointCloud End, Time: " << (double)(time_1_1_outliers_filter_end - time_1_1_outliers_filter_start) / CLOCKS_PER_SEC << "s" << endl;
+        return clear_cloud_ptr;
     }
-    clock_t time_5_GetCenter = clock();
+    else{
+        mpPoints = pPoints_sampled;
 
-    // 使用快速欧几里德聚类进行滤波
-    mDebugCenter = center;
-    PointCloud* pPointsEuFiltered = ApplyEuclideanFilter(pPoints_sampled, center);   //获取miEuclideanFilterState（欧几里得过滤的结果）
-    // delete pPoints_sampled; pPoints_sampled = NULL;
+        pcl::PointCloud<PointType>::Ptr clear_cloud_ptr = QuadricPointCloudToPclXYZ(*pPoints_sampled);
 
-    if( miEuclideanFilterState > 0 )
-    {
-        miSystemState = 2;  // fail to filter
-        std::cout<<"fail to filter"<<std::endl;
-        return NULL;
+        return clear_cloud_ptr;
     }
-    clock_t time_6_ApplyEuclideanFilter = clock();
-
-    // we have gotten the object points in the world coordinate
-    pcl::PointCloud<PointType>::Ptr clear_cloud_ptr = QuadricPointCloudToPclXYZ(*pPointsEuFiltered);
-
-    mpPoints = pPointsEuFiltered;
-
-    // std::cout<<"[debug]EllipsoidExtractor::ExtractPointCloud 4: 可视化欧几里得聚类后的结果"<<std::endl;
-    VisualizePointCloud("EuclideanFiltered", mpPoints, Vector3d(0.4,0,1.0), 2);;
-    clock_t time_7_VisualizePointCloud = clock();
-
-    // output: time efficiency
-    // cout << "****** System Time [ExtractPoints.cpp] ******" << endl ;
-    // cout << "time_2_getPointsDownsampleTransToWorld: " <<(double)(time_2_getPointsDownsampleTransToWorld - time_1_start) / CLOCKS_PER_SEC << "s" << endl;
-    // cout << "time_3_SupportingPlaneFilter: " <<(double)(time_3_SupportingPlaneFilter - time_2_getPointsDownsampleTransToWorld) / CLOCKS_PER_SEC << "s" << endl;
-    // cout << "time_4_VisualizePointCloud: " <<(double)(time_4_VisualizePointCloud - time_3_SupportingPlaneFilter) / CLOCKS_PER_SEC << "s" << endl;
-    // cout << "time_5_GetCenter: " <<(double)(time_5_GetCenter - time_4_VisualizePointCloud) / CLOCKS_PER_SEC << "s" << endl;
-    // cout << "time_6_ApplyEuclideanFilter: " <<(double)(time_6_ApplyEuclideanFilter - time_5_GetCenter) / CLOCKS_PER_SEC << "s" << endl;
-    // cout << "time_7_VisualizePointCloud: " <<(double)(time_7_VisualizePointCloud - time_6_ApplyEuclideanFilter) / CLOCKS_PER_SEC << "s" << endl;
-    cout << "[debug] EllipsoidExtractor::ExtractPointCloud End, Time: " << (double)(time_1_1_outliers_filter_end - time_1_1_outliers_filter_start) / CLOCKS_PER_SEC << "s" << endl;
-    return clear_cloud_ptr;
 }
 
 

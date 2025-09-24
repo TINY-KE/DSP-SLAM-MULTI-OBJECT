@@ -106,7 +106,7 @@ System::System(const string &strVocFile, const string &strSettingsFile, const st
 
     // 多物体dsp模型导入
     mbChair2counch = fSettings["Chair2counch"];  //控制，在localmapping物体建模时，是否将椅子转换为沙发
-    mbUseObjectConstruct = fSettings["useObjectConstruct"]; 
+
     mnComputeCuboidType = fSettings["ComputeCuboidType"]; 
     mnNumKFsPassedSinceLastRecon_thresh = fSettings["NumKFsPassedSinceLastRecon_thresh"];
     mnNumKFsPassedSinceInit_thresh = fSettings["NumKFsPassedSinceInit_thresh"];
@@ -629,9 +629,31 @@ void System::SaveObjects(const string &filepath , bool move_to_origin) {
             << "0 0 0 1     "
             << pMO->w << " "
             << pMO->l << " "
-            << pMO->h << " "
+            << pMO->h << "       "
+            // ss >> degree;
+            << "0   "
+            // ss >> scale_x; ss >> scale_y; ss >> scale_z;
+            << "1 1 1   "
+            // ss >> color;  //设定颜色的种类
+            << "0   "
             << "#" <<yolo_id[pMO->label]
             << endl;
+
+        std::cout    
+            << pMO->mnId << " "
+            << pMO->label << "    "
+            << pMO->SE3Two(0, 3) << " "
+            << pMO->SE3Two(1, 3) << " "
+            << pMO->SE3Two(2, 3) << "     "
+            << "0 0 0 1     "
+            << pMO->w << " "
+            << pMO->l << " "
+            << pMO->h << "       "
+            << "0   "
+            << "1 1 1   "
+            << "0   "
+            << "#" << yolo_id[pMO->label]
+            << std::endl;
 
         // 使用 Eigen 矩阵来表示 verts 和 faces
         auto verts = pMO->vertices;

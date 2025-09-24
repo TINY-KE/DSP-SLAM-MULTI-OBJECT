@@ -323,7 +323,7 @@ public:
 
 private:
     void LoadPointcloud(const string& strPcdDir, const string& strPointcloud_name);   //g2o::SE3Quat Ttrans=g2o::SE3Quat()
-    bool mb_global_map_input = true;
+    bool mb_global_map_input = false;
 private:
     Eigen::Matrix3d mCalib;
 };
