@@ -140,6 +140,12 @@ Tracking.AssociateObjectWithEllipsold: 1
 Tracking.AssociateDebug: 0
 Tracking.AssociateIoUThresold: 0.42
 Tracking.AssociateDisThresold: 0.8 #0.5
+Tracking.Associate.ManualLabel.x:     [-3.017305, -2.214217, -5.121503]  
+Tracking.Associate.ManualLabel.y:     [2.118296, -0.567417, 2.082256]
+Tracking.Associate.ManualLabel.z:     [0.108287, 0.364638, 0.354968]
+Tracking.Associate.ManualLabel.label: [60, 56, 57]
+Tracking.Associate.ManualDirection:   [0, 1, 0]
+Tracking.Associate.ManualLabel.DisThresold: 0.5
 
 # Debug的控制变量
 Debug.EllipsoidExtraction.DetectSource: 2  # 1：bbox过滤点云，2：掩码过滤点云

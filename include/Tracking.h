@@ -326,6 +326,9 @@ private:
     bool mb_global_map_input = false;
 private:
     Eigen::Matrix3d mCalib;
+    vector<vector<double> > mvManualObjectDetect;  //用于存储 手动标定的物体坐标检测标签
+    double mfManualObjectDetectDisThresold = 1.0; // 手动标定的物体坐标检测标签的距离阈值
+    int CheckManualLabel(ellipsoid* pEllipsoid);
 };
 
 } //namespace ORB_SLAM

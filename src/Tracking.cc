@@ -205,6 +205,32 @@ Tracking::Tracking(System *pSys, ORBVocabulary* pVoc, FrameDrawer *pFrameDrawer,
                0,  0,  1;
     mpBuilder = new Builder();
     mpBuilder->setCameraIntrinsic(mCalib, mCamera.scale);
+
+    // 手动标定物体检测标签
+    vector<double> ManualLabel_x,ManualLabel_y,ManualLabel_z,ManualLabel_label;
+    fSettings["Tracking.Associate.ManualLabel.x"] >> ManualLabel_x;
+    fSettings["Tracking.Associate.ManualLabel.y"] >> ManualLabel_y;
+    fSettings["Tracking.Associate.ManualLabel.z"] >> ManualLabel_z;
+    fSettings["Tracking.Associate.ManualLabel.label"] >> ManualLabel_label;
+    mfManualObjectDetectDisThresold = fSettings["Tracking.Associate.ManualLabel.DisThresold"];
+    if (ManualLabel_x.size() == ManualLabel_y.size() &&  ManualLabel_y.size() == ManualLabel_z.size() &&  ManualLabel_label.size() == ManualLabel_z.size() ) {
+        // std::cout << "✅ ManualLabel vectors are of equal length: " << ManualLabel_x.size() << std::endl;
+         size_t N = ManualLabel_x.size();
+        mvManualObjectDetect.reserve(N); // 预分配内存，提高效率
+        for (size_t i = 0; i < N; ++i) {
+            mvManualObjectDetect.push_back({ManualLabel_x[i], ManualLabel_y[i], ManualLabel_z[i], ManualLabel_label[i]});
+        }
+        // 可选：打印调试信息
+        // for (const auto& coord : mvManualObjectDetect) {
+        //     std::cout << "coordinate: (" << coord[0] << ", " << coord[1] << ", " << coord[2] << "), label: " << coord[3] << std::endl;
+        // }
+        // exit(-1);
+    } 
+    else {
+        std::cerr << "❌ Error: ManualLabel vectors are not of equal length!" << std::endl;
+        exit(-1);
+    }
+
 }
 
 

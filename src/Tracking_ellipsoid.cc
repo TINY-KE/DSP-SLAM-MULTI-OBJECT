@@ -428,6 +428,10 @@ namespace ORB_SLAM2 {
                     g2o::ellipsoid *pE_extractByFittingGlobal = new g2o::ellipsoid(*(pObjByFitting));
                     pGlobalEllipsoidThisObservation = pE_extractByFittingGlobal;
 
+                    // TODO: 手动标定物体检测标签
+                    pE_extractByFittingGlobal->miLabel = CheckManualLabel(pE_extractByFittingGlobal);
+                    mvpObjectDetections[i]->label = pE_extractByFittingGlobal->miLabel;
+
                     num_success_ellipsoid ++;
 
                     // KeyFrame id: "<< mpCurrentKeyFrame->mnId << " => Det["

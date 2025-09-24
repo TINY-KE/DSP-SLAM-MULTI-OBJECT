@@ -786,4 +786,37 @@ std::vector<Vector3d> Tracking::getVerticesOfEllipsoid(ellipsoid* pEllipsoid, in
 }
 
 
+int Tracking::CheckManualLabel(ellipsoid* pEllipsoid){
+    // 获取椭球体的位姿矩阵（4x4）
+    Eigen::Matrix4f Two = Converter::toMatrix4f(pEllipsoid->pose);
+
+    // 提取椭球体的中心位置（平移部分）
+    double e_x = Two(0, 3);
+    double e_y = Two(1, 3);
+    double e_z = Two(2, 3);
+
+    int label = pEllipsoid->miLabel;
+    for (auto ml : mvManualObjectDetect) {
+        // 假设 ml 是一个 vector<int> 或 vector<double>，格式为 {x, y, z, label}
+        double ml_x = ml[0];
+        double ml_y = ml[1];
+        double ml_z = ml[2];
+        int ml_label = ml[3];
+
+        // 计算欧氏距离
+        double dis = std::sqrt(
+            std::pow(e_x - ml_x, 2) +
+            std::pow(e_y - ml_y, 2) +
+            std::pow(e_z - ml_z, 2)
+        );
+
+        if(dis<mfManualObjectDetectDisThresold){
+            label = ml_label;
+        }
+    }
+    return label;
+}
+
+
+
 }
