@@ -1011,7 +1011,7 @@ g2o::ellipsoid EllipsoidExtractor::EstimateLocalEllipsoidUsingNormalVoters(cv::M
     // cout << endl;
 
     // 此处添加一个判断, 若 尺寸过小 则舍弃
-    double MinEllipsoidSize = Config::Get<int>("EllipsoidExtraction.MinEllipsoidSize");
+    double MinEllipsoidSize = Config::Get<double>("EllipsoidExtraction.MinEllipsoidSize");
     if(e_local_normalized.scale(0) <= MinEllipsoidSize || e_local_normalized.scale(1) <= MinEllipsoidSize || e_local_normalized.scale(2) <= MinEllipsoidSize)
     {
         std::cerr<<"椭球体尺寸小于最小限制"<< std::endl;

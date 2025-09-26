@@ -110,7 +110,7 @@ chair2counch: 0
 EllipsoidExtraction.ClusterTolerance: 0.04
 EllipsoidExtraction.MinClusterSize: 5
 EllipsoidExtraction.CenterDis: 0.5
-EllipsoidExtraction.MinEllipsoidSize: 0.3
+EllipsoidExtraction.MinEllipsoidSize: 0.1
 
 EllipsoidExtraction.ManhattanPlanesFilter.Open: 1
 EllipsoidExtractor.Rotation.NormalVoter.KSearchNum: 35
@@ -135,10 +135,10 @@ Ellipsoid.VisualzeDepthPoints: 1
 
 
 # 地平面提取参数： Ground Plane Extraction
-Plane.MinSize: 100  #1000
+Plane.MinSize: 2000   # 平面中点云数量的最小值，用于过滤小平面
 Plane.AngleThreshold: 3.0
 Plane.DistanceThreshold: 0.05
-Plane.MH_points_in_plane_size_scale: 0.25
+Plane.MH_points_in_plane_size_scale: 0.55
 
 
 # 椭球体数据关联
