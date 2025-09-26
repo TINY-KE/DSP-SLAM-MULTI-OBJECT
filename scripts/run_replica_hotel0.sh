@@ -10,7 +10,7 @@
 
 ./dsp_slam_rgbd  \
 Vocabulary/ORBvoc.bin  \
-configs/replica_room1.yaml  \
-/home/robotlab/dataset/Replica_room1 \
-/home/robotlab/dataset/Replica_room1/associations.txt \
+configs/replica_hotel0.yaml  \
+/home/robotlab/dataset/Replica-Dataset-results/hotel_0_640 \
+/home/robotlab/dataset/Replica-Dataset-results/hotel_0_640/associations.txt \
 map/self/GroundObjects

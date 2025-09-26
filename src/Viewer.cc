@@ -96,7 +96,7 @@ void Viewer::Run()
     pangolin::Var<bool> menuShowLastestRefinedEllipsoids("menu.Show Refined Ellipsoids One Frame Visual", true, true);
     pangolin::Var<bool> menuShowGlobalEllipsoids("menu.Show Global Ellipsoids", true, true);
     pangolin::Var<bool> menuShowEllipsoidVertices("menu.Show Ellipsoid Vertices", true, true);
-    pangolin::Var<double> SliderEllipsoidProbThresh("menu.Ellipsoid Prob", 0.3, 0.0, 1.0);
+    pangolin::Var<double> SliderEllipsoidProbThresh("menu.Ellipsoid Prob", 0.0, 0.0, 1.0);
     pangolin::Var<double> SliderEllipsoidLineWidth("menu.EllipsoidLine Width", 1.0, 0.5, 3.0);
     pangolin::Var<bool> menuShowSdfObjects("menu.Show SDF Objects",true,true);
     // 深度点云

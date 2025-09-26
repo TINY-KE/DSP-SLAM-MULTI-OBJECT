@@ -618,7 +618,11 @@ void System::SaveObjects(const string &filepath , bool move_to_origin) {
             std::cerr << "文件创建失败: " << filename << std::endl;
         }
         file << fixed;
-
+        
+        // 提取旋转部分, 转换为四元数
+        Eigen::Matrix3f R = pMO->SE3Two.block<3,3>(0, 0);
+        Eigen::Quaternionf q(R);
+    
         //只存储物体
         file    
             << pMO->mnId << " "
@@ -626,7 +630,10 @@ void System::SaveObjects(const string &filepath , bool move_to_origin) {
             << pMO->SE3Two(0, 3) << " "
             << pMO->SE3Two(1, 3) << " "
             << pMO->SE3Two(2, 3)<< "     "
-            << "0 0 0 1     "
+            << q.x() << " "
+            << q.y() << " "
+            << q.z() << " "
+            << q.w() << "     "
             << pMO->w << " "
             << pMO->l << " "
             << pMO->h << "       "

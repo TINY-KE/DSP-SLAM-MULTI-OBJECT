@@ -110,12 +110,14 @@ chair2counch: 0
 EllipsoidExtraction.ClusterTolerance: 0.1
 EllipsoidExtraction.MinClusterSize: 5
 EllipsoidExtraction.CenterDis: 0.5
+EllipsoidExtraction.MinEllipsoidSize: 0.05
 
 EllipsoidExtraction.ManhattanPlanesFilter.Open: 1
 EllipsoidExtractor.Rotation.NormalVoter.KSearchNum: 35
 EllipsoidExtractor.MinNeighborsInRadius: 40
 EllipsoidExtractor.StatisticalOutlierRemoval.MeanK: 50
 EllipsoidExtractor.SupportingPlaneFilter.DisThresh: 0.03
+EllipsoidExtractor.Optimizer.Number: 15
 EllipsoidExtractor.Optimizer.SupportingWeight: 1.0
 EllipsoidExtractor.Optimizer.BackingWeight:  1.0
 EllipsoidExtractor.Optimizer.BboxWeight:  1.2
@@ -148,7 +150,7 @@ Debug.Tracking.ellipsoid_extract: 1      # 提取椭球体
 Debug.Tracking.ellipsoid_associate: 1   # 数据关联
 Debug.Tracking.recompute_merged_ellipsoid: 1  # 数据关联并融合后，重新计算椭球体
 Debug.LocalMapping.ObjectInit: 1    # 将新物体（数据关联失败的物体）生成为新Global物体
-Debug.LocalMapping.SDFConstruct: 0  # DeepSDF
+Debug.LocalMapping.SDFConstruct: 1  # DeepSDF
 
 
 # Bounding box filter

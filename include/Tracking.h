@@ -329,6 +329,8 @@ private:
     vector<vector<double> > mvManualObjectDetect;  //用于存储 手动标定的物体坐标检测标签
     double mfManualObjectDetectDisThresold = 1.0; // 手动标定的物体坐标检测标签的距离阈值
     int CheckManualLabel(ellipsoid* pEllipsoid);
+    int CheckManualDirection(MapObject* pMO);
+
 };
 
 } //namespace ORB_SLAM

@@ -1,12 +1,12 @@
 {
-  "data_type": "ICL-NUIM",
+  "data_type": "AllObjectsOnGround",
   "detect_online": true,
   "path_label_2d": "/media/jingwen/Data/freiburg_cars/freiburg_static_car_vids/Cars/Car001/detections/labels",
   "Detector2D": {
     "config_path": "configs/config_maskrcnn.py",
     "weight_path": "weights/maskrcnn/model.pth"
   },
-  "slam_config_path": "configs/replica_room1.yaml",
+  "slam_config_path": "configs/replica_hotel0.yaml",
   "min_bb_area": 900,
   "min_mask_area": 800,
   "downsample_ratio": 1.0,
@@ -34,8 +34,8 @@
     "frame_size": 0.5
   },
   "image": {
-    "mRow": 680,
-    "mCol": 1200,
+    "mRow": 480,
+    "mCol": 640,
     "mEdge": 1
   }
 }

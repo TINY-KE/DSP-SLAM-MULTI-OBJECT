@@ -56,4 +56,5 @@ object_classes_icl_nuim = ["bench", "couch", "chair", "bed", "dining table", "re
 object_classes_on_ground = ["bench", "chair", "potted plant", "bed", "refrigerator"]
 object_classes_on_ground = ["dining table", "chair", "couch"]
 object_classes_on_ground = ["bed","dining table", "chair", "couch", "bottle", "monitor"]
+object_classes_on_ground = ["bed"]
 object_classes_on_table = [c for c in object_classes if c not in object_classes_on_ground ]

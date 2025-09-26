@@ -11,6 +11,8 @@ find_package(catkin REQUIRED COMPONENTS
         cv_bridge
         sensor_msgs
         #        image_transport
+        geometry_msgs
+        visualization_msgs
         std_msgs
         tf
 )
@@ -231,3 +233,10 @@ add_executable(rpy rpy.cpp)
 target_link_libraries(rpy 
                 ${EIGEN3_LIBS}
                 )       
+
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR})
+add_executable(publish_ellip src_ros/publish_ellip.cpp)
+target_link_libraries(publish_ellip 
+                ${EIGEN3_LIBS}
+                ${catkin_LIBRARIES}
+                )      

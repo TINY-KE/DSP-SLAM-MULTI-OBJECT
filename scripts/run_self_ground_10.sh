@@ -10,7 +10,7 @@
 
 ./dsp_slam_rgbd  \
 Vocabulary/ORBvoc.bin  \
-configs/self_allobject_ground_3.yaml  \
+configs/self_allobject_ground_10.yaml  \
 /home/robotlab/dataset/MySimDataset/gazebo_dataset_10 \
 /home/robotlab/dataset/MySimDataset/gazebo_dataset_10/associations.txt \
 map/self/GroundObjects

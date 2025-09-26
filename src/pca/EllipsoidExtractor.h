@@ -79,7 +79,7 @@ public:
     // API2.1: given a supporting plane(local coordinate)
     g2o::ellipsoid EstimateLocalEllipsoidWithSupportingPlane(cv::Mat& depth, Eigen::Vector4d& bbox, int label, double prob, Eigen::VectorXd &pose, camera_intrinsic& camera, g2o::plane* pSupPlane);
 
-    g2o::ellipsoid EstimateEllipsoidFromPCDCloud(pcl::PointCloud<PointType>::Ptr& pcd_ptr, g2o::plane* ground);
+    g2o::ellipsoid EstimateEllipsoidFromPCDCloud(pcl::PointCloud<PointType>::Ptr& pcd_ptr, g2o::plane* ground, int ManualDirection = 0);
 
     void OpenVisualization(Map* pMap);   // if opened, the pointcloud during the process will be visualized 
     void ClearPointCloudList(); // clear the visualized point cloud 
@@ -137,9 +137,10 @@ public:
                                                                                 g2o::plane &BackingPlane, double Backing_Weight);
     g2o::ellipsoid OptimizeEllipsoidWithBboxPlanesAndMHPlanes(const g2o::ellipsoid &init_guess, std::vector<g2o::plane> &BboxPlanes, double Bbox_Weight, 
                                                                                 g2o::plane &SupprotingPlane, double Supproting_Weight);
-    g2o::ellipsoid OptimizeEllipsoidWithMHPlanes(const g2o::ellipsoid &init_guess,  g2o::plane &SupprotingPlane, double Supproting_Weight,
-                                                                                    g2o::plane &BackingPlane, double Backing_Weight);
-    g2o::ellipsoid OptimizeEllipsoidWithSupportingPlanes(const g2o::ellipsoid &init_guess,  g2o::plane &SupprotingPlane, double Supproting_Weight);                                                                                
+    g2o::ellipsoid OptimizeEllipsoidWithMHPlanes(const g2o::ellipsoid &init_guess,  int num_opt, 
+                                                            g2o::plane &SupprotingPlane, double Supproting_Weight,
+                                                            g2o::plane &BackingPlane, double Backing_Weight);
+    g2o::ellipsoid OptimizeEllipsoidWithSupportingPlanes(const g2o::ellipsoid &init_guess,  int num_opt,  g2o::plane &SupprotingPlane, double Supproting_Weight);                                                                                
 private:
     ORB_SLAM2::PointCloud* ApplyMHPlanesFilter(ORB_SLAM2::PointCloud* pCloud, std::vector<g2o::plane*>& vpPlanes);
 

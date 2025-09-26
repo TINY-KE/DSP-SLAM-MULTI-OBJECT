@@ -1011,8 +1011,10 @@ g2o::ellipsoid EllipsoidExtractor::EstimateLocalEllipsoidUsingNormalVoters(cv::M
     // cout << endl;
 
     // 此处添加一个判断, 若 尺寸过小 则舍弃
-    if(e_local_normalized.scale(0) <= 0.05 || e_local_normalized.scale(1) <= 0.05 || e_local_normalized.scale(2) <= 0.05)
+    double MinEllipsoidSize = Config::Get<int>("EllipsoidExtraction.MinEllipsoidSize");
+    if(e_local_normalized.scale(0) <= MinEllipsoidSize || e_local_normalized.scale(1) <= MinEllipsoidSize || e_local_normalized.scale(2) <= MinEllipsoidSize)
     {
+        std::cerr<<"椭球体尺寸小于最小限制"<< std::endl;
         mResult = false;
     }
     else 
@@ -1199,7 +1201,7 @@ g2o::ellipsoid EllipsoidExtractor::EstimateLocalEllipsoidWithSupportingPlane(cv:
 // }
 
 
-g2o::ellipsoid EllipsoidExtractor::EstimateEllipsoidFromPCDCloud(pcl::PointCloud<PointType>::Ptr& pcd_ptr, g2o::plane* ground)
+g2o::ellipsoid EllipsoidExtractor::EstimateEllipsoidFromPCDCloud(pcl::PointCloud<PointType>::Ptr& pcd_ptr, g2o::plane* ground, int ManualDirection)
 {
     g2o::ellipsoid e;
     
@@ -1234,7 +1236,17 @@ g2o::ellipsoid EllipsoidExtractor::EstimateEllipsoidFromPCDCloud(pcl::PointCloud
     // 开始计算朝向: 使用法向量投票器    
     // 计算该点云的 normal voters
     // std::cout<< " [debug] EstimateLocalEllipsoidUsingMultiPlanes 3" << std::endl;
-    double yaw = NormalVoter(pCloudPCLGravity);  // 该函数获得一个位于 XY 平面内的, 三维法向量. 可与 Z轴组完整旋转矩阵.
+    double yaw;  // 该函数获得一个位于 XY 平面内的, 三维法向量. 可与 Z轴组完整旋转矩阵.
+    if(ManualDirection==1) 
+        yaw = 0 / 180 * M_PI;   // X轴正方向
+    else if(ManualDirection==2) 
+        yaw = 90 / 180 * M_PI;  // Y轴正方向
+    else if(ManualDirection==3)
+        yaw = 180 / 180 * M_PI; // X轴负方向
+    else if(ManualDirection==4) 
+        yaw = -90 / 180 * M_PI; // Y轴负方向
+    else
+        yaw = NormalVoter(pCloudPCLGravity);  // 法向量投票器
     // 通过yaw角度将 Gravity - > normalized 
     g2o::SE3Quat Tgn = GenerateTransformNormalToGravity(yaw); 
 

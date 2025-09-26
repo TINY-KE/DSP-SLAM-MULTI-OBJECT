@@ -318,7 +318,7 @@ g2o::ellipsoid EllipsoidExtractor::OptimizeEllipsoidWithBboxPlanesAndMHPlanes(co
     return vEllipsoid->estimate();
 }
 
-g2o::ellipsoid EllipsoidExtractor::OptimizeEllipsoidWithMHPlanes(const g2o::ellipsoid &init_guess, 
+g2o::ellipsoid EllipsoidExtractor::OptimizeEllipsoidWithMHPlanes(const g2o::ellipsoid &init_guess, int num_opt, 
                                                                                 g2o::plane &SupprotingPlane, double Supproting_Weight,
                                                                                 g2o::plane &BackingPlane, double Backing_Weight)
 {
@@ -411,7 +411,6 @@ g2o::ellipsoid EllipsoidExtractor::OptimizeEllipsoidWithMHPlanes(const g2o::elli
 
     
     // 开始优化
-    int num_opt = 10;
     // std::cout << "Begin Optimization of ellipsoid with prior... x " << num_opt << std::endl;
     graph.initializeOptimization();
     graph.optimize( num_opt );  //optimization step
@@ -423,7 +422,7 @@ g2o::ellipsoid EllipsoidExtractor::OptimizeEllipsoidWithMHPlanes(const g2o::elli
     return vEllipsoid->estimate();
 }
 
-g2o::ellipsoid EllipsoidExtractor::OptimizeEllipsoidWithSupportingPlanes(const g2o::ellipsoid &init_guess, 
+g2o::ellipsoid EllipsoidExtractor::OptimizeEllipsoidWithSupportingPlanes(const g2o::ellipsoid &init_guess,   int num_opt,
                                                                                 g2o::plane &SupprotingPlane, double Supproting_Weight)
 {
     // 基本参数的读取
@@ -494,7 +493,6 @@ g2o::ellipsoid EllipsoidExtractor::OptimizeEllipsoidWithSupportingPlanes(const g
 
     
     // 开始优化
-    int num_opt = 10;
     // std::cout << "Begin Optimization of ellipsoid with prior... x " << num_opt << std::endl;
     graph.initializeOptimization();
     graph.optimize( num_opt );  //optimization step
