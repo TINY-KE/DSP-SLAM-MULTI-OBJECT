@@ -295,6 +295,7 @@ cv::Mat Tracking::GrabImageStereo(const cv::Mat &imRectLeft, const cv::Mat &imRe
 cv::Mat Tracking::GrabImageRGBD(const cv::Mat &imRGB,const cv::Mat &imD, const double &timestamp)
 {
     mImGray = imRGB;
+    mImColor = imRGB.clone();
     cv::Mat imDepth = imD;
 
     if(mImGray.channels()==3)

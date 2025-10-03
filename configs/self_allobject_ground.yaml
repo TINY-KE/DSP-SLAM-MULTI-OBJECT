@@ -112,7 +112,6 @@ EllipsoidExtraction.ManhattanPlanesFilter.Open: 1
 EllipsoidExtractor.Rotation.NormalVoter.KSearchNum: 35
 EllipsoidExtractor.MinNeighborsInRadius: 40
 EllipsoidExtractor.StatisticalOutlierRemoval.MeanK: 50
-EllipsoidExtractor.SupportingPlaneFilter.DisThresh: 0.03
 EllipsoidExtractor.Optimizer.Number: 15
 EllipsoidExtractor.Optimizer.SupportingWeight: 1.0
 EllipsoidExtractor.Optimizer.BackingWeight:  1.0
@@ -120,6 +119,9 @@ EllipsoidExtractor.Optimizer.BboxWeight:  1.2
 EllipsoidExtractor.Optimizer.PlaneNormalAngle: 100
 EllipsoidExtractor.RefineEllipsoid.Border.x2.Pixels: 0
 EllipsoidExtractor.RefineEllipsoid.Border.y2.Pixels: 0
+EllipsoidExtractor.EuclideanFilter.Open: 1
+EllipsoidExtractor.SupportingPlaneFilter.DisThresh: 0.03
+
 
 EllipsoidExtractor_DEPTH_RANGE: 7
 

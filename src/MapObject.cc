@@ -1029,8 +1029,9 @@ void MapObject::compute_corner() {
 void MapObject::SetEllipsoid(g2o::ellipsoid e){
     // 为ellipsoid赋值
     unique_lock<mutex> lock(mMutexObject);
-    if(e.scale(0) <= 0.05 || e.scale(1) <= 0.05 || e.scale(2) <= 0.05){
-        std::cerr << "[debug] SetEllipsoid() 遇到 输入椭球体 无效, scale:"<< e.scale.transpose() << endl;
+    double MinEllipsoidSize = Config::Get<double>("EllipsoidExtraction.MinEllipsoidSize");
+    if(e.scale(0) <= MinEllipsoidSize || e.scale(1) <= MinEllipsoidSize || e.scale(2) <= MinEllipsoidSize){
+        std::cerr << "[debug] SetEllipsoid() 遇到 输入椭球体 无效, 种类："<< e.miLabel <<", scale:"<< e.scale.transpose() << endl;
         std::exit(EXIT_FAILURE);  // 或者：std::abort();
     } else {
         (*mpEllipsold) = e;

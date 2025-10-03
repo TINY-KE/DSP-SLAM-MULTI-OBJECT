@@ -217,7 +217,7 @@ int main(int argc, char **argv)
             T = tframe-vTimestamps[ni-1];
         if(ttrack<T)
         {
-            std::this_thread::sleep_for(std::chrono::microseconds(static_cast<size_t>((T- ttrack)*1e6)));
+            // std::this_thread::sleep_for(std::chrono::microseconds(static_cast<size_t>((T- ttrack)*1e6)));
         }
         // std::this_thread::sleep_for(std::chrono::microseconds(static_cast<size_t>(0.5*1e6)));
 
@@ -258,7 +258,7 @@ int main(int argc, char **argv)
 
     SLAM.SaveEntireMap(save_map_dir);
 
-    string traj_path = data_source_dir  + "/eval/temp/KeyFrameTrajectory.txt";
+    string traj_path = data_source_dir  + "/eval/temp/";
     
     
     // Save Objects and Points

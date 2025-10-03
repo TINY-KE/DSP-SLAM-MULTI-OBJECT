@@ -875,7 +875,8 @@ g2o::ellipsoid EllipsoidExtractor::EstimateLocalEllipsoidUsingMultiPlanes(cv::Ma
     // cout << endl;
 
     // 此处添加一个判断, 若 尺寸过小 则舍弃
-    if(e_local_normalized.scale(0) <= 0.05 || e_local_normalized.scale(1) <= 0.05 || e_local_normalized.scale(2) <= 0.05)
+    double MinEllipsoidSize = Config::Get<double>("EllipsoidExtraction.MinEllipsoidSize");
+    if(e_local_normalized.scale(0) <= MinEllipsoidSize || e_local_normalized.scale(1) <= MinEllipsoidSize || e_local_normalized.scale(2) <= MinEllipsoidSize)
     {
         mResult = false;
     }
@@ -1283,7 +1284,8 @@ g2o::ellipsoid EllipsoidExtractor::EstimateEllipsoidFromPCDCloud(pcl::PointCloud
     // cout << endl;
 
     // 此处添加一个判断, 若 尺寸过小 则舍弃
-    if(e_local_normalized.scale(0) <= 0.05 || e_local_normalized.scale(1) <= 0.05 || e_local_normalized.scale(2) <= 0.05)
+    double MinEllipsoidSize = Config::Get<double>("EllipsoidExtraction.MinEllipsoidSize");
+    if(e_local_normalized.scale(0) <= MinEllipsoidSize || e_local_normalized.scale(1) <= MinEllipsoidSize || e_local_normalized.scale(2) <= MinEllipsoidSize)
     {
         mResult = false;
     }

@@ -730,7 +730,8 @@ void Tracking::UpdateAssociatedObjectPoseAndScale(MapObject* pMO){
         // Visualize estimated ellipsoid
         g2o::ellipsoid* pObjRefined = new g2o::ellipsoid(e_refined);
         // pObjRefined->setColor(Vector3d(189/255.0, 183/255.0, 107/255.0), 1); 
-        pObjRefined->setColor(Vector3d(255/255.0, 255/255.0, 0/255.0), 1); 
+        // pObjRefined->setColor(Vector3d(255/255.0, 255/255.0, 0/255.0), 1); 
+        pObjRefined->setColor(Vector3d(255/255.0, 0/255.0, 0/255.0), 1); //用于论文做图
         mpMap->addRefinedEllipsoidVisual(pObjRefined);
         
         
@@ -771,7 +772,8 @@ void Tracking::UpdateAssociatedObjectPoseAndScale(MapObject* pMO){
         // Visualize estimated ellipsoid
         g2o::ellipsoid* pObjRefined = new g2o::ellipsoid(e_refined);
         // pObjRefined->setColor(Vector3d(189/255.0, 183/255.0, 107/255.0), 1); 
-        pObjRefined->setColor(Vector3d(255/255.0, 255/255.0, 0/255.0), 1); 
+        // pObjRefined->setColor(Vector3d(255/255.0, 255/255.0, 0/255.0), 1); 
+        pObjRefined->setColor(Vector3d(255/255.0, 0/255.0, 0/255.0), 1); //用于论文做图
         mpMap->addRefinedEllipsoidVisual(pObjRefined);
         
         // 用优化后的

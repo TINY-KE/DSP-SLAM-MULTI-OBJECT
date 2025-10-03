@@ -276,7 +276,11 @@ void FrameDrawer::Update(Tracking *pTracker)
 {
     unique_lock<mutex> lock(mMutex);
     mpTracker = pTracker;
-    pTracker->mImGray.copyTo(mIm);
+    if (pTracker->mImGray.empty()) {
+        std::cerr << "The cv::Mat is empty!" << std::endl;
+        std::exit(EXIT_FAILURE);
+    } 
+    pTracker->mImColor.copyTo(mIm);
     mvCurrentKeys=pTracker->mCurrentFrame.mvKeys;
     N = mvCurrentKeys.size();
     mvbVO = vector<bool>(N,false);

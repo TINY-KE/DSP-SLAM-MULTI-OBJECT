@@ -97,7 +97,7 @@ ThDepth: 40.0
 DepthMapFactor: 5000  #对应
 
 # 保存本地
-saveobjects: 0
+saveobjects: 1
 savepoints: 0
 
 # chair转counch(沙发)
@@ -107,16 +107,15 @@ chair2counch: 0
 #  单帧椭球体估计： Single-frame ellipsoid estimation
 # ------------------------------------
 # Pointcloud segmentation parameters
-EllipsoidExtraction.ClusterTolerance: 0.1
+EllipsoidExtraction.ClusterTolerance: 0.15  #控制聚类半径（单位：米），越小：只聚类彼此非常靠近的点，越大：可能会聚成大簇，甚至将多个物体合并
 EllipsoidExtraction.MinClusterSize: 5
 EllipsoidExtraction.CenterDis: 0.5
-EllipsoidExtraction.MinEllipsoidSize: 0.05
+EllipsoidExtraction.MinEllipsoidSize: 0.02
 
 EllipsoidExtraction.ManhattanPlanesFilter.Open: 1
 EllipsoidExtractor.Rotation.NormalVoter.KSearchNum: 35
 EllipsoidExtractor.MinNeighborsInRadius: 40
 EllipsoidExtractor.StatisticalOutlierRemoval.MeanK: 50
-EllipsoidExtractor.SupportingPlaneFilter.DisThresh: 0.03
 EllipsoidExtractor.Optimizer.Number: 15
 EllipsoidExtractor.Optimizer.SupportingWeight: 1.0
 EllipsoidExtractor.Optimizer.BackingWeight:  1.0
@@ -124,6 +123,11 @@ EllipsoidExtractor.Optimizer.BboxWeight:  1.2
 EllipsoidExtractor.Optimizer.PlaneNormalAngle: 100
 EllipsoidExtractor.RefineEllipsoid.Border.x2.Pixels: 0
 EllipsoidExtractor.RefineEllipsoid.Border.y2.Pixels: 0
+EllipsoidExtractor.EuclideanFilter.Open: 1
+EllipsoidExtractor.SupportingPlaneFilter.DisThresh: 0.03
+
+
+
 
 EllipsoidExtractor_DEPTH_RANGE: 7
 
