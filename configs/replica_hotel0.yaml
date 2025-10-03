@@ -80,6 +80,7 @@ DecoderPaths: ["weights/deepsdf/chairs_64",
 use_ros: 0   # 1：读取存贮在本地的ros.png   0：根据association.txt读取图片
 DatasetPathRoot: "./build/"  # 存储ros.png的地方
 Dataset.Path.Map: "/home/robotlab/dataset/ICL-NUIM/living_room_traj2n_frei_png/map/dataset.pcd"  # 用于可视化的全局地图
+Dataset.global_map_input: 0
 Dataset.step: 1
 Dataset.sleep_time: 0.3   #TODO:
 Dataset.Type: "AllObjectsOnGround"

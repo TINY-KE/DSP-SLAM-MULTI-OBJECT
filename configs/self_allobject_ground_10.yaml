@@ -77,6 +77,7 @@ DecoderPaths: ["weights/deepsdf/chairs_64",
 use_ros: 0   # 1：读取存贮在本地的ros.png   0：根据association.txt读取图片
 DatasetPathRoot: "no use"
 Dataset.Path.Map: "no use"
+Dataset.global_map_input: 0
 Dataset.step: 3
 Dataset.sleep_time: 0.5   #TODO:
 Dataset.Type: "AllObjectsOnGround"

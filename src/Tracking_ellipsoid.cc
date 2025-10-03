@@ -22,6 +22,9 @@
 #include "ORBmatcher.h"
 #include <Eigen/Dense>
 #include <opencv2/core/eigen.hpp>
+#include <boost/algorithm/string.hpp>
+#include <boost/algorithm/string/split.hpp>
+#include <boost/algorithm/string/classification.hpp>
 
 using namespace std;
 
@@ -682,25 +685,245 @@ PointCloud* filterCloudAsHeight(PointCloud* pCloud,  double dis_thresh)
         Vector3d center; center << p.x, p.y, p.z;
 
         double dis = p.z;
-        // if(dis < dis_thresh)
+        if(dis < dis_thresh)
             pCloudFiltered->push_back(p);
     }
     return pCloudFiltered;
 }
-    
+
+
+
+MatrixXd GenerateSelectedGtMat(MatrixXd &estMat, MatrixXd &gtMat)
+{
+    MatrixXd gtMatSelected; gtMatSelected.resize(0, gtMat.cols());
+    int estNum = estMat.rows();
+    int gtNum = gtMat.rows();
+    for(int i=0;i<estNum;i++)
+    {
+        VectorXd estPose = estMat.row(i);
+        double timestamp = estPose[0];
+
+        // 寻找对应的gt
+        bool bFindGT = false;
+        VectorXd pose_gt;
+        for( int n=0;n<gtNum;n++)
+        {
+            VectorXd gtPose = gtMat.row(n);
+            double timestampGT = gtPose[0];
+            if( std::abs(timestamp - timestampGT) < 0.001 )
+            {
+                bFindGT= true;
+                pose_gt = gtPose;
+                break;
+            }
+        }
+
+        if(!bFindGT) {
+            std::cout << "[ERROR in ODOM] No corresponding gt found. timestamp: " << timestamp << std::endl;
+            break;  // 未找到对应的gt, 理应报错.
+        }
+
+        addVecToMatirx(gtMatSelected, pose_gt);
+
+    }
+
+    return gtMatSelected;
+}
+
+
+
+// 函数：从文件中读取数据并生成 Eigen 矩阵
+MatrixXd loadTrajMatFromFile(const std::string& filename) {
+    std::ifstream file(filename);
+    if (!file.is_open()) {
+        throw std::runtime_error("Could not open file: " + filename);
+    }
+
+    // 用于存储所有行的数据
+    std::vector<std::vector<double>> data;
+    std::string line;
+
+    // 按行读取文件
+    while (std::getline(file, line)) {
+        std::istringstream lineStream(line);
+        std::vector<double> row;
+        double value;
+
+        // 每行按空格分隔值
+        while (lineStream >> value) {
+            row.push_back(value);
+        }
+
+        // 将每行数据存储到 data 中
+        if (!row.empty()) {
+            data.push_back(row);
+        }
+    }
+
+    file.close();
+
+    // 检查是否有数据
+    if (data.empty()) {
+        throw std::runtime_error("The file is empty or invalid.");
+    }
+
+    // 将 std::vector 转换为 Eigen::MatrixXd
+    int rows = data.size();
+    int cols = data[0].size();
+    MatrixXd mat(rows, cols);
+
+    for (int i = 0; i < rows; ++i) {
+        for (int j = 0; j < cols; ++j) {
+            mat(i, j) = data[i][j];
+        }
+    }
+
+    return mat;
+}
+
+// 估计一个刚体变换使得误差最小. 并输出匹配的变换.
+void alignTrajectory(MatrixXd& estMat, MatrixXd& gtMat, g2o::SE3Quat& transform)
+{
+    // 应该是一个闭式解.
+    // 生成两个匹配的 Mat; 用 est 去寻找 gt ( 即认为 est <= gt )
+
+    MatrixXd estPointMat = estMat.block(0,1,estMat.rows(),3);
+    MatrixXd gtMatSelected = GenerateSelectedGtMat(estMat, gtMat);
+    MatrixXd gtPointMat = gtMatSelected.block(0,1,gtMatSelected.rows(),3);
+
+    // std::cout << "gtPointMat : " << std::endl << gtPointMat << std::endl;
+    // std::cout << "estPointMat : " << std::endl << estPointMat << std::endl;
+
+    // 开始求解 : 要求输入的点是一列一个.
+    MatrixXd result = Eigen::umeyama(estPointMat.transpose(), gtPointMat.transpose(), false);
+    std::cout << " ----- Umeyama result ---- " << std::endl;
+    std::cout << result << std::endl;
+
+    g2o::SE3Quat trans(result.topLeftCorner(3,3), result.topRightCorner(3,1));
+
+    // // 将gt点变换到 est 坐标系下.
+    // Trajectory tGt;
+    // int num = gtMatSelected.rows(); // 这里只可视化所有对应帧得了.
+    // for(int i=0;i<num;i++)
+    // {
+    //     VectorXd gtPose = gtMatSelected.row(i);
+    //     SE3QuatWithStamp* pGtSE3T = new SE3QuatWithStamp();
+    //     pGtSE3T->pose.fromVector(gtPose.tail(7));
+    //     pGtSE3T->timestamp = gtPose[0];
+
+    //     // 应用变换
+    //     pGtSE3T->pose = trans.inverse() * pGtSE3T->pose;
+
+    //     tGt.push_back(pGtSE3T);
+    // }
+    transform = trans;
+
+    // 返回RMSE误差
+    return;
+}
+
+
+Eigen::MatrixXd readDataFromFile(const char* fileName, bool dropFirstline){
+    ifstream fin(fileName);
+    string line;
+
+    if(dropFirstline)
+        getline(fin, line);  // drop this line
+
+    MatrixXd mat;
+    int line_num = 0;
+    while( getline(fin, line) )
+    {
+        if(line.size()==0) continue;
+        if(line[0]=='#') continue;          // filt comments ( start with # )
+        
+        vector<string> s;
+        boost::split( s, line, boost::is_any_of( " \t," ), boost::token_compress_on );
+
+        // 输出s里的每个东西看看
+        // std::cout << " === Output Line: " << std::endl;
+        // for(auto s_bit:s)
+        // {
+        //     std::cout << s_bit.size() << " : " << s_bit << std::endl;
+        //     if(s_bit.size()==1) std::cout << int(*s_bit.c_str()) << std::endl;
+        // }
+
+        // 检查最后一个是否有空格
+        int line_size = s.size();
+        if(int(*(s[line_size-1].c_str()))==13) {
+            line_size--;
+            std::cout << " - Find a Return and clear it." << std::endl;
+            // std::cout << 
+        }
+        
+        VectorXd lineVector(line_size);
+        bool bValid = true;
+        for (int i=0;i<line_size;i++){
+            try {
+                lineVector(i) = stod(s[i]);
+            }
+            catch(std::out_of_range)
+            {
+                std::cout << "out of range : " << s[i] << "; " << line << std::endl;
+                // abort();
+                // 忽略该行
+                bValid = false;
+                break;
+            }
+        }
+
+        if(bValid){
+            if(line_num == 0)
+                mat.conservativeResize(1, line_size);
+            else
+                // vector to matrix.
+                mat.conservativeResize(mat.rows()+1, mat.cols());
+
+            mat.row(mat.rows()-1) = lineVector;
+
+            line_num++;
+        }
+    }
+    fin.close();
+
+    return mat;
+}
+
 void Tracking::LoadPointcloud(const string& strPcdDir, const string& strPointcloud_name)
 {
+    // string groundtruth_path = "/home/robotlab/dataset/ICL-NUIM/living_room_traj2n_frei_png/groundtruth.txt";
+    // string aligen_path = "/home/robotlab/dataset/ICL-NUIM/living_room_traj2n_frei_png/eval/KeyFrameTrajectory.txt";
+    
+    // MatrixXd estMat = readDataFromFile(aligen_path.c_str(), false);
+    // MatrixXd gtMat = readDataFromFile(groundtruth_path.c_str(), false);
+    // std::cout << "[Tracking::LoadPointcloud] Matrix estMat， Rows: " << estMat.rows() << ", Columns: " << estMat.cols() << std::endl;
+    // std::cout << "[Tracking::LoadPointcloud] Matrix gtMat Rows: " << gtMat.rows() << ", Columns: " << gtMat.cols() << std::endl;
+
+    // g2o::SE3Quat Tre;
+    // alignTrajectory(estMat, gtMat, Tre);
+    // std::cout<< "[Tracking::LoadPointcloud] alignTrajectory result: " << Tre.to_homogeneous_matrix() << std::endl;
+
     pcl::PointCloud<pcl::PointXYZRGB>::Ptr  cloud (new pcl::PointCloud<pcl::PointXYZRGB>);
     pcl::io::loadPCDFile<pcl::PointXYZRGB>(strPcdDir.c_str(), *cloud);
 
-    //  = Ttrans.to_homogeneous_matrix();
-    Matrix4d transform = Converter::toMatrix4d(mCurrentFrame.mTcw.inv());
-    pcl::transformPointCloud (*cloud, *cloud, transform);
+    // Matrix4d transform = Converter::toMatrix4d(mCurrentFrame.mTcw.inv());
+    // Matrix4d transform = Tre.inverse().to_homogeneous_matrix();
+    // Eigen::Matrix4d transform;
+    // transform <<  0,  0,  1, 0,
+    //      -1,  0,  0, 0,
+    //       0, -1,  0, 0,
+    //       0,  0,  0, 1;
+    // Eigen::Matrix4d transform_inverse = Eigen::Matrix4d::Identity();
+    // transform_inverse.block<3, 3>(0, 0) = transform.block<3, 3>(0, 0).transpose();  // Rᵀ
+    // transform_inverse.block<3, 1>(0, 3) = -transform.block<3, 3>(0, 0).transpose() * transform.block<3, 1>(0, 3);  // -Rᵀ * t
+    // // Matrix4d transform = Tre.inverse().to_homogeneous_matrix();
+
+    // pcl::transformPointCloud (*cloud, *cloud, transform_inverse);
 
     auto pCloud = pclToQuadricPointCloudPtr(cloud);
 
     // 临时过滤顶部
-    double dis_thresh = Config::ReadValue<double>("Visualization.Map.Filter.DisThresh");
+    double dis_thresh = Config::ReadValue<double>("Dataset.Filter.DisThresh");
     if(dis_thresh > 0){
         auto pCloud_filtered = filterCloudAsHeight(pCloud, dis_thresh);
         delete pCloud;

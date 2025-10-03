@@ -232,6 +232,7 @@ Tracking::Tracking(System *pSys, ORBVocabulary* pVoc, FrameDrawer *pFrameDrawer,
         exit(-1);
     }
 
+    mb_global_map_input = Config::Get<int>("Dataset.global_map_input");
 }
 
 
