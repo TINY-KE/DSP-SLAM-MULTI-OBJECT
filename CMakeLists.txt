@@ -241,11 +241,11 @@ target_link_libraries(dsp_slam_ros ${PROJECT_NAME})
 #                 ${catkin_LIBRARIES}
 #                 )      
 
-# set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/src_ros)
-# add_executable(publish_pcd src_ros/publish_pcd.cpp)
-# target_link_libraries(publish_pcd 
-#                       ${EIGEN3_LIBS}
-#                       ${catkin_LIBRARIES}
-#                       ${PCL_LIBRARY_DIRS}
-#                       ${PCL_LIBRARIES}
-#                 )      
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/src_ros)
+add_executable(publish_pcd src_ros/publish_pcd.cpp)
+target_link_libraries(publish_pcd 
+                      ${EIGEN3_LIBS}
+                      ${catkin_LIBRARIES}
+                      ${PCL_LIBRARY_DIRS}
+                      ${PCL_LIBRARIES}
+                )      

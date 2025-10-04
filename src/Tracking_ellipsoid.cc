@@ -660,12 +660,23 @@ namespace ORB_SLAM2 {
                 // cout << "DenseBuild: after AddPointCloudList ";
                 // printMemoryUsage();
 
-                bool open_global = false;
+                bool open_global = true;
 
                 if(open_global){
                     // Get and visualize global pointcloud.
-                    PointCloudPCL::Ptr pCloudPCL = mpBuilder->getMap();
-                    auto pCloud = pclToQuadricPointCloudPtr(pCloudPCL);
+                    PointCloudPCL::Ptr cloud = mpBuilder->getMap();
+                    
+
+                    double Radius_Search = Config::ReadValue<double>("EllipsoidExtractor_Radius_Search");   // Only consider pointcloud within depth_range
+                    double MinNeighborsInRadius = Config::ReadValue<double>("EllipsoidExtractor_MinNeighborsInRadius");   // Only consider pointcloud within depth_range
+                    // Step 3: 移除孤立点（半径滤波）
+                    pcl::RadiusOutlierRemoval<PointT> ror;
+                    ror.setInputCloud(cloud);
+                    ror.setRadiusSearch(Radius_Search);
+                    ror.setMinNeighborsInRadius(MinNeighborsInRadius);
+                    ror.filter(*cloud);
+
+                    auto pCloud = pclToQuadricPointCloudPtr(cloud);
                     mpMap->AddPointCloudList("Builder.Global Points", pCloud);
                 }
                 
@@ -684,8 +695,22 @@ PointCloud* filterCloudAsHeight(PointCloud* pCloud,  double dis_thresh)
         PointXYZRGB p = (*pCloud)[i];
         Vector3d center; center << p.x, p.y, p.z;
 
-        double dis = p.z;
-        if(dis < dis_thresh)
+        double height = p.z;
+        double y_dis = p.y;
+        double x_dis = p.x;
+        // if(height < dis_thresh && y_dis > -2)  // 过滤掉过高的点
+        
+        // ICL 电视
+        // if(height > 1.1 && x_dis > 0.4)  // 过滤掉过高的点
+        // {
+        //     continue;
+        // }
+        // if(y_dis > -2)
+
+        // ICL 沙发侧面
+        // if(height < dis_thresh && y_dis < 1)  // 过滤掉过高的点
+        
+        if(height < dis_thresh )  // 过滤掉过高的点
             pCloudFiltered->push_back(p);
     }
     return pCloudFiltered;

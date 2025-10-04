@@ -114,7 +114,7 @@ namespace ORB_SLAM2
                         }
                     }
                     else{
-                        if(z_dis>0 && z_dis<0.3) {  // 即平面不能在物体底面之上; 平面不能离地面中心太远
+                        if(z_dis>0 && z_dis<0.2) {  // 即平面不能在物体底面之上; 平面不能离地面中心太远
                             supprortingPlaneDisVec.push_back(make_pair(min_xyz_distance, pPlane));
                             std::cout << "  最近xyz距离为: " << min_xyz_distance << std::endl;
                             std::cout << "  物体长度 object_length*1.5: " << object_length*1.5 << std::endl;

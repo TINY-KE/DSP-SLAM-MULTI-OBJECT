@@ -5,6 +5,7 @@
 #include <pcl/point_types.h>
 #include <pcl/common/transforms.h>
 
+// ./src_ros/publish_pcd /home/robotlab/dataset/ICL-NUIM/living_room_traj2n_frei_png/dataset.pcd
 int main(int argc, char** argv) {
     // 初始化 ROS 节点
     ros::init(argc, argv, "pcd_publisher");
@@ -28,34 +29,54 @@ int main(int argc, char** argv) {
         return -1;
     }
 
-    Eigen::Matrix4d transform;
-    transform << 0, 0, 1, 0,
-         -1,  0,  0, 0,
-          0, -1,  0, -1.17,
-          0,  0,  0, 1;
-    Eigen::Matrix4d transform_inverse = Eigen::Matrix4d::Identity();
-    transform_inverse.block<3, 3>(0, 0) = transform.block<3, 3>(0, 0).transpose();  // Rᵀ
-    transform_inverse.block<3, 1>(0, 3) = -transform.block<3, 3>(0, 0).transpose() * transform.block<3, 1>(0, 3);  // -Rᵀ * t
-    // Matrix4d transform = Tre.inverse().to_homogeneous_matrix();
+    // Eigen::Matrix4d transform;
+    // transform << 0, 0, 1, 0,
+    //      -1,  0,  0, 0,
+    //       0, -1,  0, -1.17,
+    //       0,  0,  0, 1;
+    // Eigen::Matrix4d transform_inverse = Eigen::Matrix4d::Identity();
+    // transform_inverse.block<3, 3>(0, 0) = transform.block<3, 3>(0, 0).transpose();  // Rᵀ
+    // transform_inverse.block<3, 1>(0, 3) = -transform.block<3, 3>(0, 0).transpose() * transform.block<3, 1>(0, 3);  // -Rᵀ * t
+    // // Matrix4d transform = Tre.inverse().to_homogeneous_matrix();
 
-    pcl::transformPointCloud (*cloud, *cloud, transform);
+    // pcl::transformPointCloud (*cloud, *cloud, transform);
 
-    // 颠倒 z 轴和 y 轴
-    for (auto& point : cloud->points) {
-        point.z = -point.z;  // 颠倒 z 轴
-        // point.y = -point.y;  // 颠倒 y 轴
-        point.x += 2.2;
+    // // 颠倒 z 轴和 y 轴
+    // for (auto& point : cloud->points) {
+    //     point.z = -point.z;  // 颠倒 z 轴
+    //     // point.y = -point.y;  // 颠倒 y 轴
+    //     point.x += 2.2;
+    // }
+
+    pcl::PointCloud<pcl::PointXYZRGB>* pCloudFiltered = new pcl::PointCloud<pcl::PointXYZRGB>;
+    int num = cloud->size();
+    for(int i=0;i<num;i++)
+    {
+        pcl::PointXYZRGB p = (*cloud)[i];
+        Eigen::Vector3d center; center << p.x, p.y, p.z;
+
+        double height = p.z;
+        double y_dis = p.y;
+        double x_dis = p.x;
+        // if(height < dis_thresh && y_dis > -2)  // 过滤掉过高的点
+        
+        if(height > 1.1 && x_dis > 0.4)  // 过滤掉过高的点
+        {
+            continue;
+        }
+        if(y_dis > -2)
+            pCloudFiltered->push_back(p);
     }
-
+    *cloud = *pCloudFiltered;
     ROS_INFO("Loaded %d points from %s", (int)cloud->points.size(), argv[1]);
 
-    std::string output_file = "/home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/src_ros/modified_cloud.pcd";  // 输出文件名
-    if (pcl::io::savePCDFileASCII(output_file, *cloud) == -1) {
-        std::cerr << "Failed to save the modified point cloud." << std::endl;
-        return -1;
-    }
+    // std::string output_file = "/home/robotlab/ws_ellipsoid_dsp/src/DSP-SLAM-MULTI-OBJECT/src_ros/modified_cloud.pcd";  // 输出文件名
+    // if (pcl::io::savePCDFileASCII(output_file, *cloud) == -1) {
+    //     std::cerr << "Failed to save the modified point cloud." << std::endl;
+    //     return -1;
+    // }
 
-    std::cout << "Saved modified point cloud to " << output_file << std::endl;
+    // std::cout << "Saved modified point cloud to " << output_file << std::endl;
 
     // 转换到 ROS 的 sensor_msgs::PointCloud2 消息格式
     sensor_msgs::PointCloud2 cloud_msg;
