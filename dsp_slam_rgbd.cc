@@ -271,7 +271,9 @@ int main(int argc, char **argv)
     int SavePoints = fSettings["savepoints"];
     if (SavePoints)
         SLAM.SavePoints( data_source_dir  + "/eval/temp/points/");
-
+    int SavePCDMap = fSettings["savePCDMap"];
+    if (SavePCDMap)
+        SLAM.SavePCDMap( data_source_dir  + "/map/dataset.pcd");
 
     // Tracking time statistics
     sort(vTimesTrack.begin(),vTimesTrack.end());

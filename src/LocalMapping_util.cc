@@ -201,7 +201,7 @@ void LocalMapping::Process_Multi_DetectedObjects_byPythonReconstruct()
         if (mb_use_depth_pcd_to_reconstruct==1) {
             if ( mvpGlobalEllipsolds[det_i] != NULL ) {
                 std::cout<<"[debug] 开启基于PCD点云的DeepSDF建模"<<std::endl;
-                success_contruct = DeepSDFObjectConstruction_PcdCloud(det, pMO, det_i);
+                success_contruct = DeepSDFObjectConstruction_PcdCloud_new(det, pMO, det_i);
             }
         }
         else if(mb_use_depth_pcd_to_reconstruct==0) { 
@@ -211,6 +211,7 @@ void LocalMapping::Process_Multi_DetectedObjects_byPythonReconstruct()
             }
         }
 
+        std::cout<<"[debug] 完成DeepSDF建模,结果："<<pMO->reconstructed<<std::endl;
         if(pMO->reconstructed){
             pMO->AddObjectObservation(mpCurrentKeyFrame, det_i);
             mpCurrentKeyFrame->AddMapObject(pMO, det_i);
@@ -220,9 +221,227 @@ void LocalMapping::Process_Multi_DetectedObjects_byPythonReconstruct()
         }
     }
 }
+
+
+bool LocalMapping::DeepSDFObjectConstruction_PcdCloud_new(ObjectDetection *det, MapObject *pMO, int det_i){
+
+        auto SE3Twc = Converter::toMatrix4f(mpCurrentKeyFrame->GetPoseInverse());
+        auto SE3Tcw = Converter::toMatrix4f(mpCurrentKeyFrame->GetPose());
+        cv::Mat Rcw = mpCurrentKeyFrame->GetRotation();
+        cv::Mat tcw = mpCurrentKeyFrame->GetTranslation();
+
+
+        // 获取Global PCD Cloud，用于3D形状损失项
+        int n_valid_points = 0;  //有效点的数量
+        std::shared_ptr<PointCloud> mPointsPtr = pMO->GetPointCloud();
+        PointCloud* pPoints = mPointsPtr.get();
+        n_valid_points = pPoints->size();
+
+        // 获取当前观测帧中PCD Cloud，用于2D渲染损失项
+        int n_rays = 0;
+        pcl::PointCloud<PointType>::Ptr mPointsKeyFramePtr= det->getPcdPtr();
+        n_rays = mPointsKeyFramePtr->size();  //直接用点云的点数作为ray的数量
+
+
+        int n_background_ray = det->background_rays.rows();
+        
+        int min_valid_points = Config::Get<int>("Mapping.MinValidPoints");
+        int min_valid_rays = Config::Get<int>("Mapping.MinValidRays");
+        bool use_ellipsoid_verticles = Config::Get<int>("Mapping.use_ellipsoid_verticles");
+        std::cout<< "[debug] DeepSDFObjectConstruction_PcdCloud_new, points/thresh: "<< n_valid_points << " / "<<min_valid_points<<", rays/thresh: "<< n_rays <<  " / "<< min_valid_rays << std::endl;
+        
+        if (n_valid_points >= min_valid_points && n_rays > min_valid_rays)
+        // if (n_valid_points >= min_valid_points)  //这个判断有必要吗？  因为点云非常稠密
+        {
+            if(use_ellipsoid_verticles)
+                n_valid_points += pMO->GetEllipsoidVertices().size();
+
+            //！获取surface_points_cam
+            Eigen::MatrixXf surface_points_cam = Eigen::MatrixXf::Zero(n_valid_points, 3);
+            int p_i = 0;
+
+            std::shared_ptr<PointCloud> mPointsPtr = pMO->GetPointCloud();
+            PointCloud* pPoints = mPointsPtr.get();
+            
+            // （1）将PCD点云，转换为DSP表面的点
+            for(int i=0; i<pPoints->size(); i=i+1)
+            {
+                PointXYZRGB &p = (*pPoints)[i];
+                cv::Mat x3Dw = (cv::Mat_<float>(3,1) << p.x, p.y, p.z);
+                cv::Mat x3Dc = Rcw * x3Dw + tcw;
+                float xc = x3Dc.at<float>(0);
+                float yc = x3Dc.at<float>(1);
+                float zc = x3Dc.at<float>(2);
+                surface_points_cam(p_i, 0) = xc;
+                surface_points_cam(p_i, 1) = yc;
+                surface_points_cam(p_i, 2) = zc;
+                p_i++;
+            }
+
+            // （2）将椭球体顶点，转换为DSP表面的点
+            std::cout<< "[debug] ellipsoid_verticles Start" << std::endl;
+            if(use_ellipsoid_verticles){
+
+                std::vector<Eigen::Vector3f>  vertices = pMO->GetEllipsoidVertices();
+                
+                for(int i=0; i<vertices.size(); i=i+1)
+                {
+                    Eigen::Vector3f v = vertices[i];
+                    cv::Mat x3Dw = (cv::Mat_<float>(3,1) << v[0], v[1], v[2]);
+                    cv::Mat x3Dc = Rcw * x3Dw + tcw;
+                    float xc = x3Dc.at<float>(0);
+                    float yc = x3Dc.at<float>(1);
+                    float zc = x3Dc.at<float>(2);
+                    surface_points_cam(p_i, 0) = xc;
+                    surface_points_cam(p_i, 1) = yc;
+                    surface_points_cam(p_i, 2) = zc;
+                    p_i++;
+                }
+
+            }
+            std::cout<< "[debug] ellipsoid_verticles End" << std::endl;
+
+            // （3）获取ray_pixels和depth_obs
+            Eigen::MatrixXf ray_pixels = Eigen::MatrixXf::Zero(n_rays, 2);  //ray_pixels: 一个 n_rays × 2 的矩阵，用于存储每条射线在像素坐标系中的位置（x 和 y 坐标）。
+            Eigen::VectorXf depth_obs = Eigen::VectorXf::Zero(n_rays);  // depth_obs: 一个长度为 n_rays 的向量，用于存储每条射线对应的深度（即从相机到 3D 点的距离）。
+            int k_i = 0;
+            pcl::PointCloud<PointType>::Ptr mPointsKeyFramePtr= det->getPcdPtr();
+            for (const auto& point : *mPointsKeyFramePtr) 
+            {
+                cv::Mat x3Dw(3,1, CV_32F);  
+                x3Dw.at<float>(0) = point.x;
+                x3Dw.at<float>(1) = point.y;
+                x3Dw.at<float>(2) = point.z;
+                cv::Mat x3Dc = Rcw * x3Dw + tcw;
+                depth_obs(k_i) = x3Dc.at<float>(2);
+
+                // 将x3Dc转到像素坐标系
+                cv::Mat x2D = mpTracker->GetCameraIntrinsics() * x3Dc;
+                ray_pixels(k_i, 0) = x2D.at<float>(0) / x2D.at<float>(2); // 像素坐标 x = u
+                ray_pixels(k_i, 1 ) = x2D.at<float>(1) / x2D.at<float>(2); // 像素坐标 y = v
+
+                k_i++;
+            }
+            // 像素点的归一化的向量 [[x,y,1], ... ]
+            Eigen::MatrixXf u_hom(n_rays, 3);
+            u_hom << ray_pixels, Eigen::MatrixXf::Ones(n_rays, 1);
+            // 转换到相机坐标系的射线向量
+            Eigen::MatrixXf fg_rays(n_rays, 3);
+            Eigen::Matrix3f invK = Converter::toMatrix3f(mpTracker->GetCameraIntrinsics()).inverse();
+            for (int i = 0; i  < n_rays; i++)
+            {
+                auto x = u_hom.row(i).transpose();
+                fg_rays.row(i) = (invK * x).transpose();
+            }
+            Eigen::MatrixXf rays(fg_rays.rows() + det->background_rays.rows(), 3);
+            rays << fg_rays, det->background_rays;
+
+
+
+            /**
+             * 表面点与射线数据准备完毕，下面进行物体重建
+             * 
+            */
+            PyThreadStateLock PyThreadLock;
+
+            auto Sim3Two_pMO = pMO->Sim3Two;
+
+            int class_id = det->label;
+            py::object* optimizer_ptr;
+            std::cout<< "[debug] DeepSDFObjectConstruction_PcdCloud, 4"<< std::endl;
+
+            if(mmPyOptimizers.count(class_id) > 0) {
+                py::object* optimizer_ptr_local = &(mmPyOptimizers[class_id]);
+                optimizer_ptr = optimizer_ptr_local;
+            }
+            else{
+                cout << " [ProcessDetectedObjects_byPythonReconstruct] class " << class_id << " is not in yolo_classes" << endl;
+                int default_class_id = 60;  //默认物体设置为桌子
+                py::object* optimizer_ptr_local = &(mmPyOptimizers[default_class_id]);
+                optimizer_ptr = optimizer_ptr_local;
+            }
+
+            // cout << " [debug] Before reconstruct_object from detection ["<< det_i << "]"<< std::endl;
+
+            auto pyMapObject = optimizer_ptr->attr("reconstruct_object")
+                    (SE3Tcw * pMO->Sim3Two, surface_points_cam, rays, depth_obs, pMO->vShapeCode);
+
+            cout << " [debug] reconstruct_object 5, class id = "<<  class_id << std::endl;
+
+            // If not initialized, duplicate optimization to resolve orientation ambiguity
+            // 翻转物体朝向。这对椭球体来时是非常有必要的
+            auto flipped_Two = pMO->Sim3Two;
+            flipped_Two.col(0) *= -1;   // 翻转x方向
+            flipped_Two.col(2) *= -1;   // 翻转z方向
+            // y方向是与地面垂直的，所以不用翻转方向。
+            auto pyMapObjectFlipped = optimizer_ptr->attr("reconstruct_object")
+                    (SE3Tcw * flipped_Two, surface_points_cam, rays, depth_obs, pMO->vShapeCode);
+
+            if (pyMapObject.attr("loss").cast<float>() > pyMapObjectFlipped.attr("loss").cast<float>())
+                pyMapObject = pyMapObjectFlipped;
+            
+            // cout << " [debug] reconstruct_object 2, class id = "<<  class_id << std::endl;
+            
+            auto Sim3Tco = pyMapObject.attr("t_cam_obj").cast<Eigen::Matrix4f>();
+
+            det->SetPoseMeasurementSim3(Sim3Tco);
+            // // Sim3, SE3, Sim3
+            // // std::cbrt(Sim3Two.topLeftCorner<3, 3>().determinant());
+            // std::cout << "Sim3Two  scale old = " << std::cbrt(pMO->Sim3Two.topLeftCorner<3, 3>().determinant()) << std::endl;
+            Eigen::Matrix4f Sim3Two = SE3Twc * Sim3Tco;
+            // // Sim3Two.topLeftCorner<3, 3>() *= 1.2;
+            // std::cout << "Sim3Two scale new = " << std::cbrt(Sim3Two.topLeftCorner<3, 3>().determinant())  << std::endl;
+            // std::cout << "Sim3Two scale cube = " << sqrt(pMO->w*pMO->w + pMO->h*pMO->h + pMO->l*pMO->l)/2.0 << std::endl;
+
+            int code_len = optimizer_ptr->attr("code_len").cast<int>();
+            Eigen::Matrix<float, 64, 1> code = Eigen::VectorXf::Zero(64);
+            if (code_len == 32)
+            {
+                auto code_32 = pyMapObject.attr("code").cast<Eigen::Matrix<float, 32, 1>>();
+                code.head(32) = code_32;
+            }
+            else
+            {
+                code = pyMapObject.attr("code").cast<Eigen::Matrix<float, 64, 1>>();
+            }
+
+            
+            // cout << " [debug] Before extract_mesh_from_code for object labe:"<< class_id << ", labe:"<< class_id << std::endl;
+
+            // 获取mesh提取器
+            py::object* mesh_extracter_ptr;
+            if(mmPyOptimizers.count(class_id) > 0) {
+                // cout << " [debug] ProcessDetectedObjects_byPythonReconstruct class " << class_id << " is in yolo_classes" << endl;
+                py::object* mesh_extracter_ptr_local = &(mmPyMeshExtractors[class_id]);
+                mesh_extracter_ptr = mesh_extracter_ptr_local;
+            }
+            else{
+                cerr << " [debug] ProcessDetectedObjects_byPythonReconstruct class " << class_id << " is NOT in yolo_classes" << endl;
+                int default_class_id = 60;  //默认物体设置为桌子
+                py::object* mesh_extracter_ptr_local = &(mmPyMeshExtractors[default_class_id]);
+                mesh_extracter_ptr = mesh_extracter_ptr_local;
+            }
+
+            // cout << " [debug] reconstruct_object 3, class id = "<<  class_id << std::endl;
+
+            pMO->UpdateReconstruction(Sim3Two, code);
+            // cout << " [debug] reconstruct_object 3-1, class id = "<<  class_id << std::endl;
+            auto pyMesh = mesh_extracter_ptr->attr("extract_mesh_from_code")(code);
+            // cout << " [debug] reconstruct_object 3-2, class id = "<<  class_id << std::endl;
+            pMO->vertices = pyMesh.attr("vertices").cast<Eigen::MatrixXf>();
+            // cout << " [debug] reconstruct_object 3-3, class id = "<<  class_id << std::endl;
+            pMO->faces = pyMesh.attr("faces").cast<Eigen::MatrixXi>();
+            // cout << " [debug] reconstruct_object 3-4, class id = "<<  class_id << std::endl;
+            pMO->reconstructed = true;
+        }
+        // cout << " [debug] End DeepSDFObjectConstruction_PcdCloud" << std::endl;
+
+        return true;
+}
+
+
 bool LocalMapping::DeepSDFObjectConstruction_PcdCloud(ObjectDetection *det, MapObject *pMO, int det_i){
 
-        // pMO->AddDepthPointCloudFromObjectDetection(det->getPcdPtr());
         auto SE3Twc = Converter::toMatrix4f(mpCurrentKeyFrame->GetPoseInverse());
         auto SE3Tcw = Converter::toMatrix4f(mpCurrentKeyFrame->GetPose());
         cv::Mat Rcw = mpCurrentKeyFrame->GetRotation();
@@ -259,6 +478,7 @@ bool LocalMapping::DeepSDFObjectConstruction_PcdCloud(ObjectDetection *det, MapO
         int min_valid_points = Config::Get<int>("Mapping.MinValidPoints");
         int min_valid_rays = Config::Get<int>("Mapping.MinValidRays");
         bool use_ellipsoid_verticles = Config::Get<int>("Mapping.use_ellipsoid_verticles");
+        std::cout<< "[debug] DeepSDFObjectConstruction_PcdCloud, points/thresh: "<< n_valid_points << " / "<<min_valid_points<<", rays/thresh: "<< n_rays <<  " / "<< min_valid_rays << std::endl;
         
         if (n_valid_points >= min_valid_points && n_rays > min_valid_rays)
         // if (n_valid_points >= min_valid_points)  //这个判断有必要吗？  因为点云非常稠密
@@ -289,7 +509,7 @@ bool LocalMapping::DeepSDFObjectConstruction_PcdCloud(ObjectDetection *det, MapO
             }
 
             // （2）将椭球体顶点，转换为DSP表面的点
-            // std::cout<< "[debug] ellipsoid_verticles Start" << std::endl;
+            std::cout<< "[debug] ellipsoid_verticles Start" << std::endl;
             if(use_ellipsoid_verticles){
 
                 std::vector<Eigen::Vector3f>  vertices = pMO->GetEllipsoidVertices();
@@ -309,11 +529,11 @@ bool LocalMapping::DeepSDFObjectConstruction_PcdCloud(ObjectDetection *det, MapO
                 }
 
             }
-            // std::cout<< "[debug] ellipsoid_verticles End" << std::endl;
+            std::cout<< "[debug] ellipsoid_verticles End" << std::endl;
 
             // （3）获取ray_pixels和depth_obs
-            Eigen::MatrixXf ray_pixels = Eigen::MatrixXf::Zero(n_rays, 2);
-            Eigen::VectorXf depth_obs = Eigen::VectorXf::Zero(n_rays);
+            Eigen::MatrixXf ray_pixels = Eigen::MatrixXf::Zero(n_rays, 2);  //ray_pixels: 一个 n_rays × 2 的矩阵，用于存储每条射线在像素坐标系中的位置（x 和 y 坐标）。
+            Eigen::VectorXf depth_obs = Eigen::VectorXf::Zero(n_rays);  // depth_obs: 一个长度为 n_rays 的向量，用于存储每条射线对应的深度（即从相机到 3D 点的距离）。
             int k_i = 0;
             for (auto point_idx : det->GetFeaturePoints())
             {
@@ -334,10 +554,10 @@ bool LocalMapping::DeepSDFObjectConstruction_PcdCloud(ObjectDetection *det, MapO
                 ray_pixels(k_i, 1 ) = mpCurrentKeyFrame->mvKeysUn[point_idx].pt.y;
                 k_i++;
             }
-            // 像素点的归一化的向量 [[x,y,1], ... ]
+            // ray_pixels转为齐次坐标
             Eigen::MatrixXf u_hom(n_rays, 3);
             u_hom << ray_pixels, Eigen::MatrixXf::Ones(n_rays, 1);
-            // 转换到相机坐标系的射线向量
+            // u_hom转换到相机坐标系
             Eigen::MatrixXf fg_rays(n_rays, 3);
             Eigen::Matrix3f invK = Converter::toMatrix3f(mpTracker->GetCameraIntrinsics()).inverse();
             for (int i = 0; i  < n_rays; i++)
@@ -360,6 +580,8 @@ bool LocalMapping::DeepSDFObjectConstruction_PcdCloud(ObjectDetection *det, MapO
 
             int class_id = det->label;
             py::object* optimizer_ptr;
+            std::cout<< "[debug] DeepSDFObjectConstruction_PcdCloud, 4"<< std::endl;
+
             if(mmPyOptimizers.count(class_id) > 0) {
                 py::object* optimizer_ptr_local = &(mmPyOptimizers[class_id]);
                 optimizer_ptr = optimizer_ptr_local;
@@ -376,7 +598,7 @@ bool LocalMapping::DeepSDFObjectConstruction_PcdCloud(ObjectDetection *det, MapO
             auto pyMapObject = optimizer_ptr->attr("reconstruct_object")
                     (SE3Tcw * pMO->Sim3Two, surface_points_cam, rays, depth_obs, pMO->vShapeCode);
 
-            // cout << " [debug] reconstruct_object 1, class id = "<<  class_id << std::endl;
+            cout << " [debug] reconstruct_object 5, class id = "<<  class_id << std::endl;
 
             // If not initialized, duplicate optimization to resolve orientation ambiguity
             // 翻转物体朝向。这对椭球体来时是非常有必要的
@@ -451,22 +673,26 @@ bool LocalMapping::DeepSDFObjectConstruction_PcdCloud(ObjectDetection *det, MapO
 
 bool LocalMapping::DeepSDFObjectConstruction(ObjectDetection *det, MapObject *pMO, int det_i){
         
+        std::cout<< "[debug] DeepSDFObjectConstruction, 1"<< std::endl;
         auto SE3Twc = Converter::toMatrix4f(mpCurrentKeyFrame->GetPoseInverse());
         auto SE3Tcw = Converter::toMatrix4f(mpCurrentKeyFrame->GetPose());
         cv::Mat Rcw = mpCurrentKeyFrame->GetRotation();
         cv::Mat tcw = mpCurrentKeyFrame->GetTranslation();
         int numKFsPassedSinceInit = int(mpCurrentKeyFrame->mnId - pMO->mpRefKF->mnId);
+        std::cout<< "[debug] DeepSDFObjectConstruction, 2"<< std::endl;
 
         // 一个物体被检测到五次，才进行一次重建，从而节约运算资源
         if ((numKFsPassedSinceInit - 15) % mnNumKFsPassedSinceInit_thresh != 0) {
             std::cout << "  Conitinue because (numKFsPassedSinceInit - 15) % 5 != 0" << std::endl;
             return false;
         }
+        std::cout<< "[debug] DeepSDFObjectConstruction, 3"<< std::endl;
 
         // 如果自上次重建后经过的关键帧数量少于8个，则跳过重建，从而节约运算资源
         int numKFsPassedSinceLastRecon = int(mpCurrentKeyFrame->mnId) - nLastReconKFID;
         if (numKFsPassedSinceLastRecon  < mnNumKFsPassedSinceLastRecon_thresh)
             return false;
+        std::cout<< "[debug] DeepSDFObjectConstruction, 4"<< std::endl;
         
         // 1. 统计物体 pMO 上有效（三维）地图点的数量，存储在变量 n_valid_points 中。
         std::vector<MapPoint*> points_on_object = pMO->GetMapPointsOnObject();

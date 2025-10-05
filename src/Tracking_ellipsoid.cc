@@ -623,58 +623,42 @@ namespace ORB_SLAM2 {
 
     void Tracking::DenseBuild()
     {
-        bool mbOpenBuilder = Config::Get<int>("Visualization.Builder.Open") > 0;
-        if(mbOpenBuilder)
+        int mOpenBuilder = Config::Get<int>("Visualization.Builder.Open");
+        bool open_local = false, open_global = false;
+        if(mOpenBuilder==1){
+            open_local = true;
+        }
+        else if (mOpenBuilder==2){
+            open_local = true;
+            open_global = true;
+        }
+
+        if(open_local)
         {
             double depth_range = Config::ReadValue<double>("EllipsoidExtractor_DEPTH_RANGE");   // Only consider pointcloud within depth_range
 
             if(!mCurrentFrame.color_img.empty()){    // RGB images are needed.
                 Eigen::VectorXd pose = mCurrentFrame.cam_pose_Twc.toVector();
-                // cv::imshow("mCurrentFrame->rgb_img", mCurrentFrame->rgb_img);
-                // cv::waitKey(20);
-
-                // cout << "DenseBuild: before processFrame ";
-                // printMemoryUsage();
 
                 // TODO： 下面这一步产生了较大的内存使用
                 mpBuilder->processFrame(mCurrentFrame.color_img, mCurrentFrame.pointcloud_img, pose, depth_range);
-                // cout << "DenseBuild: after processFrame ";
-                // printMemoryUsage();
 
                 double voxel_size = Config::Get<double>("Visualization.Builder.VoxelSize");
-                // std::cout<< "[DenseBuild] Voxel size: " << voxel_size << std::endl;
 
                 mpBuilder->voxelFilter(voxel_size);   // Down sample threshold; smaller the finer; depend on the hardware.
-                // cout << "DenseBuild: after voxelFilter ";
-                // printMemoryUsage();
 
                 PointCloudPCL::Ptr pCurrentCloudPCL = mpBuilder->getCurrentMap();
-                // cout << "DenseBuild: after getCurrentMap ";
-                // printMemoryUsage();
 
                 auto pCloudLocal = pclToQuadricPointCloudPtr(pCurrentCloudPCL);
-                // cout << "DenseBuild: after pclToQuadricPointCloudPtr ";
-                // printMemoryUsage();
 
                 mpMap->AddPointCloudList("Builder.Local Points", pCloudLocal);
-                // cout << "DenseBuild: after AddPointCloudList ";
-                // printMemoryUsage();
-
-                bool open_global = true;
 
                 if(open_global){
                     // Get and visualize global pointcloud.
                     PointCloudPCL::Ptr cloud = mpBuilder->getMap();
                     
-
                     double Radius_Search = Config::ReadValue<double>("EllipsoidExtractor_Radius_Search");   // Only consider pointcloud within depth_range
                     double MinNeighborsInRadius = Config::ReadValue<double>("EllipsoidExtractor_MinNeighborsInRadius");   // Only consider pointcloud within depth_range
-                    // Step 3: 移除孤立点（半径滤波）
-                    pcl::RadiusOutlierRemoval<PointT> ror;
-                    ror.setInputCloud(cloud);
-                    ror.setRadiusSearch(Radius_Search);
-                    ror.setMinNeighborsInRadius(MinNeighborsInRadius);
-                    ror.filter(*cloud);
 
                     auto pCloud = pclToQuadricPointCloudPtr(cloud);
                     mpMap->AddPointCloudList("Builder.Global Points", pCloud);

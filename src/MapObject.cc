@@ -1061,7 +1061,7 @@ void MapObject::SetPoseByEllipsoid(g2o::ellipsoid* e, double scale_manual)
 
     // world -> object
     Two = Converter::toMatrix4f(e->pose);
-    // cout << "Ellipsold->pose, Two = \n" << Two.matrix() << endl;
+
 
     Vector3d& scale = e->scale;
     float s = scale.norm() * 2;
@@ -1074,6 +1074,22 @@ void MapObject::SetPoseByEllipsoid(g2o::ellipsoid* e, double scale_manual)
     cout << "[deub] SetPoseByEllipsoid: 椭球体对角线长度：" << s << "0.5倍对角线长度：" << 0.50 * s << endl;
 
     Two.topLeftCorner(3, 3) = 0.50 * s * scale_manual * Two.topLeftCorner(3, 3);
+
+
+    // 如果 Two和SE3Two的z轴方向相反（允许一定误差），则将Two绕着y轴旋转180度
+    Eigen::Vector3f TwoZAxis = Two.block<3, 1>(0, 2);      // Two 的 z 轴方向
+    Eigen::Vector3f SE3TwoZAxis = SE3Two.block<3, 1>(0, 2); // SE3Two 的 z 轴方向
+    TwoZAxis.normalize();
+    SE3TwoZAxis.normalize();
+    float dot_product = TwoZAxis.dot(SE3TwoZAxis);
+    const float tolerance = 0.01f;  // 允许的误差范围
+    if (dot_product <= -0.5f) {  // 点积小于等于 -0.5 表示角度在 [120°, 240°]
+        cout << "[debug] Two 和 SE3Two 的 z 轴方向相反，旋转 Two 180 度" << std::endl;
+        // 绕 y 轴旋转 180 度的旋转矩阵
+        Eigen::Matrix3f Ry180 = Eigen::AngleAxisf(M_PI, Eigen::Vector3f(0, 1, 0)).matrix();
+        // 应用旋转到 Two
+        Two.block<3, 3>(0, 0) = Two.block<3, 3>(0, 0) * Ry180;
+    }
 
 
     w = e->scale(1) * 2;  // x

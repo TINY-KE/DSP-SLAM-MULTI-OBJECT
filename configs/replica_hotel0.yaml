@@ -30,7 +30,7 @@ Objects.maskErrosion: 15
 #--------------------------------------------------------------------------------------------
 
 # ORB Extractor: Number of features per image
-ORBextractor.nFeatures: 3000
+ORBextractor.nFeatures: 8000 #3000
 
 # ORB Extractor: Scale factor between levels in the scale pyramid
 ORBextractor.scaleFactor: 1.2
@@ -78,13 +78,12 @@ DecoderPaths: ["weights/deepsdf/chairs_64",
 
 # ros
 use_ros: 0   # 1：读取存贮在本地的ros.png   0：根据association.txt读取图片
-DatasetPathRoot: "./build/"  # 存储ros.png的地方
-Dataset.Path.Map: "/home/robotlab/dataset/ICL-NUIM/living_room_traj2n_frei_png/map/dataset.pcd"  # 用于可视化的全局地图
-Dataset.global_map_input: 0
+DatasetPathRoot: "/home/robotlab/dataset/Replica-Dataset-results/hotel_0_640/"  # 存储ros.png的地方
+Dataset.Path.Map: "/home/robotlab/dataset/Replica-Dataset-results/hotel_0_640/map/dataset.pcd"  # 用于可视化的全局地图
+Dataset.global_map_input: 1 
 Dataset.step: 1
 Dataset.sleep_time: 0.3   #TODO:
 Dataset.Type: "AllObjectsOnGround"
-Visualization.Map.Filter.DisThresh: 1
 Minimux_Points_To_Judge_Good: 5  #20  #视情况，看是否要减小到5
 
 # camera
@@ -99,7 +98,8 @@ DepthMapFactor: 6553.5  #对应
 
 # 保存本地
 saveobjects: 1
-savepoints: 0
+savepoints: 1
+savePCDMap: 0
 
 # chair转counch(沙发)
 chair2counch: 0
@@ -111,7 +111,7 @@ chair2counch: 0
 EllipsoidExtraction.ClusterTolerance: 0.04
 EllipsoidExtraction.MinClusterSize: 5
 EllipsoidExtraction.CenterDis: 0.5
-EllipsoidExtraction.MinEllipsoidSize: 0.1
+EllipsoidExtraction.MinEllipsoidSize: 0.01
 
 EllipsoidExtraction.ManhattanPlanesFilter.Open: 1
 EllipsoidExtractor.Rotation.NormalVoter.KSearchNum: 35
@@ -193,7 +193,7 @@ NumKFsPassedSinceLastRecon_thresh: 4  #自上次重建后经过的最少关键�
 ConstraintType: 1 #3 rostf; 2 imu; 1 yaml
 
 # Visualization
-Visualization.Builder.Open: 1
+Visualization.Builder.Open: 0
 Visualization.Builder.Global.Open: 1
 Visualization.Builder.VoxelSize: 0.05
 

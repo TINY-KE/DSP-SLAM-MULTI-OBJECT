@@ -749,6 +749,18 @@ void System::SavePoints(const string &filepath ) {
 }
 
 
+// DatasetPathRoot
+
+void System::SavePCDMap(const string &filepath ) {
+    cout << endl << "Saving PCDMap in: " << filepath << endl;
+    
+    mpTracker->mpBuilder->saveMap(filepath);
+        
+    // cout << "PCDMap saved in: "<< filepath << endl;
+
+}
+
+
 int System::GetTrackingState()
 {
     unique_lock<mutex> lock(mMutexState);

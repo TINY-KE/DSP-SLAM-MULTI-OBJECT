@@ -249,3 +249,11 @@ target_link_libraries(publish_pcd
                       ${PCL_LIBRARY_DIRS}
                       ${PCL_LIBRARIES}
                 )      
+
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/src_ros)
+add_executable(show_local_objects src_ros/show_local_objects.cpp)
+target_link_libraries(show_local_objects 
+                        ${EIGEN3_LIBS}
+                        ${catkin_LIBRARIES}
+                        ${OpenCV_LIBS}
+        )      

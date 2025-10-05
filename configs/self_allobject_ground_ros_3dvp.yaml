@@ -91,6 +91,7 @@ Objects.maskErrosion: 5  #default 10
 # 保存本地
 saveobjects: 1
 savepoints: 1
+savePCDMap: 0
 
 # chair转counch(沙发)
 chair2counch: 0
