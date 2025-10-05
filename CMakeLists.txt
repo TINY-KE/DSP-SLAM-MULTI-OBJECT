@@ -234,12 +234,12 @@ target_link_libraries(dsp_slam_ros ${PROJECT_NAME})
 #                 ${EIGEN3_LIBS}
 #                 )       
 
-# set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/src_ros)
-# add_executable(publish_ellip src_ros/publish_ellip.cpp)
-# target_link_libraries(publish_ellip 
-#                 ${EIGEN3_LIBS}
-#                 ${catkin_LIBRARIES}
-#                 )      
+set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/src_ros)
+add_executable(publish_soslam src_ros/publish_soslam.cpp)
+target_link_libraries(publish_soslam 
+                ${EIGEN3_LIBS}
+                ${catkin_LIBRARIES}
+                )      
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/src_ros)
 add_executable(publish_pcd src_ros/publish_pcd.cpp)

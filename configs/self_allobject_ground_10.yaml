@@ -95,9 +95,9 @@ ThDepth: 8.0   # 单位米
 DepthMapFactor: 5000.0  #对应
 
 # 保存本地
-saveobjects: 1
-savepoints: 1
-savePCDMap: 1
+saveobjects: 0
+savepoints: 0
+savePCDMap: 0
 
 # chair转counch(沙发)
 chair2counch: 0
