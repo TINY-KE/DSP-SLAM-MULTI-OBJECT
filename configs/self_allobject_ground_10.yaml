@@ -95,7 +95,7 @@ ThDepth: 8.0   # 单位米
 DepthMapFactor: 5000.0  #对应
 
 # 保存本地
-saveobjects: 0
+saveobjects: 1
 savepoints: 0
 savePCDMap: 0
 
@@ -156,7 +156,7 @@ Debug.EllipsoidExtraction.DetectSource: 2  # 1：bbox过滤点云，2：掩码�
 Debug.EllipsoidExtraction.OpenRelations: 0  # 在单帧EllipsoidExtraction中就通过曼哈顿平面优化，而不是等到数据关联后
 Debug.Tracking.ellipsoid_extract: 1      # 提取椭球体
 Debug.Tracking.ellipsoid_associate: 1   # 数据关联
-Debug.Tracking.recompute_merged_ellipsoid: 1  # 数据关联并融合后，重新计算椭球体
+Debug.Tracking.recompute_merged_ellipsoid: 0  # 数据关联并融合后，重新计算椭球体
 Debug.LocalMapping.ObjectInit: 1    # 将新物体（数据关联失败的物体）生成为新Global物体
 Debug.LocalMapping.SDFConstruct: 1  # DeepSDF
 
@@ -167,7 +167,7 @@ Measurement.LengthLimit.Pixels: 0
 Measurement.Probability.Thresh: 0
 
 # 物体建模
-Mapping.use_depth_pcd_to_reconstruct: 1  # 1 PCL Cloud, 0 ORB Points, 2 Close Reconstruction
+Mapping.use_depth_pcd_to_reconstruct: 0  # 1 PCL Cloud, 0 ORB Points, 2 Close Reconstruction
 Mapping.LocalMappingInSameThread: 1
 Mapping.PcdCloudVoxelType: 1  #0 不降采样， 1 均匀， 2 近似
 Mapping.PcdCloudVoxelSize: 0.03

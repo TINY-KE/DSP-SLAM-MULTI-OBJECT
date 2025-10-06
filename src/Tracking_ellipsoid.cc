@@ -558,10 +558,10 @@ namespace ORB_SLAM2 {
                     mpMap->addRefinedEllipsoidVisual(pObjRefined);
                     
                     // 用优化后的
-                    // (*pFrame->mpLocalObjects[i]) = e_refined;
+                    (*pFrame->mpLocalObjects[i]) = e_refined;
 
-                    // g2o::ellipsoid e_global = e_refined.transform_from(pFrame->cam_pose_Twc);
-                    // pKF->ReplaceEllipsoldsGlobal(i, &e_global);
+                    g2o::ellipsoid e_global = e_refined.transform_from(pFrame->cam_pose_Twc);
+                    pKF->ReplaceEllipsoldsGlobal(i, &e_global);
 
                 }
             }
@@ -594,10 +594,10 @@ namespace ORB_SLAM2 {
                     mpMap->addRefinedEllipsoidVisual(pObjRefined);
                     
                     // 用优化后的
-                    // (*pFrame->mpLocalObjects[i]) = e_refined;
+                    (*pFrame->mpLocalObjects[i]) = e_refined;
 
-                    // g2o::ellipsoid e_global = e_refined.transform_from(pFrame->cam_pose_Twc);
-                    // pKF->ReplaceEllipsoldsGlobal(i, &e_global);
+                    g2o::ellipsoid e_global = e_refined.transform_from(pFrame->cam_pose_Twc);
+                    pKF->ReplaceEllipsoldsGlobal(i, &e_global);
 
                 }
             }

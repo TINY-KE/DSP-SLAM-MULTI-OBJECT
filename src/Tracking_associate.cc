@@ -622,7 +622,8 @@ int Tracking::associateDetWithObject(ORB_SLAM2::KeyFrame *pKF, MapObject* pMO, i
         }
     }
 
-    if(mb_use_depth_pcd_to_reconstruct){
+    // if(mb_use_depth_pcd_to_reconstruct)
+    {
         // 融合PCD点云
         pMO->AddDepthPointCloudFromObjectDetection(detKF1->getPcdPtr());
         // 更新数据关联后的物体的位姿形状

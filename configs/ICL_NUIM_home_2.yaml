@@ -65,10 +65,9 @@ Viewer.UsePangolin: 1
 # EDSP
 #--------------------------------------------------------------------------------------------
 
-YoloClasses: [56, 57, 2, 75, 60, 59, 62, 63, 73]
+YoloClasses: [56, 57, 75, 60, 59, 62, 63, 73]
 DecoderPaths: ["weights/deepsdf/chairs_64",
                "weights/deepsdf/sofas_64",
-               "weights/deepsdf/cars_64",
                "weights/deepsdf/vases_64_c",
                "weights/deepsdf/tables_64",  #table is default object in my code, so it's essential to keep the table.
                "weights/deepsdf/beds_64",
@@ -162,7 +161,7 @@ Debug.EllipsoidExtraction.DetectSource: 2  # 1：bbox过滤点云，2：掩码�
 Debug.EllipsoidExtraction.OpenRelations: 0  # 在单帧EllipsoidExtraction中就通过曼哈顿平面优化，而不是等到数据关联后
 Debug.Tracking.ellipsoid_extract: 1      # 提取椭球体
 Debug.Tracking.ellipsoid_associate: 1   # 数据关联
-Debug.Tracking.recompute_merged_ellipsoid: 1  # 数据关联并融合后，重新计算椭球体
+Debug.Tracking.recompute_merged_ellipsoid: 0  # 数据关联并融合后，重新计算椭球体
 Debug.LocalMapping.ObjectInit: 1    # 将新物体（数据关联失败的物体）生成为新Global物体
 Debug.LocalMapping.SDFConstruct: 1  # DeepSDF
 
