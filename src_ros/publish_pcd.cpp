@@ -138,6 +138,76 @@ pcl::PointCloud<pcl::PointXYZRGB>*  filterCloudAsHeight_3(pcl::PointCloud<pcl::P
     return pCloudFiltered;
 }
 
+pcl::PointCloud<pcl::PointXYZRGB>*  filterCloudAsHeight_4(pcl::PointCloud<pcl::PointXYZRGB>* pCloud){
+    pcl::PointCloud<pcl::PointXYZRGB>* pCloudFiltered = new pcl::PointCloud<pcl::PointXYZRGB>;
+    
+    
+
+
+    int num = pCloud->size();
+    for(int i=0;i<num;i++)
+    {
+        pcl::PointXYZRGB p = (*pCloud)[i];
+        Eigen::Vector3d center; center << p.x, p.y, p.z;
+
+        double height = p.z;
+        double y_dis = p.y;
+        double x_dis = p.x;
+        // if(height < dis_thresh && y_dis > -2)  // 过滤掉过高的点
+        
+        // if(y_dis < -0.53)  // 过滤掉靠墙的点
+        // {
+        //     continue;
+        // }
+        // if(x_dis < 1.7)  
+        // {
+        //     continue;
+        // }
+        // if(x_dis > 5.7)  
+        // {
+        //     continue;
+        // }
+        
+        // ICL 沙发侧面
+        if(height < 2.6)  {
+            // p.z -= 0.2;
+            pCloudFiltered->push_back(p);
+        } 
+    }
+
+    // // 地面
+    // // 1. 添加地面点云
+    // pcl::PointCloud<pcl::PointXYZRGB>::Ptr groundCloud(new pcl::PointCloud<pcl::PointXYZRGB>());
+    // double x_min = -4.0, x_max = 18.0;  // x 范围
+    // double y_min = -4.0, y_max = 18.0;  // y 范围
+    // double z_ground = -0.07 + 0.15;             // 地面高度
+    // double resolution = 0.01;          // 地面点云分辨率（步长）
+
+    // for (double x = x_min; x <= x_max; x += resolution) {
+    //     for (double y = y_min; y <= y_max; y += resolution) {
+    //         pcl::PointXYZRGB groundPoint;
+    //         groundPoint.x = x;
+    //         groundPoint.y = y;
+    //         groundPoint.z = z_ground;
+
+    //         // 设置为黑色的 RGB 值
+    //         groundPoint.r = 100;
+    //         groundPoint.g = 100;
+    //         groundPoint.b = 100;
+    //         // 灰色
+    //         // groundPoint.r = 160;
+    //         // groundPoint.g = 160;
+    //         // groundPoint.b = 160;
+
+    //         groundCloud->push_back(groundPoint);
+    //     }
+    // }
+
+    // *pCloudFiltered += *groundCloud;
+
+    return pCloudFiltered;
+}
+
 int main(int argc, char** argv) {
     // 初始化 ROS 节点
     ros::init(argc, argv, "pcd_publisher");
@@ -163,6 +233,9 @@ int main(int argc, char** argv) {
         pcd_file_path  = "/home/robotlab/dataset/Replica-Dataset-results/hotel_0_640/map/dataset.pcd";
     else if(dateset_type == 3){
         pcd_file_path = "/home/robotlab/dataset/MySimDataset/gazebo_dataset_10/map/dataset.pcd";
+    }
+    else if(dateset_type == 4){
+        pcd_file_path = "/home/robotlab/dataset/Replica-Dataset-results/hotel_0_640/map/dataset.pcd";
     }
 
     else
@@ -220,7 +293,13 @@ int main(int argc, char** argv) {
         *cloud = *filtered_cloud;
         delete filtered_cloud;
     }
-
+    else if(dateset_type==4){
+        // Replica 数据集需要对点云进行滤波
+        pcl::PointCloud<pcl::PointXYZRGB>* filtered_cloud = filterCloudAsHeight_4(cloud.get());
+        cloud->clear();
+        *cloud = *filtered_cloud;
+        delete filtered_cloud;
+    }
 
     {
         // // （3）根据需要保存修改后的点云到新的 PCD 文件

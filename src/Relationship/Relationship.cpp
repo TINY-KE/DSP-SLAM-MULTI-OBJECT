@@ -24,7 +24,9 @@ namespace ORB_SLAM2
         auto mvpKeyframeGlobalEllipsolds = pKF->GetEllipsoldsGlobal();
         Relations relations_return;
         int obj_num = vpEllips.size();
-        std::cout<< "[debug] RelationExtractor::ExtractRelations, obj_num: " << obj_num << ", plane_num: " << vpPlanes.size() << std::endl;
+        // std::cout<< "[debug] RelationExtractor::ExtractRelations, obj_num: " << obj_num << ", plane_num: " << vpPlanes.size() << std::endl;
+        
+        double backing_distance_max = Config::Get<double>("backing_distance_max"); 
         for (int obj_id = 0; obj_id < obj_num; obj_id++)
         {
             g2o::ellipsoid *pEllip = vpEllips[obj_id];
@@ -44,7 +46,7 @@ namespace ORB_SLAM2
                 is_on_ground = false;
             }
 
-            std::cout<< "[debug] RelationExtractor::ExtractRelations, obj_id: " << obj_id << std::endl;
+            // std::cout<< "[debug] RelationExtractor::ExtractRelations, obj_id: " << obj_id << std::endl;
             if(pEllip->mbBackingPlaneDefined || pEllip->mbSupportingPlaneDefined ) {
                 std::cerr << "[Error]: 已提前有MHP! "<< pEllip->mbSupportingPlaneDefined << ", "<< pEllip->mbBackingPlaneDefined << std::endl;
                 exit(-1);
@@ -156,7 +158,7 @@ namespace ORB_SLAM2
                     p_global->transform(pKF->cam_pose_Twc);
                     g2o::ConstrainPlane* mhp_global = new g2o::ConstrainPlane(p_global);
                     mhp_global->type = CONSTRAINPLANE_STATE::SUPPORTING; 
-                    std::cout<<"[deubg] pSupportingPlane_best:"<< p_global->param.transpose() << std::endl;
+                    // std::cout<<"[deubg] pSupportingPlane_best:"<< p_global->param.transpose() << std::endl;
                     mvpKeyframeGlobalEllipsolds[obj_id]->mpSupportingPlane = mhp_global;
                     mvpKeyframeGlobalEllipsolds[obj_id]->mbSupportingPlaneDefined = true;
                 }
@@ -166,7 +168,7 @@ namespace ORB_SLAM2
             int back_plane_id=-1;
             g2o::plane* pBackingPlane_best = NULL;
             std::vector<std::pair<double, g2o::plane*>> backingPlaneAreaVec;
-            std::cout<< "[debug] RelationExtractor::ExtractRelations, obj_id: " << obj_id << ", plane_num: " << vpPlanes.size() << std::endl;
+            // std::cout<< "[debug] RelationExtractor::ExtractRelations, obj_id: " << obj_id << ", plane_num: " << vpPlanes.size() << std::endl;
             for (int plane_id = 0; plane_id < vpPlanes.size(); plane_id++)
             {
                 g2o::plane *pPlane = vpPlanes[plane_id];
@@ -189,7 +191,7 @@ namespace ORB_SLAM2
 
                             double dis = plane_align.distanceToPoint(sideplane_centor, true);
 
-                            if ( dis < 0.1 &&  dis > -0.5)  // 平面最多进入物体内部10cm
+                            if ( dis < 0.1 &&  dis > -1*backing_distance_max)  // 平面最多进入物体内部10cm
                             {
                                 // 平面中点的数量
                                 backingPlaneAreaVec.push_back(make_pair(PlanePoints.size(), pPlane));

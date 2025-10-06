@@ -127,6 +127,7 @@ EllipsoidExtractor.RefineEllipsoid.Border.x2.Pixels: 0
 EllipsoidExtractor.RefineEllipsoid.Border.y2.Pixels: 0
 EllipsoidExtractor.EuclideanFilter.Open: 1
 EllipsoidExtractor.SupportingPlaneFilter.DisThresh: 0.03
+EllipsoidExtractor.backing_distance_max: 0.5
 
 
 
