@@ -156,6 +156,8 @@ void LocalMapping::Create_Multi_NewObjectsFromDetections()  // 用于RGBD模式
         // std::cout<<"[GetMapPointsWithinBoundingCubeToGround] end"<<std::endl;
         
         double scale = Config::Get<double>("Mapping.ObjectScale");
+        
+        std::cout<<"[debug] Create_Multi_NewObjectsFromDetections, KeyFrame中的全局椭球体: index:"<<det_i<<", scale:" << mvpGlobalEllipsolds[det_i]->scale.transpose()  << std::endl;
 
         pNewObj->SetPoseByEllipsoid(mvpGlobalEllipsolds[det_i], scale);
     }

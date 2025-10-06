@@ -575,6 +575,65 @@ void System::SaveTrajectoryKITTI(const string &filename)
 }
 
 
+void System::SaveEllipsoids(const string &filepath) {
+    cout << endl << "Saving Ellisoids in: " << filepath << endl;
+
+    auto mvpMapObjects = mpMap->GetAllMapObjects();
+    
+    //  生成文件  例如 "filepath/file_1.txt"
+    std::string filename_head = filepath + "/ellipsoid_"; 
+
+    std::string filename = generateFileName(filename_head);
+    ofstream file;
+    file.open(filename.c_str());
+    if (!file) {
+        std::cerr << "文件创建失败: " << filename << std::endl;
+    }
+    file << fixed;
+
+    for (auto pMO: mvpMapObjects) {
+
+        if (!pMO)
+            continue;
+        if (pMO->isBad())
+            continue;
+        
+        auto pE = pMO->GetEllipsold();
+        SE3Quat SE3Two = pE->pose;
+        Eigen::Matrix4d Two = SE3Two.to_homogeneous_matrix();
+        Vector3d scale = pE->scale;
+
+        // 提取旋转部分, 转换为四元数
+        Eigen::Matrix3d R = Two.block<3,3>(0, 0);
+        // 使用 Eigen 提供的转换函数
+        Eigen::Vector3d rpy = R.eulerAngles(2, 1, 0); // ZYX 顺序，对应 yaw-pitch-roll
+        float roll  = rpy[2];
+        float pitch = rpy[1];
+        float yaw   = rpy[0];
+        Eigen::Quaterniond q(R);
+    
+        //只存储物体
+        file    
+            << pMO->mnId << " "
+            << pMO->label << "    "
+            << Two(0, 3) << " "
+            << Two(1, 3) << " "
+            << Two(2, 3)<< "     "
+            << roll/M_PI*180 << " "
+            << pitch/M_PI*180 << " "
+            << yaw/M_PI*180 << "     "
+            << scale(0) << " "
+            << scale(1) << " "
+            << scale(2) 
+            << endl;
+    }
+    file.close();
+    
+    cout << endl << "Ellipsoid saved!" << endl;
+
+}
+
+
 void System::SaveObjects(const string &filepath , bool move_to_origin) {
     cout << endl << "Saving Objects in: " << filepath << endl;
     

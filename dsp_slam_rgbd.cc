@@ -267,6 +267,7 @@ int main(int argc, char **argv)
     if (SaveLocalObjects){
         bool move_to_origin = true;
         SLAM.SaveObjects( data_source_dir  + "/eval/temp/objects/", move_to_origin);
+        SLAM.SaveEllipsoids( data_source_dir  + "/eval/temp/");
     }
     int SavePoints = fSettings["savepoints"];
     if (SavePoints)

@@ -98,7 +98,7 @@ DepthMapFactor: 6553.5  #对应
 
 # 保存本地
 saveobjects: 1
-savepoints: 1
+savepoints: 0
 savePCDMap: 0
 
 # chair转counch(沙发)
@@ -111,7 +111,7 @@ chair2counch: 0
 EllipsoidExtraction.ClusterTolerance: 0.04
 EllipsoidExtraction.MinClusterSize: 5
 EllipsoidExtraction.CenterDis: 0.5
-EllipsoidExtraction.MinEllipsoidSize: 0.01
+EllipsoidExtraction.MinEllipsoidSize: 0.1
 
 EllipsoidExtraction.ManhattanPlanesFilter.Open: 1
 EllipsoidExtractor.Rotation.NormalVoter.KSearchNum: 35
@@ -157,12 +157,12 @@ Tracking.Associate.ManualLabel.DisThresold: 0.5
 
 # Debug的控制变量
 Debug.EllipsoidExtraction.DetectSource: 2  # 1：bbox过滤点云，2：掩码过滤点云
-Debug.EllipsoidExtraction.OpenRelations: 0  # 在单帧EllipsoidExtraction中就通过曼哈顿平面优化，而不是等到数据关联后
+Debug.EllipsoidExtraction.OpenRelations: 1  # 在单帧EllipsoidExtraction中就通过曼哈顿平面优化，而不是等到数据关联后
 Debug.Tracking.ellipsoid_extract: 1      # 提取椭球体
-Debug.Tracking.ellipsoid_associate: 1  # 数据关联
-Debug.Tracking.recompute_merged_ellipsoid: 1  # 数据关联并融合后，重新计算椭球体
-Debug.LocalMapping.ObjectInit: 1   # 将新物体（数据关联失败的物体）生成为新Global物体
-Debug.LocalMapping.SDFConstruct: 1  # DeepSDF
+Debug.Tracking.ellipsoid_associate: 1   # 数据关联
+Debug.Tracking.recompute_merged_ellipsoid: 0  # 数据关联并融合后，重新计算椭球体
+Debug.LocalMapping.ObjectInit: 1    # 将新物体（数据关联失败的物体）生成为新Global物体
+Debug.LocalMapping.SDFConstruct: 0  # DeepSDF
 
 
 # Bounding box filter

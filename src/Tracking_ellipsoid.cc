@@ -519,53 +519,54 @@ namespace ORB_SLAM2 {
             }
             std::cout << "flag:" << e->mbBackingPlaneDefined << "/" << e->mbSupportingPlaneDefined << std::endl;
             
-            if(e->mbBackingPlaneDefined && e->mbSupportingPlaneDefined ){   
+            // if(e->mbBackingPlaneDefined && e->mbSupportingPlaneDefined ){   
 
-                std::cout<<"[debug] RefineObjectsWithRelations 2, 存在支撑和倚靠平面" << std::endl;
+            //     std::cout<<"[debug] RefineObjectsWithRelations 2, 存在支撑和倚靠平面" << std::endl;
 
-                double supproting_weight = Config::ReadValue<double>("EllipsoidExtractor.Optimizer.SupportingWeight");
-                g2o::plane* pSupPlane = e->mpSupportingPlane->pPlane;
-                std::cout<<"[debug] RefineObjectsWithRelations 2-1" << std::endl;
-                double backing_weight = Config::ReadValue<double>("EllipsoidExtractor.Optimizer.BackingWeight");
-                g2o::plane* pBackPlane = e->mpBackingPlane->pPlane;
+            //     double supproting_weight = Config::ReadValue<double>("EllipsoidExtractor.Optimizer.SupportingWeight");
+            //     g2o::plane* pSupPlane = e->mpSupportingPlane->pPlane;
+            //     std::cout<<"[debug] RefineObjectsWithRelations 2-1" << std::endl;
+            //     double backing_weight = Config::ReadValue<double>("EllipsoidExtractor.Optimizer.BackingWeight");
+            //     g2o::plane* pBackPlane = e->mpBackingPlane->pPlane;
 
-                std::cout<<"[debug] RefineObjectsWithRelations 2-2" << std::endl;
-                double bbox_weight = Config::ReadValue<double>("EllipsoidExtractor.Optimizer.BboxWeight");
-                std::vector<g2o::plane> vBboxPlanes;
-                std::vector<g2o::ConstrainPlane*> vBboxConstrainPlanes = e->mvBboxPlanesLocal;
-                std::cout<<"[debug] RefineObjectsWithRelations 2-3" << std::endl;
-                for(auto cp : vBboxConstrainPlanes)
-                    vBboxPlanes.push_back(*cp->pPlane);
+            //     std::cout<<"[debug] RefineObjectsWithRelations 2-2" << std::endl;
+            //     double bbox_weight = Config::ReadValue<double>("EllipsoidExtractor.Optimizer.BboxWeight");
+            //     std::vector<g2o::plane> vBboxPlanes;
+            //     std::vector<g2o::ConstrainPlane*> vBboxConstrainPlanes = e->mvBboxPlanesLocal;
+            //     std::cout<<"[debug] RefineObjectsWithRelations 2-3" << std::endl;
+            //     for(auto cp : vBboxConstrainPlanes)
+            //         vBboxPlanes.push_back(*cp->pPlane);
 
-                std::cout<<"[debug] RefineObjectsWithRelations 3, 开始优化" << std::endl;
+            //     std::cout<<"[debug] RefineObjectsWithRelations 3, 开始优化" << std::endl;
 
-                g2o::ellipsoid e_refined = mpEllipsoidExtractor->OptimizeEllipsoidWithBboxPlanesAndMHPlanes(
-                        *e, vBboxPlanes, bbox_weight, *pSupPlane, supproting_weight, *pBackPlane, backing_weight);
+            //     g2o::ellipsoid e_refined = mpEllipsoidExtractor->OptimizeEllipsoidWithBboxPlanesAndMHPlanes(
+            //             *e, vBboxPlanes, bbox_weight, *pSupPlane, supproting_weight, *pBackPlane, backing_weight);
                 
 
 
 
-                // 可视化 Refined Object，并变换到世界坐标系下
-                bool c0 = mpEllipsoidExtractor->GetResult();
-                std::cout << "[debug] RefineObjectsWithRelations 4, mpEllipsoidExtractor->GetResult()结果为： " << c0 << std::endl;
-                if( c0 )
-                {
-                    // Visualize estimated ellipsoid
-                    g2o::ellipsoid* pObjRefined = new g2o::ellipsoid(e_refined.transform_from(pFrame->cam_pose_Twc));
-                    // pObjRefined->setColor(Vector3d(189/255.0, 183/255.0, 107/255.0), 1); 
-                    // pObjRefined->setColor(Vector3d(0/255.0, 128/255.0, 0/255.0), 1); 
-                    pObjRefined->setColor(Vector3d(255/255.0, 128/255.0, 0/255.0), 1); 
-                    mpMap->addRefinedEllipsoidVisual(pObjRefined);
+            //     // 可视化 Refined Object，并变换到世界坐标系下
+            //     bool c0 = mpEllipsoidExtractor->GetResult();
+            //     std::cout << "[debug] RefineObjectsWithRelations 4, mpEllipsoidExtractor->GetResult()结果为： " << c0 << std::endl;
+            //     if( c0 )
+            //     {
+            //         // Visualize estimated ellipsoid
+            //         g2o::ellipsoid* pObjRefined = new g2o::ellipsoid(e_refined.transform_from(pFrame->cam_pose_Twc));
+            //         // pObjRefined->setColor(Vector3d(189/255.0, 183/255.0, 107/255.0), 1); 
+            //         // pObjRefined->setColor(Vector3d(0/255.0, 128/255.0, 0/255.0), 1); 
+            //         pObjRefined->setColor(Vector3d(255/255.0, 128/255.0, 0/255.0), 1); 
+            //         mpMap->addRefinedEllipsoidVisual(pObjRefined);
                     
-                    // 用优化后的
-                    // (*pFrame->mpLocalObjects[i]) = e_refined;
+            //         // 用优化后的
+            //         (*pFrame->mpLocalObjects[i]) = e_refined;
 
-                    // g2o::ellipsoid e_global = e_refined.transform_from(pFrame->cam_pose_Twc);
-                    // pKF->ReplaceEllipsoldsGlobal(i, &e_global);
+            //         g2o::ellipsoid e_global = e_refined.transform_from(pFrame->cam_pose_Twc);
+            //         pKF->ReplaceEllipsoldsGlobal(i, &e_global);
 
-                }
-            }
-            else if(e->mbSupportingPlaneDefined ){   
+            //     }
+            // }
+            // else 
+            if(e->mbSupportingPlaneDefined ){   
 
                 double supproting_weight = Config::ReadValue<double>("EllipsoidExtractor.Optimizer.SupportingWeight");
                 g2o::plane* pSupPlane = e->mpSupportingPlane->pPlane;
@@ -578,8 +579,6 @@ namespace ORB_SLAM2 {
 
                 g2o::ellipsoid e_refined = mpEllipsoidExtractor->OptimizeEllipsoidWithBboxPlanesAndMHPlanes(
                         *e, vBboxPlanes, bbox_weight, *pSupPlane, supproting_weight);
-                
-
 
 
                 // 可视化 Refined Object，并变换到世界坐标系下
@@ -594,11 +593,14 @@ namespace ORB_SLAM2 {
                     mpMap->addRefinedEllipsoidVisual(pObjRefined);
                     
                     // 用优化后的
-                    // (*pFrame->mpLocalObjects[i]) = e_refined;
+                    (*pFrame->mpLocalObjects[i]) = e_refined;
 
-                    // g2o::ellipsoid e_global = e_refined.transform_from(pFrame->cam_pose_Twc);
-                    // pKF->ReplaceEllipsoldsGlobal(i, &e_global);
-
+                    std::cout<<"[debug] RefineObjectsWithRelations 5-1, 替换KeyFrame中的全局椭球体: scale:" << e_refined.scale.transpose()  << std::endl;
+                    g2o::ellipsoid e_global = e_refined.transform_from(pFrame->cam_pose_Twc);
+                    std::cout<<"[debug] RefineObjectsWithRelations 5-2, 替换KeyFrame中的全局椭球体: scale:" << e_global.scale.transpose()  << std::endl;
+                    pKF->ReplaceEllipsoldsGlobal(i, &e_global);
+                    std::cout<<"[debug] RefineObjectsWithRelations 5-3, 替换KeyFrame中的全局椭球体: index:"<<i<<", : scale:" << pKF->GetEllipsoldsGlobal()[i]->scale.transpose()  << std::endl;
+                    
                 }
             }
         }

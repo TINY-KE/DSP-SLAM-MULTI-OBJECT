@@ -686,10 +686,10 @@ void Tracking::UpdateAssociatedObjectPoseAndScale(MapObject* pMO){
         auto mvpGlobalEllipsolds = it->first->GetEllipsoldsGlobal();
 
 
-        // std::cout<<"[debug] UpdateAssociatedObjectPoseAndScale, 关键帧["<< it->first->mnId << "]的观测：" << it->second <<std::endl;
+        std::cout<<"[debug] UpdateAssociatedObjectPoseAndScale, 关键帧["<< it->first->mnId << "]的观测：" << it->second <<std::endl;
         // 对应的椭球体
         g2o::ellipsoid* e = mvpGlobalEllipsolds[it->second];
-        // std:cout<< "            支撑面："<<e->mbSupportingPlaneDefined <<",倚靠面："<<e->mbBackingPlaneDefined<<std::endl;
+        std:cout<< "            支撑面："<<e->mbSupportingPlaneDefined <<",倚靠面："<<e->mbBackingPlaneDefined<<std::endl;
 
         // 提前曼哈顿平面，当前考虑到现在提取的MHP都挺好，直接随便选一个
         if(e->mbSupportingPlaneDefined){
@@ -705,8 +705,8 @@ void Tracking::UpdateAssociatedObjectPoseAndScale(MapObject* pMO){
         num++;
     }
 
-    // std::cout<<"[debug] UpdateAssociatedObjectPoseAndScale1, 关键帧数量: "<< num <<std::endl;
-    // std::cout<<"[debug] UpdateAssociatedObjectPoseAndScale2, flag: "<< bSupportingPlaneDefined << "/"<< bBackingPlaneDefined <<std::endl;
+    std::cout<<"[debug] UpdateAssociatedObjectPoseAndScale1, 关键帧数量: "<< num <<std::endl;
+    std::cout<<"[debug] UpdateAssociatedObjectPoseAndScale2, flag: "<< bSupportingPlaneDefined << "/"<< bBackingPlaneDefined <<std::endl;
     
     int opt_num = Config::ReadValue<int>("EllipsoidExtractor.Optimizer.Number");
     
@@ -714,10 +714,10 @@ void Tracking::UpdateAssociatedObjectPoseAndScale(MapObject* pMO){
         
         double supproting_weight = Config::ReadValue<double>("EllipsoidExtractor.Optimizer.SupportingWeight");
         g2o::plane* pSupPlane = pSupportingPlane->pPlane;
-        // std::cout<<"[debug] UpdateAssociatedObjectPoseAndScale3-1, pSupPlane: "<< pSupPlane->param.transpose() << ", supproting_weight:" << supproting_weight <<std::endl;
+        std::cout<<"[debug] UpdateAssociatedObjectPoseAndScale3-1, pSupPlane: "<< pSupPlane->param.transpose() << ", supproting_weight:" << supproting_weight <<std::endl;
         double backing_weight = Config::ReadValue<double>("EllipsoidExtractor.Optimizer.BackingWeight");
         g2o::plane* pBackPlane = pBackingPlane->pPlane;
-        // std::cout<<"[debug] UpdateAssociatedObjectPoseAndScale3-2, pBackPlane: "<< pBackPlane->param.transpose() << ", backing_weight:" << backing_weight <<std::endl;
+        std::cout<<"[debug] UpdateAssociatedObjectPoseAndScale3-2, pBackPlane: "<< pBackPlane->param.transpose() << ", backing_weight:" << backing_weight <<std::endl;
 
         
 
@@ -753,18 +753,18 @@ void Tracking::UpdateAssociatedObjectPoseAndScale(MapObject* pMO){
         mpMap->addPlane(pPlane_2);
         
 
-        // std::cout<<"[debug] UpdateAssociatedObjectPoseAndScale3-3, e_merged: "<< e_merged.scale.transpose() <<std::endl;
-        // std::cout<<"[debug] UpdateAssociatedObjectPoseAndScale3-4, pObjRefined: "<< pObjRefined->scale.transpose() <<std::endl;
+        std::cout<<"[debug] UpdateAssociatedObjectPoseAndScale3-3, e_merged: "<< e_merged.scale.transpose() <<std::endl;
+        std::cout<<"[debug] UpdateAssociatedObjectPoseAndScale3-4, pObjRefined: "<< pObjRefined->scale.transpose() <<std::endl;
 
         pMO->SetPoseByEllipsoid(pObjRefined, scale);
-        // std::cout<<"[debug] UpdateAssociatedObjectPoseAndScale3-5, ENd"<<std::endl;
+        std::cout<<"[debug] UpdateAssociatedObjectPoseAndScale3-5, ENd"<<std::endl;
         
     }
     // 只使用支撑面进行优化
     else if(bSupportingPlaneDefined){
         double supproting_weight = Config::ReadValue<double>("EllipsoidExtractor.Optimizer.SupportingWeight");
         g2o::plane* pSupPlane = &mGroundPlane;
-        // std::cout<<"[debug] UpdateAssociatedObjectPoseAndScale4, pSupPlane: "<< pSupPlane->param.transpose() <<std::endl;
+        std::cout<<"[debug] UpdateAssociatedObjectPoseAndScale4, pSupPlane: "<< pSupPlane->param.transpose() <<std::endl;
 
         g2o::ellipsoid e_refined = mpEllipsoidExtractor->OptimizeEllipsoidWithSupportingPlanes( e_merged, opt_num, *pSupPlane, supproting_weight);
         
