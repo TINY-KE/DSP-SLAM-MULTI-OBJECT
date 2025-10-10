@@ -302,13 +302,15 @@ int main(int argc, char** argv) {
     }
 
     {
-        // // （3）根据需要保存修改后的点云到新的 PCD 文件
+        // （3）根据需要保存修改后的点云到新的 PCD 文件
         // std::string output_file = "/home/robotlab/dataset/MySimDataset/gazebo_dataset_10/map/modified_cloud.pcd";  // 输出文件名
-        // if (pcl::io::savePCDFileASCII(output_file, *cloud) == -1) {
-        //     std::cerr << "Failed to save the modified point cloud." << std::endl;
-        //     return -1;
-        // }
-        // std::cout << "Saved modified point cloud to " << output_file << std::endl;
+        // std::string output_file = "/home/robotlab/dataset/ICL-NUIM/living_room_traj2n_frei_png/map/modified_cloud.pcd";  // 输出文件名
+        std::string output_file = "/home/robotlab/dataset/Replica-Dataset-results/hotel_0_640/map/modified_cloud.pcd";  // 输出文件名
+        if (pcl::io::savePCDFileASCII(output_file, *cloud) == -1) {
+            std::cerr << "Failed to save the modified point cloud." << std::endl;
+            return -1;
+        }
+        std::cout << "Saved modified point cloud to " << output_file << std::endl;
     }
     
     // {

@@ -98,9 +98,13 @@ void Viewer::Run()
     pangolin::Var<bool> menuShowEllipsoidVertices("menu.Show Ellipsoid Vertices", true, true);
     pangolin::Var<double> SliderEllipsoidProbThresh("menu.Ellipsoid Prob", 0.01, 0.0, 1.0);
     pangolin::Var<double> SliderEllipsoidLineWidth("menu.EllipsoidLine Width", 1.0, 0.5, 3.0);
+    pangolin::Var<double> SliderEllipsoidMiniSize("menu.Ellipsoid MiniSize", 0.0, 0.0, 1.0);
+    
     pangolin::Var<bool> menuShowSdfObjects("menu.Show SDF Objects",true,true);
     // 深度点云
     pangolin::Var<float> SliderPointCloudListSize("menu.Pointcloud Size", 3.0, 0.5, 10.0);
+    pangolin::Var<float> SliderPointCloudSink("menu.World Sink", 0.0, -0.3, 0.3);
+
     // pangolin::Var<bool> menuShowDepthPoints("menu.Show Depth Points",false,true);
     // 地面
     pangolin::Var<float> SlidermPlaneLineWidth("menu.PlaneLine Width", 1.0, 0.5, 3.0);
@@ -218,7 +222,8 @@ void Viewer::Run()
             if(menuShowGlobalEllipsoids){
                 double ellipsoidProbThresh = SliderEllipsoidProbThresh;
                 double ellipsoidLineWidth = SliderEllipsoidLineWidth;
-                mpMapDrawer->drawGlobalEllipsoids(ellipsoidProbThresh,ellipsoidLineWidth);
+                double ellipsoidMiniSize = SliderEllipsoidMiniSize;
+                mpMapDrawer->drawGlobalEllipsoids(ellipsoidProbThresh,ellipsoidLineWidth, ellipsoidMiniSize);
             }
 
             // if(menuShowDepthPoints)
@@ -275,7 +280,8 @@ void Viewer::Run()
             RefreshMenuForDepthPointCloud();
             RefreshPointCloudOptions();
             float pointcloudSize = SliderPointCloudListSize;
-            mpMapDrawer->drawPointCloudWithOptions(mmPointCloudOptionMap, pointcloudSize);
+            float pointcloudSink = SliderPointCloudSink;
+            mpMapDrawer->drawPointCloudWithOptions(mmPointCloudOptionMap, pointcloudSize, pointcloudSink);
             // end
 
             if(menuShowEllipsoidVertices){

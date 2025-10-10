@@ -79,9 +79,10 @@ DecoderPaths: ["weights/deepsdf/chairs_64",
 # ros
 use_ros: 0   # 1：读取存贮在本地的ros.png   0：根据association.txt读取图片
 DatasetPathRoot: "./build/"
-Dataset.Path.Map: "/home/robotlab/dataset/ICL-NUIM/living_room_traj2n_frei_png/dataset.pcd"
+# Dataset.Path.Map: "/home/robotlab/dataset/ICL-NUIM/living_room_traj2n_frei_png/dataset.pcd"
+Dataset.Path.Map: "/home/robotlab/dataset/ICL-NUIM/living_room_traj2n_frei_png/map/remove_one_wall.pcd"
 Dataset.global_map_input: 1
-Dataset.Filter.DisThresh: 1.5
+Dataset.Filter.DisThresh: 1.8
 Dataset.step: 1
 Dataset.sleep_time: 0.3   #TODO:
 Dataset.Type: "ICL-NUIM"
@@ -98,8 +99,8 @@ ThDepth: 40.0
 DepthMapFactor: 5000  #对应
 
 # 保存本地
-saveobjects: 1
-savepoints: 1
+saveobjects: 0
+savepoints: 0
 savePCDMap: 0
 
 # chair转counch(沙发)
@@ -127,7 +128,7 @@ EllipsoidExtractor.RefineEllipsoid.Border.x2.Pixels: 0
 EllipsoidExtractor.RefineEllipsoid.Border.y2.Pixels: 0
 EllipsoidExtractor.EuclideanFilter.Open: 1
 EllipsoidExtractor.SupportingPlaneFilter.DisThresh: 0.03
-EllipsoidExtractor.backing_distance_max: 0.5
+EllipsoidExtractor.backing_distance_max: 0.2
 
 
 
@@ -155,7 +156,7 @@ Tracking.Associate.ManualLabel.y:     [-2]
 Tracking.Associate.ManualLabel.z:     [0.6]
 Tracking.Associate.ManualLabel.label: [56]  # 60: table, 56: chair, 57: couch
 Tracking.Associate.ManualDirection:   [0]   # 0：不限制，1：x正， 2：y正， 3：x负， 4：y负
-Tracking.Associate.ManualLabel.DisThresold: 0.5
+Tracking.Associate.ManualLabel.DisThresold: 0.2
 
 
 # Debug的控制变量

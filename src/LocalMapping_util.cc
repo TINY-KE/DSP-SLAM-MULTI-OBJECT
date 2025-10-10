@@ -222,7 +222,7 @@ void LocalMapping::Process_Multi_DetectedObjects_byPythonReconstruct()
     }
 }
 
-
+// 2D渲染损失用的是深度点云 
 bool LocalMapping::DeepSDFObjectConstruction_PcdCloud_new(ObjectDetection *det, MapObject *pMO, int det_i){
 
         auto SE3Twc = Converter::toMatrix4f(mpCurrentKeyFrame->GetPoseInverse());
@@ -377,7 +377,10 @@ bool LocalMapping::DeepSDFObjectConstruction_PcdCloud_new(ObjectDetection *det, 
             auto pyMapObjectFlipped = optimizer_ptr->attr("reconstruct_object")
                     (SE3Tcw * flipped_Two, surface_points_cam, rays, depth_obs, pMO->vShapeCode);
 
-            if (pyMapObject.attr("loss").cast<float>() > pyMapObjectFlipped.attr("loss").cast<float>())
+            double loss = pyMapObject.attr("loss").cast<float>();
+            double loss_flipped = pyMapObjectFlipped.attr("loss").cast<float>();
+            std::cout<< "[debug] DeepSDFObjectConstruction_PcdCloud_new, object id: "<< pMO->mnId<< ", loss: "<< loss << ", loss_flipped: "<< loss_flipped << std::endl;
+            if (loss > loss_flipped)
                 pyMapObject = pyMapObjectFlipped;
             
             // cout << " [debug] reconstruct_object 2, class id = "<<  class_id << std::endl;
@@ -429,6 +432,10 @@ bool LocalMapping::DeepSDFObjectConstruction_PcdCloud_new(ObjectDetection *det, 
             auto pyMesh = mesh_extracter_ptr->attr("extract_mesh_from_code")(code);
             // cout << " [debug] reconstruct_object 3-2, class id = "<<  class_id << std::endl;
             pMO->vertices = pyMesh.attr("vertices").cast<Eigen::MatrixXf>();
+            double temp = pyMapObject.attr("loss").cast<float>();
+            if(temp < pMO->loss){  //重建失败
+                pMO->loss = temp;
+            }
             // cout << " [debug] reconstruct_object 3-3, class id = "<<  class_id << std::endl;
             pMO->faces = pyMesh.attr("faces").cast<Eigen::MatrixXi>();
             // cout << " [debug] reconstruct_object 3-4, class id = "<<  class_id << std::endl;

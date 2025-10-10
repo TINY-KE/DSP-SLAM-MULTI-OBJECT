@@ -210,6 +210,7 @@ namespace ORB_SLAM2 {
         // 构建椭球体与曼哈顿平面之间的关联关系
         TaskRelationship(pFrame, pKF);
 
+        
         int type = Config::Get<int>("Debug.EllipsoidExtraction.OpenRelations");
         if(type){
             // [4] Use Relationship To Refine Ellipsoids
@@ -331,8 +332,8 @@ namespace ORB_SLAM2 {
             // 对观测进行椭球体提取的几大条件
             if( c5_prob_check && c1_not_on_border /* && c2 && !c3 */ && c4_not_human ){
                 
-                mpMap->clearPlanes();
-                mpMap->addPlane(&mGroundPlane);
+                // mpMap->clearPlanes();
+                // mpMap->addPlane(&mGroundPlane);
                 
                 // 使用多平面估计局部椭球体 (depth, label, bbox, prob, mCamera)
                 // TODO： 这里有待将物体对应的深度点云添加给MapObject，可以先通过椭球体进行关联
@@ -505,7 +506,7 @@ namespace ORB_SLAM2 {
     // 3) 若不满足，则使用点云中心+bbox产生点模型椭球体
     void Tracking::RefineObjectsWithRelations(ORB_SLAM2::Frame *pFrame, KeyFrame* pKF)
     {
-        
+
         Eigen::VectorXd camera_pose = pFrame->cam_pose_Twc.toVector();
         std::vector<g2o::ellipsoid*>& vpEllipsoids = pFrame->mpLocalObjects;
         
@@ -517,6 +518,7 @@ namespace ORB_SLAM2 {
                 std::cout << ", NULL ellipsoid, continue..." << std::endl;
                 continue;
             }
+
             std::cout << "flag:" << e->mbBackingPlaneDefined << "/" << e->mbSupportingPlaneDefined << std::endl;
             
             if(e->mbBackingPlaneDefined && e->mbSupportingPlaneDefined ){   
@@ -558,10 +560,10 @@ namespace ORB_SLAM2 {
                     mpMap->addRefinedEllipsoidVisual(pObjRefined);
                     
                     // 用优化后的
-                    // (*pFrame->mpLocalObjects[i]) = e_refined;
+                    (*pFrame->mpLocalObjects[i]) = e_refined;
 
-                    // g2o::ellipsoid e_global = e_refined.transform_from(pFrame->cam_pose_Twc);
-                    // pKF->ReplaceEllipsoldsGlobal(i, &e_global);
+                    g2o::ellipsoid e_global = e_refined.transform_from(pFrame->cam_pose_Twc);
+                    pKF->ReplaceEllipsoldsGlobal(i, &e_global);
 
                 }
             }
@@ -594,10 +596,10 @@ namespace ORB_SLAM2 {
                     mpMap->addRefinedEllipsoidVisual(pObjRefined);
                     
                     // 用优化后的
-                    // (*pFrame->mpLocalObjects[i]) = e_refined;
+                    (*pFrame->mpLocalObjects[i]) = e_refined;
 
-                    // g2o::ellipsoid e_global = e_refined.transform_from(pFrame->cam_pose_Twc);
-                    // pKF->ReplaceEllipsoldsGlobal(i, &e_global);
+                    g2o::ellipsoid e_global = e_refined.transform_from(pFrame->cam_pose_Twc);
+                    pKF->ReplaceEllipsoldsGlobal(i, &e_global);
 
                 }
             }

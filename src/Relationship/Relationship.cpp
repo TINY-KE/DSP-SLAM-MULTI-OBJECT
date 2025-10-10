@@ -26,7 +26,7 @@ namespace ORB_SLAM2
         int obj_num = vpEllips.size();
         // std::cout<< "[debug] RelationExtractor::ExtractRelations, obj_num: " << obj_num << ", plane_num: " << vpPlanes.size() << std::endl;
         
-        double backing_distance_max = Config::Get<double>("backing_distance_max"); 
+        double backing_distance_max = Config::Get<double>("EllipsoidExtractor.backing_distance_max"); 
         for (int obj_id = 0; obj_id < obj_num; obj_id++)
         {
             g2o::ellipsoid *pEllip = vpEllips[obj_id];
@@ -44,6 +44,14 @@ namespace ORB_SLAM2
                 is_on_ground = true;
             } else {
                 is_on_ground = false;
+            }
+
+            std::vector<int> Objects_dont_use_backing = {56, 57/* 椅子，沙发 */ , 58 /* 盆栽植物 */, 60 /* 餐桌 */};
+            bool dont_use_backing = false;
+            if (std::find(Objects_dont_use_backing.begin(), Objects_dont_use_backing.end(), object_label) != Objects_dont_use_backing.end()) {
+                dont_use_backing = true;
+            } else {
+                dont_use_backing = false;
             }
 
             // std::cout<< "[debug] RelationExtractor::ExtractRelations, obj_id: " << obj_id << std::endl;
@@ -125,7 +133,7 @@ namespace ORB_SLAM2
                 }
             }
 
-            if(supprortingPlaneDisVec.size()!=0) {
+            if(supprortingPlaneDisVec.size()!=0 ) {
                 sort(supprortingPlaneDisVec.begin(), supprortingPlaneDisVec.end(), sort_plane_dis);
                 double dis_min = supprortingPlaneDisVec[0].first;
                 pSupportingPlane_best = supprortingPlaneDisVec[0].second;
@@ -176,12 +184,12 @@ namespace ORB_SLAM2
 
                 if(pPlane->miMHType==g2o::MANHATTAN_PLANE_TYPE::VERTICAL){
 
-                    for(int j=2; j<6; j++){
+                    for(int j=2; j<6; j+=1){
 
                         g2o::plane* pObj_side_plane = obj_planes[j];
                         // 判断是否平行
                         double angle_diff = pObj_side_plane->angleToPlane(*pPlane);
-                        if (std::abs(angle_diff) < M_PI / 180.0 * 10  ||  std::abs(angle_diff-M_PI) < M_PI / 180.0 * 10) // 容忍 10 度
+                        if (std::abs(angle_diff) < M_PI / 180.0 * 10  ||  std::abs(angle_diff-M_PI) < M_PI / 180.0 * 10 )  // 容忍 10 度
                         {
                             g2o::plane plane_align = *pPlane;
                             if(std::abs(angle_diff-M_PI) < M_PI / 180.0 * 10)
@@ -210,7 +218,7 @@ namespace ORB_SLAM2
 
             // std::cout<<
 
-            if(backingPlaneAreaVec.size()!=0) {
+            if(backingPlaneAreaVec.size()!=0 && !dont_use_backing ) {
                 std::sort(backingPlaneAreaVec.begin(), backingPlaneAreaVec.end(), 
                     [](const auto& a, const auto& b) {
                         return a.first > b.first; 

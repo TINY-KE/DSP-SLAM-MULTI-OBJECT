@@ -69,7 +69,7 @@ private:
 // ellipsoid-version
 public:
     bool drawEllipsoidsVisual(double prob_thresh, double ellipsoidLineWidth=1.0);
-    bool drawGlobalEllipsoids(double prob_thresh, double ellipsoidLineWidth=1.0);
+    bool drawGlobalEllipsoids(double prob_thresh, double ellipsoidLineWidth=1.0, double MinEllipsoidSize = 0.0);
     bool drawLastestEllipsoidsVisual(double prob_thresh, double ellipsoidLineWidth=1.0);
     bool drawLastestRefinedEllipsoidsVisual(double prob_thresh, double ellipsoidLineWidth=1.0);
     bool drawEllipsoidVertices(double prob_thresh, double pointcloudSize=1.0);
@@ -81,7 +81,7 @@ public:
     void SE3ToOpenGLCameraMatrix(g2o::SE3Quat &matIn, pangolin::OpenGlMatrix &M); // inverse matIn
     void drawAxisNormal();
     void drawPointCloudLists(float pointSize);
-    void drawPointCloudWithOptions(const std::map<std::string,bool> &options, float pointcloudSize=1); // draw the point cloud lists with options opened
+    void drawPointCloudWithOptions(const std::map<std::string,bool> &options, float pointcloudSize=1, float sink_dis=0.0); // draw the point cloud lists with options opened
 
     // 绘制平面
     Eigen::Matrix3d calibRotMatAccordingToAxis(Matrix3d& rotMat, const Vector3d& normal);

@@ -136,6 +136,7 @@ public:
     int mRenderId; // Object ID in the renderer
     Eigen::MatrixXf vertices;
     Eigen::MatrixXi faces;
+    double loss=1;
 
     std::mutex mMutexObject;
     std::mutex mMutexFeatures;

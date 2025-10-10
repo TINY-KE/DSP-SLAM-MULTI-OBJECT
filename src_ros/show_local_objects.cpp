@@ -1020,7 +1020,7 @@ int main(int argc, char **argv) {
         std::vector<cv::Mat> camera_groundTruths;
         read_view(cam_traj_file_name, camera_groundTruths);
         std::cout<<"Publish Camera GroundTruth"<<endl;
-        int step = 10;
+        int step = 1;
         if(argc > 1 )
         {
             step = atoi(argv[1]);

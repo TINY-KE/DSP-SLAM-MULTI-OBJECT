@@ -333,7 +333,7 @@ void MapDrawer::drawPointCloudLists(float pointSize)
 }
 
 
-void MapDrawer::drawPointCloudWithOptions(const std::map<std::string,bool> &options, float pointcloudSize)
+void MapDrawer::drawPointCloudWithOptions(const std::map<std::string,bool> &options, float pointcloudSize, float sink_dis)
 {
     auto pointLists = mpMap->GetPointCloudList();
     if(pointLists.size() < 1) return;
@@ -358,7 +358,7 @@ void MapDrawer::drawPointCloudWithOptions(const std::map<std::string,bool> &opti
             glPointSize( pointcloudSize );
             glBegin(GL_POINTS);
             glColor3d(p.r/255.0, p.g/255.0, p.b/255.0);
-            glVertex3d(p.x, p.y, p.z);
+            glVertex3d(p.x, p.y, p.z-sink_dis);
             glEnd();
         }
     }
@@ -589,7 +589,7 @@ bool MapDrawer::drawLastestRefinedEllipsoidsVisual(double prob_thresh, double el
 
     return true;
 }
-bool MapDrawer::drawGlobalEllipsoids(double prob_thresh, double ellipsoidLineWidth) {
+bool MapDrawer::drawGlobalEllipsoids(double prob_thresh, double ellipsoidLineWidth, double MinEllipsoidSize) {
 
     auto mvpMapObjects = mpMap->GetAllMapObjects();
     std::vector<ellipsoid*> ellipsoids_prob;
@@ -605,6 +605,9 @@ bool MapDrawer::drawGlobalEllipsoids(double prob_thresh, double ellipsoidLineWid
             continue;
 
         auto pE = pMO->GetEllipsold();
+
+        if(pE->scale(0) <= MinEllipsoidSize || pE->scale(1) <= MinEllipsoidSize || pE->scale(2) <= MinEllipsoidSize)
+            continue;
 
         if(pE->prob > prob_thresh ){
             // std::cout << std::endl;
@@ -824,6 +827,8 @@ bool MapDrawer::drawPlanes(g2o::MANHATTAN_PLANE_TYPE type, float PlaneLineWidth)
     for( size_t i=0; i<planes.size(); i++) {
         g2o::plane* ppl = planes[i];
         if(ppl->miMHType == type) {
+            // if(ppl->miMHType == g2o::MANHATTAN_PLANE_TYPE::BBOX)
+            //     i+=5;
             // std::cout << "drawPlaneWithEquation : " << ppl->param.transpose().matrix() << std::endl;
             drawPlaneWithEquation(ppl, PlaneLineWidth);
             // success_debug = true;

@@ -331,6 +331,28 @@ cv::Mat Tracking::GrabImageRGBD(const cv::Mat &imRGB,const cv::Mat &imD, const d
         LoadPointcloud(Config::Get<string>("Dataset.Path.Map"), "background_world");
     }
 
+    // // 用于paper做图
+    // ellipsoid* debugE = new ellipsoid();
+    // Eigen::VectorXd vec(11);
+    // vec << 6.22, -0.17, 0.392584,       // x, y, z
+    //        0.0, 0.0, 0.342, 0.940, // qx, qy, qz, qw (四元数)
+    //        0.78/2.0, 0.8/2.0, 0.8/2.0,      // a, b, c
+    //        1.0;
+    // debugE->LoadFromVectorWithoutVecPlanes(vec);
+    // debugE->setColor(Vector3d(1,0,0), 1); 
+    // mpMap->addRefinedEllipsoidVisual(debugE);
+
+    // -3.02 2.05 0.392584         0 0 0      2.1 1.12 0.36       0       0   #茶几
+    ellipsoid* debugE = new ellipsoid();
+    Eigen::VectorXd vec(11);
+    vec << -3.02, 2.05, 0.392584/2.0,       // x, y, z
+           0.0, 0.0, 0, 1,  // qx, qy, qz, qw (四元数)
+           2.1/2.0, 1.12/2.0, 0.36/2.0,      // a, b, c
+           1.0;
+    debugE->LoadFromVectorWithoutVecPlanes(vec);
+    debugE->setColor(Vector3d(1,0,0), 1); 
+    mpMap->addRefinedEllipsoidVisual(debugE);
+
     return mCurrentFrame.mTcw.clone();
 }
 
