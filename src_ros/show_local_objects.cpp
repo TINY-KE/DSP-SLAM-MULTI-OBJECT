@@ -815,17 +815,33 @@ geometry_msgs::Point transformPointToWorld(const geometry_msgs::Point& point_obj
     return point_world;
 }
 
-geometry_msgs::Point transformPointToWorld_scale(const geometry_msgs::Point& point_object, 
+geometry_msgs::Point transformPointToWorld_scale(const geometry_msgs::Point& point_world, 
                                            double tx, double ty, double tz,
+                                           const Eigen::Quaterniond& orientation, // ✅ 四元数
                                            double degree /* 绕z轴的角度 */ ,
                                            double scale_x /* 扩大的尺度 */,
                                            double scale_y /* 扩大的尺度 */,
                                            double scale_z /* 扩大的尺度 */                                
                                            ) {
+    Eigen::Vector3d eigen_point(point_world.x, point_world.y, point_world.z);
+    // 使用四元数旋转点
+    Eigen::Vector3d rotated_point = orientation.inverse() * eigen_point;
+
+    geometry_msgs::Point point_object;
+    point_object.x = rotated_point.x();
+    point_object.y = rotated_point.y();
+    point_object.z = rotated_point.z();
+                                            
     // 1️⃣ 计算四元数（绕 Z 轴旋转 degree 角度）
     double radian = degree * M_PI / 180.0;  // 角度转弧度
-    tf2::Quaternion q;
-    q.setRPY(0, 0, radian); // 绕 Z 轴旋转
+    tf2::Quaternion manual_tf2_q;
+    manual_tf2_q.setRPY(0, radian, 0); 
+    Eigen::Quaterniond eigen_q(manual_tf2_q.w(), manual_tf2_q.x(), manual_tf2_q.y(), manual_tf2_q.z());
+    Eigen::Quaterniond result = orientation * eigen_q;
+    tf2::Quaternion q(result.x(),
+                                   result.y(),
+                                   result.z(),
+                                   result.w());
 
     // 1️⃣ 创建 TF2 变换
     tf2::Transform transform;
@@ -841,12 +857,12 @@ geometry_msgs::Point transformPointToWorld_scale(const geometry_msgs::Point& poi
     tf2::Vector3 point_transformed = transform * point_local;
 
     // 4️⃣ 结果转换回 geometry_msgs::Point
-    geometry_msgs::Point point_world;
-    point_world.x = point_transformed.x();
-    point_world.y = point_transformed.y();
-    point_world.z = point_transformed.z();
+    geometry_msgs::Point point_world_new;
+    point_world_new.x = point_transformed.x();
+    point_world_new.y = point_transformed.y();
+    point_world_new.z = point_transformed.z();
 
-    return point_world;
+    return point_world_new;
 }
 
 
@@ -963,7 +979,7 @@ int main(int argc, char **argv) {
                 ss >> temp; point_object.y = temp;
                 ss >> temp; point_object.z = temp;
                 
-                geometry_msgs::Point point_world = transformPointToWorld_scale(point_object, tx, ty, tz, degree, scale_x,scale_y,scale_z);
+                geometry_msgs::Point point_world = transformPointToWorld_scale(point_object, tx, ty, tz, quaternion, degree, scale_x,scale_y,scale_z);
                 
                 mesh_marker.points.push_back(point_world);
 

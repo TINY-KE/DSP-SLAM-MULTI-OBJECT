@@ -166,7 +166,10 @@ int main(int argc, char **argv)
         std::chrono::steady_clock::time_point t1_read = std::chrono::steady_clock::now();
         //! 读取图像
         std::cout<< " 读取 RGB   Image: "<<string(argv[3])+"/"+vstrImageFilenamesRGB[ni] << std::endl;
-        imRGB = cv::imread(string(argv[3])+"/"+vstrImageFilenamesRGB[ni], CV_LOAD_IMAGE_UNCHANGED);
+        // imRGB = cv::imread(string(argv[3])+"/"+vstrImageFilenamesRGB[ni], CV_LOAD_IMAGE_UNCHANGED);
+        imRGB = cv::imread(string(argv[3])+"/"+vstrImageFilenamesRGB[ni], CV_LOAD_IMAGE_COLOR);
+        std::cout << " main imRGB size: " << imRGB.size() << ", channels: " << imRGB.channels() << std::endl;
+
         std::cout<< " 读取 Depth Image: "<<string(argv[3])+"/"+vstrImageFilenamesD[ni] << std::endl;
         imD = cv::imread(string(argv[3])+"/"+vstrImageFilenamesD[ni], CV_LOAD_IMAGE_UNCHANGED);
         std::cout<< " 读取 Image Done." << std::endl;
@@ -262,12 +265,22 @@ int main(int argc, char **argv)
     
     
     // Save Objects and Points
-    SLAM.SaveKeyFrameTrajectoryTUM(traj_path);
     int SaveLocalObjects = fSettings["saveobjects"];
+    bool success_save_objects = false;
     if (SaveLocalObjects){
         bool move_to_origin = true;
-        SLAM.SaveObjects( data_source_dir  + "/eval/temp/objects/", move_to_origin);
+        success_save_objects = SLAM.SaveObjects( data_source_dir  + "/eval/temp/objects/", move_to_origin);
+        while(!success_save_objects){
+            std::cout << "*****************************" << std::endl;
+            std::cout << "请创建用于保存物体的文件夹, 并 Press [ENTER] to continue." << std::endl;
+            std::cout << "*****************************" << std::endl;
+            char key = getchar();
+            success_save_objects = SLAM.SaveObjects( data_source_dir  + "/eval/temp/objects/", move_to_origin);
+        }
     }
+    
+    SLAM.SaveKeyFrameTrajectoryTUM(traj_path);
+    
     int SavePoints = fSettings["savepoints"];
     if (SavePoints)
         SLAM.SavePoints( data_source_dir  + "/eval/temp/points/");

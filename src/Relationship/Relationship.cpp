@@ -189,10 +189,10 @@ namespace ORB_SLAM2
                         g2o::plane* pObj_side_plane = obj_planes[j];
                         // 判断是否平行
                         double angle_diff = pObj_side_plane->angleToPlane(*pPlane);
-                        if (std::abs(angle_diff) < M_PI / 180.0 * 10  ||  std::abs(angle_diff-M_PI) < M_PI / 180.0 * 10 )  // 容忍 10 度
+                        if (std::abs(angle_diff) < M_PI / 180.0 * 30  ||  std::abs(angle_diff-M_PI) < M_PI / 180.0 * 30 )  // 容忍 30 度
                         {
                             g2o::plane plane_align = *pPlane;
-                            if(std::abs(angle_diff-M_PI) < M_PI / 180.0 * 10)
+                            if(std::abs(angle_diff-M_PI) < M_PI / 180.0 * 30)
                                 plane_align.param = -plane_align.param; // 调转方向
                             
                             Vector3d sideplane_centor = (mCorners.col(mIds(0,j)-1) + mCorners.col(mIds(2,j)-1))/2;

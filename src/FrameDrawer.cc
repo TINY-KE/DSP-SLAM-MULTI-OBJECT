@@ -54,6 +54,9 @@ cv::Mat FrameDrawer::DrawFrame()
     vector<cv::Mat> vmasks;
     vector<vector<int>> vbboxs;
 
+    // std::cout<<"[debug] FrameDrawer::DrawFrame() 1: "<<std::endl;
+    // std::cout << "  mIm size: " << mIm.size() << ", channels: " << mIm.channels() << std::endl;
+
     //Copy variables within scoped mutex
     {
         unique_lock<mutex> lock(mMutex);
@@ -94,6 +97,8 @@ cv::Mat FrameDrawer::DrawFrame()
     // cvshow中显示mask和bbox
     if(im.channels()<3) //this should be always true
         cvtColor(im,im,CV_GRAY2BGR);
+    // std::cout<<"[debug] FrameDrawer::DrawFrame() 8"<<std::endl;
+
 
     for (auto &mask: vmasks) {
         cv::Mat mask_rgb = cv::Mat::zeros(mask.rows, mask.cols, CV_8UC3);
@@ -111,8 +116,12 @@ cv::Mat FrameDrawer::DrawFrame()
         channels.emplace_back(mask);
         merge(channels, mask_rgb);
         // 3、将掩膜叠加到原图：
+        // std::cout << "  im size: " << im.size() << ", channels: " << im.channels() << std::endl;
+        // std::cout << "  mask_rgb size: " << mask_rgb.size() << ", channels: " << mask_rgb.channels() << std::endl;
         cv::addWeighted(im, 1, mask_rgb, 0.2, 0.0, im);
+        // std::cout<<"[debug] FrameDrawer::DrawFrame() 8-9"<<std::endl;
     }
+    // std::cout<<"[debug] FrameDrawer::DrawFrame() 9"<<std::endl;
     for (auto &bbox: vbboxs) {
         int x1 = bbox[0], y1 = bbox[1], x2 = bbox[2], y2 = bbox[3];
         cv::rectangle(im, cv::Point2f(float(x1), float(y1)), cv::Point2f(float(x2), float(y2)), \
@@ -170,6 +179,7 @@ cv::Mat FrameDrawer::DrawFrame()
 
     cv::Mat imWithInfo;
     DrawTextInfo(im,state, imWithInfo);
+    // std::cout<<"[debug] FrameDrawer::DrawFrame() 10"<<std::endl;
 
     // mIm = imWithInfo.clone();
     return imWithInfo;

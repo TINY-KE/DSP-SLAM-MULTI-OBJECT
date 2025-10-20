@@ -298,6 +298,10 @@ cv::Mat Tracking::GrabImageRGBD(const cv::Mat &imRGB,const cv::Mat &imD, const d
     mImGray = imRGB;
     mImColor = imRGB.clone();
     cv::Mat imDepth = imD;
+    // 输出size
+    // std::cout << "imRGB size: " << imRGB.size() << ", channels: " << imRGB.channels() << std::endl;
+    // std::cout << "mImColor size: " << mImColor.size() << ", channels: " << mImColor.channels() << std::endl;
+    // std::cout << "imD size: " << imD.size() << ", channels: " << imD.channels() << std::endl;
 
     if(mImGray.channels()==3)
     {
@@ -342,16 +346,17 @@ cv::Mat Tracking::GrabImageRGBD(const cv::Mat &imRGB,const cv::Mat &imD, const d
     // debugE->setColor(Vector3d(1,0,0), 1); 
     // mpMap->addRefinedEllipsoidVisual(debugE);
 
+    // // 用于paper做图
     // -3.02 2.05 0.392584         0 0 0      2.1 1.12 0.36       0       0   #茶几
-    ellipsoid* debugE = new ellipsoid();
-    Eigen::VectorXd vec(11);
-    vec << -3.02, 2.05, 0.392584/2.0,       // x, y, z
-           0.0, 0.0, 0, 1,  // qx, qy, qz, qw (四元数)
-           2.1/2.0, 1.12/2.0, 0.36/2.0,      // a, b, c
-           1.0;
-    debugE->LoadFromVectorWithoutVecPlanes(vec);
-    debugE->setColor(Vector3d(1,0,0), 1); 
-    mpMap->addRefinedEllipsoidVisual(debugE);
+    // ellipsoid* debugE = new ellipsoid();
+    // Eigen::VectorXd vec(11);
+    // vec << -3.02, 2.05, 0.392584/2.0,       // x, y, z
+    //        0.0, 0.0, 0, 1,  // qx, qy, qz, qw (四元数)
+    //        2.1/2.0, 1.12/2.0, 0.36/2.0,      // a, b, c
+    //        1.0;
+    // debugE->LoadFromVectorWithoutVecPlanes(vec);
+    // debugE->setColor(Vector3d(1,0,0), 1); 
+    // mpMap->addRefinedEllipsoidVisual(debugE);
 
     return mCurrentFrame.mTcw.clone();
 }

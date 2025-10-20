@@ -217,7 +217,7 @@ private:
     std::mutex mMutexState;
     
 public:
-    void SaveObjects(const string &file_path , bool move_to_origin = false );  //用于保存物体的位置信息和面片信息
+    bool SaveObjects(const string &file_path , bool move_to_origin = false );  //用于保存物体的位置信息和面片信息
     void SavePoints(const string &filepath );  //用于保存地图点的位置信息
     void SavePCDMap(const string &filepath );  //用于保存Global PCD Map
     std::string generateFileName(std::string head);

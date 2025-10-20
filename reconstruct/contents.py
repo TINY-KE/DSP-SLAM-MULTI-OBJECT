@@ -51,8 +51,8 @@ object_classes_freiburg = ["car"]
 object_classes_icl_nuim = ["bench", "couch", "chair", "monitor"]
 
 
-# object_classes_on_ground = ["bench", "chair", "potted plant", "bed", "dining table", "refrigerator"]
-object_classes_on_ground = ["bench", "chair", "potted plant", "bed", "refrigerator"]
-object_classes_on_ground = ["bench", "chair", "bed", "dining table",  "couch"]  #for gazebo
+# object_classes_on_ground = ["chair", "bed"]  #for ruihai bedroom
+object_classes_on_ground = ["bench", "chair", "bed", "dining table",  "couch", "monitor"]  #for ruihai livingroom   , "vase", "cup", "bowl"
+# object_classes_on_ground = ["bench", "chair", "bed", "dining table",  "couch"]  #for gazebo
 # object_classes_on_ground = ["chair", "bed"]  #for replica   ,"couch"
 object_classes_on_table = [c for c in object_classes if c not in object_classes_on_ground ]

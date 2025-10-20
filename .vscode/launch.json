@@ -11,9 +11,9 @@
         // "program": "${workspaceFolder}/instanceAnnotation",
         "args": [
           "Vocabulary/ORBvoc.bin",
-          "configs/self_allobject_ground_3.yaml",
-          "/home/robotlab/dataset/MySimDataset/gazebo_dataset_10",
-          "/home/robotlab/dataset/MySimDataset/gazebo_dataset_10/associations.txt",
+          "configs/ruihai.yaml",
+          "/home/robotlab/dataset/Ruihan",
+          "/home/robotlab/dataset/Ruihan/associations.txt",
           "map/self/GroundObjects"
 
 

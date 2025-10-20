@@ -141,9 +141,6 @@ pcl::PointCloud<pcl::PointXYZRGB>*  filterCloudAsHeight_3(pcl::PointCloud<pcl::P
 pcl::PointCloud<pcl::PointXYZRGB>*  filterCloudAsHeight_4(pcl::PointCloud<pcl::PointXYZRGB>* pCloud){
     pcl::PointCloud<pcl::PointXYZRGB>* pCloudFiltered = new pcl::PointCloud<pcl::PointXYZRGB>;
     
-    
-
-
     int num = pCloud->size();
     for(int i=0;i<num;i++)
     {
@@ -208,6 +205,55 @@ pcl::PointCloud<pcl::PointXYZRGB>*  filterCloudAsHeight_4(pcl::PointCloud<pcl::P
     return pCloudFiltered;
 }
 
+
+pcl::PointCloud<pcl::PointXYZRGB>*  filterCloudAsHeight_5(pcl::PointCloud<pcl::PointXYZRGB>* pCloud){
+    pcl::PointCloud<pcl::PointXYZRGB>* pCloudFiltered = new pcl::PointCloud<pcl::PointXYZRGB>;
+    
+    int num = pCloud->size();
+    for(int i=0;i<num;i++)
+    {
+        pcl::PointXYZRGB p = (*pCloud)[i];
+        Eigen::Vector3d center; center << p.x, p.y, p.z;
+
+        double height = p.z;
+        double y_dis = p.y;
+        double x_dis = p.x;
+        
+        // ICL 沙发侧面
+        if(height < 1.3)  {
+            pCloudFiltered->push_back(p);
+        } 
+    }
+
+    return pCloudFiltered;
+}
+
+pcl::PointCloud<pcl::PointXYZRGB>*  filterCloudAsHeight_6(pcl::PointCloud<pcl::PointXYZRGB>* pCloud){
+    pcl::PointCloud<pcl::PointXYZRGB>* pCloudFiltered = new pcl::PointCloud<pcl::PointXYZRGB>;
+    
+    int num = pCloud->size();
+    for(int i=0;i<num;i++)
+    {
+        pcl::PointXYZRGB p = (*pCloud)[i];
+        Eigen::Vector3d center; center << p.x, p.y, p.z;
+
+        double height = p.z;
+        double y_dis = p.y;
+        double x_dis = p.x;
+        
+        // ICL 沙发侧面
+        if(height < 2 && x_dis>-0.7)  {
+            pCloudFiltered->push_back(p);
+        } 
+    }
+
+    return pCloudFiltered;
+}
+
+
+
+
+
 int main(int argc, char** argv) {
     // 初始化 ROS 节点
     ros::init(argc, argv, "pcd_publisher");
@@ -236,6 +282,11 @@ int main(int argc, char** argv) {
     }
     else if(dateset_type == 4){
         pcd_file_path = "/home/robotlab/dataset/Replica-Dataset-results/hotel_0_640/map/dataset.pcd";
+    }
+    else if(dateset_type == 5){
+        pcd_file_path = "/home/robotlab/dataset/Ruihan/mylivingroom/map/dataset.pcd";
+    }else if(dateset_type == 6){
+        pcd_file_path = "/home/robotlab/dataset/Ruihan/mybedroom/map/dataset.pcd";
     }
 
     else
@@ -300,17 +351,34 @@ int main(int argc, char** argv) {
         *cloud = *filtered_cloud;
         delete filtered_cloud;
     }
+    else if(dateset_type==5){
+        // Replica 数据集需要对点云进行滤波
+        pcl::PointCloud<pcl::PointXYZRGB>* filtered_cloud = filterCloudAsHeight_5(cloud.get());
+        cloud->clear();
+        *cloud = *filtered_cloud;
+        delete filtered_cloud;
+    }
+    else if(dateset_type==6){
+        // Replica 数据集需要对点云进行滤波
+        pcl::PointCloud<pcl::PointXYZRGB>* filtered_cloud = filterCloudAsHeight_6(cloud.get());
+        cloud->clear();
+        *cloud = *filtered_cloud;
+        delete filtered_cloud;
+    }
+
+
 
     {
-        // （3）根据需要保存修改后的点云到新的 PCD 文件
-        // std::string output_file = "/home/robotlab/dataset/MySimDataset/gazebo_dataset_10/map/modified_cloud.pcd";  // 输出文件名
-        // std::string output_file = "/home/robotlab/dataset/ICL-NUIM/living_room_traj2n_frei_png/map/modified_cloud.pcd";  // 输出文件名
-        std::string output_file = "/home/robotlab/dataset/Replica-Dataset-results/hotel_0_640/map/modified_cloud.pcd";  // 输出文件名
-        if (pcl::io::savePCDFileASCII(output_file, *cloud) == -1) {
-            std::cerr << "Failed to save the modified point cloud." << std::endl;
-            return -1;
-        }
-        std::cout << "Saved modified point cloud to " << output_file << std::endl;
+        // // （3）根据需要保存修改后的点云到新的 PCD 文件
+        // // std::string output_file = "/home/robotlab/dataset/MySimDataset/gazebo_dataset_10/map/modified_cloud.pcd";  // 输出文件名
+        // // std::string output_file = "/home/robotlab/dataset/ICL-NUIM/living_room_traj2n_frei_png/map/modified_cloud.pcd";  // 输出文件名
+        // // std::string output_file = "/home/robotlab/dataset/Replica-Dataset-results/hotel_0_640/map/modified_cloud.pcd";  // 输出文件名
+        // std::string output_file = "/home/robotlab/dataset/Ruihan/mylivingroom/map/dataset.pcd";
+        // if (pcl::io::savePCDFileASCII(output_file, *cloud) == -1) {
+        //     std::cerr << "Failed to save the modified point cloud." << std::endl;
+        //     return -1;
+        // }
+        // std::cout << "Saved modified point cloud to " << output_file << std::endl;
     }
     
     // {

@@ -575,7 +575,7 @@ void System::SaveTrajectoryKITTI(const string &filename)
 }
 
 
-void System::SaveObjects(const string &filepath , bool move_to_origin) {
+bool System::SaveObjects(const string &filepath , bool move_to_origin) {
     cout << endl << "Saving Objects in: " << filepath << endl;
     
     char *yolo_id[] = {
@@ -616,6 +616,7 @@ void System::SaveObjects(const string &filepath , bool move_to_origin) {
         file.open(filename.c_str());
         if (!file) {
             std::cerr << "文件创建失败: " << filename << std::endl;
+            return false;
         }
         file << fixed;
         
@@ -705,7 +706,7 @@ void System::SaveObjects(const string &filepath , bool move_to_origin) {
 
     
     cout << endl << "Object saved!" << endl;
-
+    return true;
 }
 
 void System::SavePoints(const string &filepath ) {
