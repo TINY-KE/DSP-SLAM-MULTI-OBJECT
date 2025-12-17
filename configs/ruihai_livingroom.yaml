@@ -100,7 +100,7 @@ DepthMapFactor: 5000  #对应
 
 # 保存本地
 saveobjects: 1
-savepoints: 0
+savepoints: 1
 savePCDMap: 0
 
 # chair转counch(沙发)

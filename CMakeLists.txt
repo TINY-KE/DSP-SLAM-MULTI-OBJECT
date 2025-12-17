@@ -257,3 +257,10 @@ target_link_libraries(show_local_objects
                         ${catkin_LIBRARIES}
                         ${OpenCV_LIBS}
         )      
+# add_executable(show_local_objects_fordsp src_ros/show_local_objects_fordsp.cpp)
+# target_link_libraries(show_local_objects_fordsp
+#                         ${EIGEN3_LIBS}
+#                         ${catkin_LIBRARIES}
+#                         ${OpenCV_LIBS}
+#         )      
+# message("Hello CMake")

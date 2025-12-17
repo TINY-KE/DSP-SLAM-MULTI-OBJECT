@@ -835,7 +835,7 @@ geometry_msgs::Point transformPointToWorld_scale(const geometry_msgs::Point& poi
     // 1️⃣ 计算四元数（绕 Z 轴旋转 degree 角度）
     double radian = degree * M_PI / 180.0;  // 角度转弧度
     tf2::Quaternion manual_tf2_q;
-    manual_tf2_q.setRPY(0, radian, 0); 
+    manual_tf2_q.setRPY(0, 0, radian);  // 绕 Z 轴旋转
     Eigen::Quaterniond eigen_q(manual_tf2_q.w(), manual_tf2_q.x(), manual_tf2_q.y(), manual_tf2_q.z());
     Eigen::Quaterniond result = orientation * eigen_q;
     tf2::Quaternion q(result.x(),
@@ -979,7 +979,7 @@ int main(int argc, char **argv) {
                 ss >> temp; point_object.z = temp;
                 
                 geometry_msgs::Point point_world = transformPointToWorld_scale(point_object, tx, ty, tz, quaternion, degree, scale_x,scale_y,scale_z);
-                // if(point_object.z>0.1)
+                
                 mesh_marker.points.push_back(point_world);
 
             }

@@ -244,3 +244,21 @@ pybind11::handle::dec_ref() is being called while the GIL is either not held or 
     + 如何实现
 
 # 第六阶段  联合优化中加上relations平面（水平面和垂直面）
+
+
+# MST中修：
++ 消融实验，只显示椭球体
+
+
++ 真实实验的物体位形，标定
+
++ 真实实验的轨迹精度
+    + /home/robotlab/dataset/Ruihan/mylivingroom/eval/5 mst v1
+    +  evo_ape tum KeyFrameTrajectory-2025-10-16_18-14-01.txt  KeyFrameTrajectory-2025-12-17_03-41-10.txt -va --plot --plot_mode xyz
+    + 
+
++ 打开全局优化中的dsp和椭球体
+    + optimize_object
+    + optimize_ellipsoid
+    + 已关闭
+    
