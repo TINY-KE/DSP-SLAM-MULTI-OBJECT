@@ -240,6 +240,8 @@ target_link_libraries(publish_ellip
                 ${EIGEN3_LIBS}
                 ${catkin_LIBRARIES}
                 )      
+# 用法： ./src_ros/publish_ellip scene_id  #其中scene_id表示对应场景的id，例如1对应ICL-NUIM/living_room_traj2n_frei_png
+
 
 set(CMAKE_RUNTIME_OUTPUT_DIRECTORY ${PROJECT_SOURCE_DIR}/src_ros)
 add_executable(publish_pcd src_ros/publish_pcd.cpp)

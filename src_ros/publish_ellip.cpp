@@ -9,6 +9,9 @@
 #include <string>
 #include <cmath>
 
+std::vector<std::tuple<float, float, float>> mvObjectColors;
+
+
 // ✅ 你的函数（保持不变）
 void publishEllipsoidWireframe(ros::Publisher& pub,
                                 const Eigen::Vector3d& center,
@@ -25,7 +28,7 @@ void publishEllipsoidWireframe(ros::Publisher& pub,
     marker.id = marker_id;
     marker.type = visualization_msgs::Marker::LINE_LIST;
     marker.action = visualization_msgs::Marker::ADD;
-    marker.scale.x = 0.01;  // 线宽
+    marker.scale.x = 0.02;  // 线宽
     marker.color = color;
 
     const int segments_per_circle = 20;
@@ -79,6 +82,18 @@ void publishEllipsoidWireframe(ros::Publisher& pub,
     pub.publish(marker);
 }
 
+void CreateColorVectors(){
+    mvObjectColors.push_back(std::tuple<float, float, float>({210. / 255., 245. / 255., 60. / 255.}));  //lime  0
+    mvObjectColors.push_back(std::tuple<float, float, float>({60. / 255., 180. / 255., 75. / 255.}));   // green  1
+    mvObjectColors.push_back(std::tuple<float, float, float>({0., 0., 255. / 255.}));	 // blue  2
+    mvObjectColors.push_back(std::tuple<float, float, float>({255. / 255., 0, 255. / 255.}));   // Magenta  3
+    mvObjectColors.push_back(std::tuple<float, float, float>({255. / 255., 165. / 255., 0}));   // orange 4
+    mvObjectColors.push_back(std::tuple<float, float, float>({128. / 255., 0, 128. / 255.}));   //purple 5
+    mvObjectColors.push_back(std::tuple<float, float, float>({0., 255. / 255., 255. / 255.}));   //cyan 6
+    mvObjectColors.push_back(std::tuple<float, float, float>({230. / 255., 0., 0.}));	 // red  7
+    mvObjectColors.push_back(std::tuple<float, float, float>({250. / 255., 190. / 255., 190. / 255.})); //pink  8
+    mvObjectColors.push_back(std::tuple<float, float, float>({0., 128. / 255., 128. / 255.}));   //Teal  9
+}
 // ✅ 主程序：读取 txt 数据并发布多个椭球体
 int main(int argc, char** argv) {
     ros::init(argc, argv, "ellipsoid_marker_node");
@@ -87,23 +102,37 @@ int main(int argc, char** argv) {
     ros::Publisher marker_pub = nh.advertise<visualization_msgs::Marker>("soslam_ellipsoid", 100);
 
     ros::Rate rate(1);  // 每秒刷新一次
+    CreateColorVectors();
 
     int dateset_type = std::atoi(argv[1]);
     std::string file_path;
     if(dateset_type == 1)
-        file_path = "/home/robotlab/dataset/ICL-NUIM/living_room_traj2n_frei_png/ellipsoid-soslam/ellipsoids.txt";
+        file_path = "/home/robotlab/dataset/ICL-NUIM/living_room_traj2n_frei_png/eval/ellipsoid-soslam/ellipsoids.txt";
     else if(dateset_type == 2)
-        file_path = "/home/robotlab/dataset/Replica-Dataset-results/hotel_0_640/ellipsoid-soslam/ellipsoids.txt";
+        file_path = "/home/robotlab/dataset/Replica-Dataset-results/hotel_0_640/eval/ellipsoid-soslam/ellipsoids.txt";
     else if(dateset_type == 3){
-        file_path = "/home/robotlab/dataset/MySimDataset/gazebo_dataset_10/ellipsoid-soslam/ellipsoids.txt";
+        file_path = "/home/robotlab/dataset/MySimDataset/gazebo_dataset_10/eval/ellipsoid-soslam/ellipsoids.txt";
     }
     else if(dateset_type == 4){
         // 用于论文中展示2D和3DIoU
         file_path = "/home/robotlab/dataset/Replica-Dataset-results/hotel_0_640/data_for_assoication_in_paper/ellipsoids.txt";
     }
 
+    else if(dateset_type == 5){
+        file_path = "/home/robotlab/dataset/ICL-NUIM/living_room_traj2n_frei_png/eval/ellipsoid-voom/ellipsoids.txt";
+    }
+    else if(dateset_type == 6){
+        file_path = "/home/robotlab/dataset/Replica-Dataset-results/hotel_0_640/eval/ellipsoid-voom/ellipsoids.txt";
+    }
+    else if(dateset_type == 7){
+        file_path = "/home/robotlab/dataset/MySimDataset/gazebo_dataset_10/eval/ellipsoid-voom/ellipsoids.txt";
+    }
 
     while (ros::ok()) {
+
+        std::cout<< "用法： ./src_ros/publish_ellip scene_id" << std::endl <<
+                    "       其中scene_id表示对应场景的id" <<std::endl;
+                    
         std::ifstream infile(file_path);
         if (!infile.is_open()) {
             ROS_ERROR("Failed to open file: %s", file_path.c_str());
@@ -134,25 +163,28 @@ int main(int argc, char** argv) {
             Eigen::Quaterniond q = yawAngle * pitchAngle * rollAngle;
 
             std_msgs::ColorRGBA color;
-            if(color_flag==1){
-                color.r = 0;
-                color.g = 0;
-                color.b = 1;
-                color.a = 1.0f;
-            }
-            else if (color_flag==0){
-                color.r = 1;
-                color.g = 0;
-                color.b = 0;
-                color.a = 1.0f; 
-            }
-            else if (color_flag==2){
-                color.r = 0.05;
-                color.g = 0.05;
-                color.b = 0.05;
-                color.a = 1.0f; 
-            }
-            
+            // if(color_flag==1){
+            //     color.r = 0;
+            //     color.g = 0;
+            //     color.b = 1;
+            //     color.a = 1.0f;
+            // }
+            // else if (color_flag==0){
+            //     color.r = 1;
+            //     color.g = 0;
+            //     color.b = 0;
+            //     color.a = 1.0f; 
+            // }
+            // else if (color_flag==2){
+            //     color.r = 0.05;
+            //     color.g = 0.05;
+            //     color.b = 0.05;
+            //     color.a = 1.0f; 
+            // }
+            color.r =  std::get<0>(mvObjectColors[int(color_flag) % 10]);
+            color.g =  std::get<1>(mvObjectColors[int(color_flag) % 10]);
+            color.b =  std::get<2>(mvObjectColors[int(color_flag) % 10]);
+            color.a = 1.0f; 
 
             publishEllipsoidWireframe(marker_pub, center, radii, q, color, "world", marker_id++);
         }
