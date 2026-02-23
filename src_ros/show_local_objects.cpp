@@ -424,6 +424,7 @@ void PublishCameras(const vector<cv::Mat> &VIEWs, int step = 15, bool only_draw_
             cv::Mat p4w = Twc * p4;
 
             geometry_msgs::Point msgs_o, msgs_p1, msgs_p2, msgs_p3, msgs_p4;
+            // double x_trans = 0-0.5;   // -0.5 用于椭球体观测示意图的paper做图  ;
             double x_trans = 0-0.5;   // -0.5 用于椭球体观测示意图的paper做图  ;
             msgs_o.x = ow.at<float>(0) + x_trans;
             msgs_o.y = ow.at<float>(1);
