@@ -1,1 +1,0 @@
-/usr/bin/c++ -fPIC  -w -Wall -O3 -march=native -g -shared -Wl,-soname,libRelationship.so -o ../../../../QSP-SLAM-Ellipsoidal-Prior/lib/libRelationship.so CMakeFiles/Relationship.dir/Relationship.cpp.o 
