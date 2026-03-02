@@ -43,6 +43,8 @@ ros::Publisher publisher_SdfObject;
 ros::Publisher publisher_points;
 ros::Publisher publisher_KF;
 ros::Publisher publisher_baselink_trajectory;
+ros::Publisher publisher_ellipsoid;
+
 std::vector<std::tuple<float, float, float>> mvObjectColors;
 
 double my_trajectory_length=0, direct_trajectory_length=0;
@@ -66,6 +68,91 @@ std::vector<std::string> getFilesInDirectory(const std::string& targetpath) {
 
     pclose(pipe);
     return files;
+}
+
+
+void publishEllipsoidWireframe(ros::Publisher& pub,
+                                const Eigen::Vector3d& center,
+                                const Eigen::Vector3d& radii,
+                                const Eigen::Quaterniond& orientation, // ✅ 四元数
+                                const std_msgs::ColorRGBA& color,
+                                const std::string& frame_id = "world")
+{
+    visualization_msgs::Marker marker;
+    marker.header.frame_id = frame_id;
+    marker.header.stamp = ros::Time::now();
+    marker.ns = "ellipsoid";
+    marker.id = 0;
+    marker.type = visualization_msgs::Marker::LINE_LIST;
+    marker.action = visualization_msgs::Marker::ADD;
+    marker.scale.x = 0.01;  // 线宽
+
+    marker.color = color;
+
+    const int segments_per_circle = 14;
+    const int num_latitude = 14;
+    const int num_longitude = 14;
+
+    const double dtheta = 2 * M_PI / segments_per_circle;
+    const double dphi = M_PI / num_latitude;
+
+    // 纬线（水平圈）
+    for (int i = 1; i < num_latitude; ++i) {
+        double phi = i * dphi;
+        double z = cos(phi);
+        double r = sin(phi);
+
+        for (int j = 0; j < segments_per_circle; ++j) {
+            double theta1 = j * dtheta;
+            double theta2 = (j + 1) * dtheta;
+
+            Eigen::Vector3d p1_unit(r * cos(theta1), r * sin(theta1), z);
+            Eigen::Vector3d p2_unit(r * cos(theta2), r * sin(theta2), z);
+
+            // 缩放为椭球体
+            Eigen::Vector3d p1_scaled = p1_unit.cwiseProduct(radii);
+            Eigen::Vector3d p2_scaled = p2_unit.cwiseProduct(radii);
+
+            // 旋转 + 平移
+            Eigen::Vector3d p1 = orientation * p1_scaled + center;
+            Eigen::Vector3d p2 = orientation * p2_scaled + center;
+
+            geometry_msgs::Point gp1, gp2;
+            gp1.x = p1.x(); gp1.y = p1.y(); gp1.z = p1.z();
+            gp2.x = p2.x(); gp2.y = p2.y(); gp2.z = p2.z();
+
+            marker.points.push_back(gp1);
+            marker.points.push_back(gp2);
+        }
+    }
+
+    // 经线（垂直圈）
+    for (int j = 0; j < segments_per_circle; ++j) {
+        double theta = j * dtheta;
+
+        for (int i = 0; i < num_latitude; ++i) {
+            double phi1 = i * dphi;
+            double phi2 = (i + 1) * dphi;
+
+            Eigen::Vector3d p1_unit(sin(phi1) * cos(theta), sin(phi1) * sin(theta), cos(phi1));
+            Eigen::Vector3d p2_unit(sin(phi2) * cos(theta), sin(phi2) * sin(theta), cos(phi2));
+
+            Eigen::Vector3d p1_scaled = p1_unit.cwiseProduct(radii);
+            Eigen::Vector3d p2_scaled = p2_unit.cwiseProduct(radii);
+
+            Eigen::Vector3d p1 = orientation * p1_scaled + center;
+            Eigen::Vector3d p2 = orientation * p2_scaled + center;
+
+            geometry_msgs::Point gp1, gp2;
+            gp1.x = p1.x(); gp1.y = p1.y(); gp1.z = p1.z();
+            gp2.x = p2.x(); gp2.y = p2.y(); gp2.z = p2.z();
+
+            marker.points.push_back(gp1);
+            marker.points.push_back(gp2);
+        }
+    }
+
+    pub.publish(marker);
 }
 
 
@@ -677,6 +764,7 @@ int main(int argc, char **argv) {
     publisher_points = nh.advertise<visualization_msgs::Marker>("/Point", 1000);
     publisher_KF = nh.advertise<visualization_msgs::Marker>("/KeyFrame", 1000);
     publisher_baselink_trajectory = nh.advertise<visualization_msgs::Marker>("/baselink_trajectory", 1000);
+    publisher_ellipsoid  = nh.advertise<visualization_msgs::Marker>("ellipsoid_marker", 1);
     ros::start();
 
 
@@ -726,7 +814,7 @@ int main(int argc, char **argv) {
 
 
             // 设置标记的缩放
-            mesh_marker.scale.x = 1.0;
+            mesh_marker.scale.x = 1.0;  
             mesh_marker.scale.y = 1.0;
             mesh_marker.scale.z = 1.0;
 
@@ -735,19 +823,25 @@ int main(int argc, char **argv) {
             double mnId, label,    tx,ty,tz,  qx,qy,qz,qw,  w,h,l,   degree=1,   scale_x=1,scale_y=1,scale_z=1;  
             double color = 0;
             ss >> mnId; ss >> label;
-            ss >> tx; ss >> ty; ss >> tz;
-            ss >> qx; ss >> qy; ss >> qz; ss >> qw;
-            ss >> w; ss >> h; ss >> l;
+            ss >> tx; ss >> ty; ss >> tz;   Eigen::Vector3d center(tx, ty, tz);
+            ss >> qx; ss >> qy; ss >> qz; ss >> qw;  Eigen::Quaterniond quaternion(qw, qx, qy, qz); // 顺序：w, x, y, z
+            ss >> w; ss >> h; ss >> l;  
             ss >> degree;
-            ss >> scale_x; ss >> scale_y; ss >> scale_z;
+            ss >> scale_x; ss >> scale_y; ss >> scale_z;  Eigen::Vector3d radii(w*scale_x/2.0, h*scale_y/2.0, l*scale_z/2.0);
             ss >> color;  //设定颜色的种类
 
             // 设置标记的颜色和透明度
-            mesh_marker.color.a = 1.0f; // 设置透明度为 1.0（不透明）
+            mesh_marker.color.a = 1; //0.8f; // 设置透明度为 1.0（不透明）
             mesh_marker.color.r =  std::get<0>(mvObjectColors[int(color) % 10]);
             mesh_marker.color.g =  std::get<1>(mvObjectColors[int(color) % 10]);
             mesh_marker.color.b =  std::get<2>(mvObjectColors[int(color) % 10]);
+            std_msgs::ColorRGBA color_ellip;
+            color_ellip.r = 1.0f;
+            color_ellip.g = 0.0f;
+            color_ellip.b = 0.0f;
+            color_ellip.a = 1.0f;
 
+            // 物体内部的点
             while (std::getline(file, line)) {
                 
                 std::stringstream ss(line);
@@ -768,6 +862,7 @@ int main(int argc, char **argv) {
 
             // 发布网格物体
             publisher_SdfObject.publish(mesh_marker);
+            publishEllipsoidWireframe(publisher_ellipsoid, center, radii, quaternion, color_ellip, "world");
             Id++;
         }  
 
@@ -779,7 +874,7 @@ int main(int argc, char **argv) {
             return 1;
         }
         visualization_msgs::Marker mPoints;
-        float fPointSize=0.008;
+        float fPointSize=0.018;
         mPoints.header.frame_id =  "world";
         mPoints.ns = "POINTS";
         mPoints.id=0;

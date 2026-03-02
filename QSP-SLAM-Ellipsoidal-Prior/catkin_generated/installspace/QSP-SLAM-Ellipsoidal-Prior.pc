@@ -1,0 +1,8 @@
+prefix=/usr/local
+
+Name: QSP-SLAM-Ellipsoidal-Prior
+Description: Description of QSP-SLAM-Ellipsoidal-Prior
+Version: 0.0.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: 

@@ -1,0 +1,8 @@
+prefix=/usr/local
+
+Name: SimDataset
+Description: Description of SimDataset
+Version: 0.0.0
+Cflags: 
+Libs: -L${prefix}/lib 
+Requires: gazebo_msgs geometry_msgs roscpp sensor_msgs std_msgs tf
