@@ -424,7 +424,8 @@ void PublishCameras(const vector<cv::Mat> &VIEWs, int step = 15, bool only_draw_
             cv::Mat p4w = Twc * p4;
 
             geometry_msgs::Point msgs_o, msgs_p1, msgs_p2, msgs_p3, msgs_p4;
-            double x_trans = 0-0.5;   // -0.5 用于椭球体观测示意图的paper做图  ;
+            // double x_trans = 0-0.5;   // -0.5 用于椭球体观测示意图的paper做图  ;
+            double x_trans = 0; 
             msgs_o.x = ow.at<float>(0) + x_trans;
             msgs_o.y = ow.at<float>(1);
             msgs_o.z = ow.at<float>(2);
@@ -1008,13 +1009,13 @@ int main(int argc, char **argv) {
         mPoints.scale.y=fPointSize;
         mPoints.pose.orientation.w=1.0;
         mPoints.action=visualization_msgs::Marker::ADD;
-        // mPoints.color.r = 0.4;
-        // mPoints.color.g = 0.4;
-        // mPoints.color.b = 0.4;
+        mPoints.color.r = 0.;
+        mPoints.color.g = 0.;
+        mPoints.color.b = 0.;
         // mPoints.color.a = 1.0;
-        mPoints.color.r = 0.4/2;
-        mPoints.color.g = 0.4/2;
-        mPoints.color.b = 0.8;
+        // mPoints.color.r = 0.4/2;
+        // mPoints.color.g = 0.4/2;
+        // mPoints.color.b = 0.8;
         mPoints.color.a = 0.8;
 
         std::string line;

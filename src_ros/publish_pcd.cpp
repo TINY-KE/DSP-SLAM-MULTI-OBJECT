@@ -119,6 +119,7 @@ pcl::PointCloud<pcl::PointXYZRGB>*  filterCloudAsHeight_3(pcl::PointCloud<pcl::P
             continue;
         }
 
+        // 用于过滤中心顶部的噪点
         if(x_dis < 2 && x_dis > -2 && y_dis < 1 && y_dis > 0 && height > 1.5) 
         {
             continue;
@@ -131,6 +132,52 @@ pcl::PointCloud<pcl::PointXYZRGB>*  filterCloudAsHeight_3(pcl::PointCloud<pcl::P
         
         // ICL 沙发侧面
         if(height < 1.8) {
+            // p.z -= 0.2;
+            pCloudFiltered->push_back(p);
+        } 
+    }
+    return pCloudFiltered;
+}
+
+pcl::PointCloud<pcl::PointXYZRGB>*  filterCloudAsHeight_3_for_big_paper(pcl::PointCloud<pcl::PointXYZRGB>* pCloud){
+    pcl::PointCloud<pcl::PointXYZRGB>* pCloudFiltered = new pcl::PointCloud<pcl::PointXYZRGB>;
+    
+
+
+    int num = pCloud->size();
+    for(int i=0;i<num;i++)
+    {
+        pcl::PointXYZRGB p = (*pCloud)[i];
+        Eigen::Vector3d center; center << p.x, p.y, p.z;
+
+        double height = p.z;
+        double y_dis = p.y;
+        double x_dis = p.x;
+        // if(height < dis_thresh && y_dis > -2)  // 过滤掉过高的点
+        
+        // if(x_dis < -7.2 && y_dis < -5 )  // 过滤掉过高的点
+        // {
+        //     continue;
+        // }
+        
+        // if(y_dis < -5 )  // 过滤掉过高的点
+        // {
+        //     continue;
+        // }
+
+        // 用于过滤中心顶部的噪点
+        if(x_dis < 2 && x_dis > -2 && y_dis < 1 && y_dis > 0 && height > 1.5) 
+        {
+            continue;
+        }
+
+        if(height < -0.08) 
+        {
+            continue;
+        }
+        
+        // ICL 沙发侧面
+        if(height < 2.2) {
             // p.z -= 0.2;
             pCloudFiltered->push_back(p);
         } 
@@ -267,9 +314,9 @@ int main(int argc, char** argv) {
 
     // 检查是否提供了 PCD 文件路径
     std::string pcd_file_path;
-    int dateset_type = 1; // 1: ICL-NUIM, 2: Replica 
+    int dateset_type = 1; // 1: ICL-NUIM, 2: Replica, 3: gazebo, 4: Replica2??, 5: Ruihan livingroom, 6: Ruihan bedroom  
     if (argc < 2) {
-        ROS_ERROR("Please provide the path to a PCD type.");
+        ROS_ERROR("Please provide the path to a PCD type: \n 1 for ICL-NUIM, 2 for Replica, 3 for Gazebo, 4 for Replica2, 5 for Ruihan livingroom, 6 for Ruihan bedroom.");
         return -1;
     }
     dateset_type = std::atoi(argv[1]);
@@ -340,6 +387,7 @@ int main(int argc, char** argv) {
     else if(dateset_type==3){
         // Replica 数据集需要对点云进行滤波
         pcl::PointCloud<pcl::PointXYZRGB>* filtered_cloud = filterCloudAsHeight_3(cloud.get());
+        // pcl::PointCloud<pcl::PointXYZRGB>* filtered_cloud = filterCloudAsHeight_3_for_big_paper(cloud.get());        
         cloud->clear();
         *cloud = *filtered_cloud;
         delete filtered_cloud;

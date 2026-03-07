@@ -261,4 +261,13 @@ pybind11::handle::dec_ref() is being called while the GIL is either not held or 
     + optimize_object
     + optimize_ellipsoid
     + 已关闭
-    
+
+
+# 博士大论文：
++ 使用gazebo的书桌 展示支撑平面
+    + 发布gazebo的真值点云
+        ./src_ros/publish_pcd 3
+    + 运行gazebo的SLAM
+        run_self_ground_10.sh
+    + 运行ICL的SLAM
+        bash scripts/run_icl2.sh 
