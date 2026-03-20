@@ -213,7 +213,7 @@ void PublishObjectGroundtruth(string object_groundtruth_file_name){
         // CubeMarker.color.r =  get<0>(mvObjectColors[(pMO->mnId+5) % 10]);
         // CubeMarker.color.g =  get<1>(mvObjectColors[(pMO->mnId+5) % 10]);
         // CubeMarker.color.b =  get<2>(mvObjectColors[(pMO->mnId+5) % 10]);
-        CubeMarker.scale.x = 0.01;
+        CubeMarker.scale.x = 0.02;   // 宽度
         //     8------7
         //    /|     /|
         //   / |    / |

@@ -116,13 +116,21 @@ class Detector2D(object):
                 if n_det_bbox:
                     any_detect = True
                     # print(f"{n_det_bbox} {object_class}, ", end='')
+                    if o == 55:  # 将蛋糕cake
+                        print(f"Detected {n_det_bbox} cake, remapping to table.")
+                        current_label = 60  # 强制改为桌子的 ID
+                    elif o == 71:  # 将水槽 sink
+                        print(f"Detected {n_det_bbox} couch, remapping to chair.")
+                        current_label = 60
+                    else:
+                        current_label = o
                     print(f"{n_det_bbox} {object_class}, ")
 
                 assert n_det_bbox == n_det_mask,  f"len(bbox[{o}]) != len(mask[{o}])"
                 bboxes_o = self.predictions[0][o]
                 bboxes.append(bboxes_o)
                 masks += self.predictions[1][o]
-                labels.extend([o for i in range(n_det_bbox)])
+                labels.extend([current_label for i in range(n_det_bbox)])
                 n_det += n_det_bbox
 
         if any_detect:

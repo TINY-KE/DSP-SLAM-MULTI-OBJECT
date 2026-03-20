@@ -271,3 +271,33 @@ pybind11::handle::dec_ref() is being called while the GIL is either not held or 
         run_self_ground_10.sh
     + 运行ICL的SLAM
         bash scripts/run_icl2.sh 
+
+
+# 博士大论文：
+
++ 运行7楼
+bash scripts/run_7
++ 修改物体识别的物体种类
+/home/robotlab/ws_3d_vp/src/QSP-SLAM-my/reconstruct/contents.py
++ 按键
+else if (key=='a'){
+                    images_numbers_to_pass_over = 10;
+                }
+                else if (key=='s'){
+                    images_numbers_to_pass_over = 50;
+                }
+                else if (key=='d'){
+                    images_numbers_to_pass_over = 100;
+                }
+                else if (key=='f'){
+                    images_numbers_to_pass_over = 300;
+                }
+                else if (key=='g'){
+                    images_numbers_to_pass_over = 450;
+
++ 瑞海家园
+ 在make_prediction(self, image, object_classes=coco_classes):中，将蛋糕和水池，认为是桌子
+
+ + 修改内容
+    + 在曼哈顿支撑平面中，加入了地面
+    +  在make_prediction(self, image, object_classes=coco_classes):中，将蛋糕和水池，认为是桌子

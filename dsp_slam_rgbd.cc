@@ -123,7 +123,7 @@ int main(int argc, char **argv)
     cv::Mat imRGB, imD;
 
     int images_numbers_to_pass_over = 1;
-    bool frame_by_frame = true;
+    bool frame_by_frame = false;
     if(frame_by_frame) {
         std::cout << "*****************************" << std::endl;
         std::cout << "input image: Press [ENTER] to continue ... , [y] to autonomous mode, [e] to quit." << std::endl;

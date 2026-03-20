@@ -124,7 +124,8 @@ class Frame:
             # label_path2d = os.path.join(self.lbl2d_dir, "%06d.lbl" % self.frame_id)
             det_2d = torch.load(label_path2d)
         t2 = get_time()
-        print("2D detctor takes %f seconds" % (t2 - t1))
+        
+        print("[2026-debug] 2D detctor takes %f seconds" % (t2 - t1))
         # print(f"self.img_rgb.shape = {self.img_rgb.shape}")
 
         # print(f"det_2d.size = {len(det_2d["pred_labels"])}")
@@ -240,6 +241,7 @@ class MonoSequence:
         self.detections_in_current_frame = None
 
     def get_frame_by_id(self, frame_id):
+        print("[2026-debug] get_frame_by_id")
         self.current_frame = Frame(self, frame_id = frame_id)
         self.current_frame.get_detections()
         self.detections_in_current_frame = self.current_frame.instances

@@ -667,7 +667,7 @@ void Tracking::UpdateAssociatedObjectPoseAndScale(MapObject* pMO){
 
     double scale = Config::Get<double>("Mapping.ObjectScale");
     // std::cout << "[debug] UpdateAssociatedObjectPoseAndScale, 融合后的椭球体 scale:"<< e_merged.scale.transpose() << endl;
-    // std::cout << "[debug] UpdateAssociatedObjectPoseAndScale, 融合后的椭球体 Pose:"<< e_merged.pose.translation().transpose() << endl;
+    std::cout << "[debug] UpdateAssociatedObjectPoseAndScale, 融合后的椭球体 Pose:"<< e_merged.pose.translation().transpose() << endl;
     e_merged.prob_3d = pMO->GetEllipsold()->prob_3d;
     e_merged.prob = pMO->GetEllipsold()->prob;    // measurement_prob * symmetry_prob
     e_merged.miLabel = pMO->GetEllipsold()->miLabel;

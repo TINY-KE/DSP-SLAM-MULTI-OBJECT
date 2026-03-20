@@ -35,18 +35,21 @@ namespace ORB_SLAM2
                 continue;
             }
 
-            // std::cout<<"debug: vpEllips[obj_id]->miLabel: ";
+            std::cout<<"debug: vpEllips[obj_id]->miLabel: ";
             // std::cout<< vpEllips[obj_id]->miLabel <<std::endl;
             int object_label = vpEllips[obj_id]->miLabel;  // 假设标签值
             bool is_on_ground = false;
             std::vector<int> Objects_on_ground_Labels = {56, 57/* 椅子，沙发 */ ,13 /* 板凳 */, 58 /* 盆栽植物 */, 59 /* 床 */, 60 /* 餐桌 */, 72 /* 冰箱 */};
             if (std::find(Objects_on_ground_Labels.begin(), Objects_on_ground_Labels.end(), object_label) != Objects_on_ground_Labels.end()) {
+                std::cout<< " [debug] RelationExtractor::ExtractRelations, object_label: " << object_label << " 在地面上." << std::endl;
                 is_on_ground = true;
             } else {
+                std::cout<< " [debug] RelationExtractor::ExtractRelations, object_label: " << object_label << " 不在地面上." << std::endl;
                 is_on_ground = false;
             }
 
-            std::vector<int> Objects_dont_use_backing = {56, 57/* 椅子，沙发 */ , 58 /* 盆栽植物 */, 60 /* 餐桌 */};
+            // std::vector<int> Objects_dont_use_backing = {56, 57/* 椅子，沙发 */ , 58 /* 盆栽植物 */, 60 /* 餐桌 */};
+            std::vector<int> Objects_dont_use_backing = {};
             bool dont_use_backing = false;
             if (std::find(Objects_dont_use_backing.begin(), Objects_dont_use_backing.end(), object_label) != Objects_dont_use_backing.end()) {
                 dont_use_backing = true;
@@ -54,7 +57,7 @@ namespace ORB_SLAM2
                 dont_use_backing = false;
             }
 
-            // std::cout<< "[debug] RelationExtractor::ExtractRelations, obj_id: " << obj_id << std::endl;
+            std::cout<< "[debug] RelationExtractor::ExtractRelations, obj_id: " << obj_id << std::endl;
             if(pEllip->mbBackingPlaneDefined || pEllip->mbSupportingPlaneDefined ) {
                 std::cerr << "[Error]: 已提前有MHP! "<< pEllip->mbSupportingPlaneDefined << ", "<< pEllip->mbBackingPlaneDefined << std::endl;
                 exit(-1);
@@ -85,7 +88,7 @@ namespace ORB_SLAM2
                 PointCloudPCL PlanePoints = vpPlanesPoints[plane_id];
 
                 // 判断水平面是否是支撑平面
-                if(pPlane->miMHType==g2o::MANHATTAN_PLANE_TYPE::HORIZONTAL){
+                if(pPlane->miMHType==g2o::MANHATTAN_PLANE_TYPE::HORIZONTAL || pPlane->miMHType==g2o::MANHATTAN_PLANE_TYPE::GROUND){
                     double z_dis = pObj_bottom_plane->distanceToPlane(*pPlane);
                     
                     pcl::KdTreeFLANN<PointT> kdtree;
@@ -119,6 +122,7 @@ namespace ORB_SLAM2
                         g2o::plane* pPlaneGlobal = new g2o::plane(*pPlane);
                         pPlaneGlobal->transform(pKF->cam_pose_Twc);
                         double height = -1 * pPlaneGlobal->param[3] / pPlaneGlobal->param[2];
+                        std::cout << "  潜在水平支撑面的高度为: " << height << std::endl;
                         if(height<0.1) {
                             supprortingPlaneDisVec.push_back(make_pair(min_xyz_distance, pPlane));
                         }
@@ -130,6 +134,9 @@ namespace ORB_SLAM2
                             std::cout << "  物体长度 object_length*1.5: " << object_length*1.5 << std::endl;
                         }
                     }
+                }
+                else{
+                    std::cout << "  plane_id: " << plane_id << " 不是水平面，跳过支撑关系判断." << std::endl;
                 }
             }
 
@@ -176,7 +183,7 @@ namespace ORB_SLAM2
             int back_plane_id=-1;
             g2o::plane* pBackingPlane_best = NULL;
             std::vector<std::pair<double, g2o::plane*>> backingPlaneAreaVec;
-            // std::cout<< "[debug] RelationExtractor::ExtractRelations, obj_id: " << obj_id << ", plane_num: " << vpPlanes.size() << std::endl;
+            std::cout<< "[debug] RelationExtractor::ExtractRelations, obj_id: " << obj_id << ", plane_num: " << vpPlanes.size() << std::endl;
             for (int plane_id = 0; plane_id < vpPlanes.size(); plane_id++)
             {
                 g2o::plane *pPlane = vpPlanes[plane_id];
@@ -200,17 +207,18 @@ namespace ORB_SLAM2
                             double dis = plane_align.distanceToPoint(sideplane_centor, true);
 
                             if ( dis < 0.1 &&  dis > -1*backing_distance_max)  // 平面最多进入物体内部10cm
+                            // if ( dis < -0.1 &&  dis > -1*backing_distance_max)  // 平面在物体外部10cm以上。用于瑞海家园的桌布假餐桌
                             {
                                 // 平面中点的数量
                                 backingPlaneAreaVec.push_back(make_pair(PlanePoints.size(), pPlane));
-                                // std::cout << "  [success] plane_id: " << plane_id << ", area: " << PlanePoints.size() << ", angle: " << angle_diff << ", dis: " << dis << std::endl;
+                                std::cout << "  [success] plane_id: " << plane_id << ", area: " << PlanePoints.size() << ", angle: " << angle_diff << ", dis: " << dis << std::endl;
                             }
                             else{
-                                // std::cout << "  [fail]    plane_id: " << plane_id << ", area: " << PlanePoints.size() << ", angle: " << angle_diff << ", dis: " << dis << std::endl;
+                                std::cout << "  [fail]    plane_id: " << plane_id << ", area: " << PlanePoints.size() << ", angle: " << angle_diff << ", dis: " << dis << std::endl;
                             }
                         }
                         else{
-                                // std::cout << "  [fail]    plane_id: " << plane_id << ", area: " << PlanePoints.size() << ", angle: " << angle_diff << std::endl;
+                                std::cout << "  [fail]    plane_id: " << plane_id << ", area: " << PlanePoints.size() << ", angle: " << angle_diff << std::endl;
                         }
                     }         
                 }

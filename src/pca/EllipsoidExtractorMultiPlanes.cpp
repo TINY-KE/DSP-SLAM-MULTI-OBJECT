@@ -1236,19 +1236,27 @@ g2o::ellipsoid EllipsoidExtractor::EstimateEllipsoidFromPCDCloud(pcl::PointCloud
     // ✅ 6. 估计物体主方向（Yaw角）
     // 开始计算朝向: 使用法向量投票器    
     // 计算该点云的 normal voters
-    // std::cout<< " [debug] EstimateLocalEllipsoidUsingMultiPlanes 3" << std::endl;
+    std::cout<< " [debug] EstimateLocalEllipsoidUsingMultiPlanes 3, ManualDirection: "<< ManualDirection << std::endl;
     double yaw;  // 该函数获得一个位于 XY 平面内的, 三维法向量. 可与 Z轴组完整旋转矩阵.
-    if(ManualDirection==1) 
-        yaw = 0 / 180 * M_PI;   // X轴正方向
-    else if(ManualDirection==2) 
-        yaw = 90 / 180 * M_PI;  // Y轴正方向
-    else if(ManualDirection==3)
-        yaw = 180 / 180 * M_PI; // X轴负方向
-    else if(ManualDirection==4) 
-        yaw = -90 / 180 * M_PI; // Y轴负方向
-    else
+    if(ManualDirection==1) {
+        std::cout<< " [debug] EstimateLocalEllipsoidUsingMultiPlanes 3-1, ManualDirection: "<< ManualDirection  << ", set yaw to 0" << std::endl;
+        yaw = 0.0;
+    }
+    else if(ManualDirection==2) {
+        std::cout<< " [debug] EstimateLocalEllipsoidUsingMultiPlanes 3-1, ManualDirection: "<< ManualDirection  << ", set yaw to  90" << std::endl;
+        yaw = 90.0 / 180.0 * M_PI;  // Y轴正方向
+    }else if(ManualDirection==3){
+        std::cout<< " [debug] EstimateLocalEllipsoidUsingMultiPlanes 3-1, ManualDirection: "<< ManualDirection  << ", set yaw to 180" << std::endl;
+        yaw = 180.0 / 180.0 * M_PI; // X轴负方向
+    }else if(ManualDirection==4) {
+        std::cout<< " [debug] EstimateLocalEllipsoidUsingMultiPlanes 3-1, ManualDirection: "<< ManualDirection  << ", set yaw to -90" << std::endl;
+        yaw = -90.0 / 180.0 * M_PI; // Y轴负方向
+    }else{
+        std::cout<< " [debug] EstimateLocalEllipsoidUsingMultiPlanes 3-1, ManualDirection: "<< ManualDirection  << ", set yaw by 法向量投票" << std::endl;
         yaw = NormalVoter(pCloudPCLGravity);  // 法向量投票器
+    }
     // 通过yaw角度将 Gravity - > normalized 
+    std::cout<< " [debug] EstimateLocalEllipsoidUsingMultiPlanes 3-2, yaw: "<< yaw << std::endl;
     g2o::SE3Quat Tgn = GenerateTransformNormalToGravity(yaw); 
 
     // ✅ 7. 点云变换到归一化坐标系
